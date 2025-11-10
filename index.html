@@ -815,22 +815,164 @@ async function openItemReviewModal(type, id) {
         if (error) throw error;
         
         let content = '';
+        let projectData = null;
+        let attributeData = null;
+
+        // Get additional project and attribute data for comprehensive display
+        if (type === 'code') {
+            projectData = data.project;
+            
+            // Get project attributes if project exists
+            if (data.project_id) {
+                try {
+                    const { data: attrs, error: attrError } = await supabase
+                        .from('project_attributes')
+                        .select(`
+                            *,
+                            standard_values (
+                                id,
+                                name,
+                                value,
+                                attribute_id
+                            )
+                        `)
+                        .eq('project_id', data.project_id);
+                    
+                    if (attrError) {
+                        console.warn('Failed to fetch with standard_values join:', attrError);
+                        // Fallback: fetch attributes only
+                        const { data: attrsOnly, error: fallbackError } = await supabase
+                            .from('project_attributes')
+                            .select('*')
+                            .eq('project_id', data.project_id);
+                        
+                        if (!fallbackError && attrsOnly) {
+                            // For each attribute, fetch standard values separately
+                            const attributesWithValues = await Promise.all(
+                                attrsOnly.map(async (attr) => {
+                                    const { data: values, error: valueError } = await supabase
+                                        .from('standard_values')
+                                        .select('id, name, value, attribute_id')
+                                        .eq('attribute_id', attr.id);
+                                    
+                                    return { ...attr, standard_values: values || [] };
+                                })
+                            );
+                            attributeData = attributesWithValues;
+                        }
+                    } else {
+                        attributeData = attrs;
+                    }
+                } catch (error) {
+                    console.error('Error fetching attribute data:', error);
+                    attributeData = null;
+                }
+            }
+        }
+
         switch(type) {
             case 'code':
                 content = `
-                    <div class="space-y-4">
-                        <div class="bg-blue-50 p-4 rounded-lg">
-                            <h3 class="font-semibold">${data.item_code}</h3>
-                            <p class="text-sm text-gray-600">${data.project?.project_name || 'Unknown Project'}</p>
+                    <div class="space-y-6">
+                        <!-- Request Status & Basic Info -->
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="text-lg font-semibold text-blue-900">Request Information</h3>
+                                <span class="px-3 py-1 rounded-full text-sm font-medium ${
+                                    data.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                    data.status === 'reviewer_approved' ? 'bg-blue-100 text-blue-800' :
+                                    data.status === 'admin_approved' ? 'bg-green-100 text-green-800' :
+                                    data.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                                    'bg-gray-100 text-gray-800'
+                                }">
+                                    ${data.status?.replace('_', ' ')?.toUpperCase() || 'PENDING'}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div><span class="font-medium">Request ID:</span> ${data.id}</div>
+                                <div><span class="font-medium">Created:</span> ${formatDate(data.created_at)}</div>
+                                <div><span class="font-medium">Requester:</span> ${data.created_by_user?.username || 'Unknown'} (${data.created_by_user?.email || 'N/A'})</div>
+                                <div><span class="font-medium">Reviewer:</span> ${data.reviewed_by_user?.username || 'Not assigned'}</div>
+                            </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><strong>Created by:</strong> ${data.created_by_user?.username || 'N/A'}</div>
-                            <div><strong>UOM:</strong> ${data.uom || 'N/A'}</div>
-                            <div><strong>Country:</strong> ${data.country_of_origin || 'N/A'}</div>
-                            <div><strong>Model:</strong> ${data.model_number || 'N/A'}</div>
+
+                        <!-- Project Information -->
+                        ${projectData ? `
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Project Details</h3>
+                            <div class="grid grid-cols-1 gap-3 text-sm">
+                                <div><span class="font-medium">Project Name:</span> ${projectData.project_name || data.project?.project_name || 'N/A'}</div>
+                            </div>
                         </div>
-                        <div><strong>Description 1:</strong> ${data.description1 || 'N/A'}</div>
-                        <div><strong>Description 2:</strong> ${data.description2 || 'N/A'}</div>
+                        ` : ''}
+
+                        <!-- Item Code Request Details -->
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <h3 class="text-lg font-semibold text-green-900 mb-3">Item Code Request Details</h3>
+                            <div class="space-y-3 text-sm">
+                                <div><span class="font-medium">Requested Item Code:</span> <span class="font-mono text-lg">${data.item_code || 'N/A'}</span></div>
+                                <div><span class="font-medium">Description 1:</span> ${data.description1 || 'N/A'}</div>
+                                <div><span class="font-medium">Description 2:</span> ${data.description2 || 'N/A'}</div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><span class="font-medium">UOM:</span> ${data.uom || 'N/A'}</div>
+                                    <div><span class="font-medium">Country of Origin:</span> ${data.country_of_origin || 'N/A'}</div>
+                                </div>
+                                <div><span class="font-medium">Model Number:</span> ${data.model_number || 'N/A'}</div>
+                                
+                                <!-- Financial Information Section -->
+                                <div class="border-t pt-3 mt-3">
+                                    <h4 class="font-semibold text-green-800 mb-2">Financial Information</h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div><span class="font-medium">Unit Price:</span> <span class="text-green-600 font-semibold">${data.unit_price ? (parseFloat(data.unit_price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})) : 'N/A'}</span></div>
+                                        <div><span class="font-medium">Currency:</span> <span class="font-mono">${data.currency_code || 'N/A'}</span></div>
+                                    </div>
+                                    <div class="mt-2"><span class="font-medium">Manufacturer:</span> <span class="text-blue-600 font-medium">${data.manufacturer || 'N/A'}</span></div>
+                                </div>
+                                
+                                <div><span class="font-medium">Combination Signature:</span> <span class="font-mono text-xs">${data.combination_signature || 'N/A'}</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Attribute Selections -->
+                        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                            <h3 class="text-lg font-semibold text-yellow-900 mb-3">Selected Attribute Values</h3>
+                            <div class="space-y-4">
+                                ${attributeData && data.attribute_selections ? 
+                                    (() => {
+                                        const selections = data.attribute_selections || {};
+                                        return attributeData.map(attr => {
+                                            const selectedValueId = selections[attr.id];
+                                            const selectedValue = attr.standard_values?.find(val => val.id === selectedValueId);
+                                            
+                                            return `
+                                                <div class="border border-yellow-200 p-3 rounded bg-white">
+                                                    <div class="font-medium text-yellow-900 mb-2">${attr.attribute_name} ${attr.is_mandatory ? '(Required)' : '(Optional)'}</div>
+                                                    <div class="text-sm">
+                                                        <div class="text-green-600 font-medium mb-2">✓ Selected: ${selectedValue ? selectedValue.name : 'None'}</div>
+                                                        <div class="text-gray-600">Available values:</div>
+                                                        <div class="ml-4 mt-1 space-y-1 max-h-32 overflow-y-auto">
+                                                            ${(attr.standard_values || []).map(val => `
+                                                                <div class="${val.id === selectedValueId ? 'text-green-600 font-bold' : 'text-gray-500'}">
+                                                                    ${val.id === selectedValueId ? '→ ' : '• '}${val.name}
+                                                                </div>
+                                                            `).join('')}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        }).join('');
+                                    })()
+                                : '<p class="text-gray-500 italic">No attribute selections found</p>'}
+                            </div>
+                        </div>
+
+                        <!-- Review Comments -->
+                        ${data.review_comments || data.reviewer_comments ? `
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h3 class="text-lg font-semibold text-blue-900 mb-2">Previous Review Comments</h3>
+                            <p class="text-sm text-blue-800">${data.review_comments || data.reviewer_comments}</p>
+                        </div>
+                        ` : ''}
                     </div>
                 `;
                 break;
@@ -896,12 +1038,7 @@ async function submitCurrentReview(decision) {
         
         console.log('Submitting review:', decision, 'for', reviewItem, 'with comments:', comments);
 
-        // Validate comments for rejection
-        if (decision === 'reject' && !comments) {
-            alert('Comments are required when rejecting a request.');
-            document.getElementById('review-comments').focus();
-            return;
-        }
+        
 
         let result;
         
@@ -1339,34 +1476,55 @@ async function viewRequestDetails(type, requestId) {
             throw new Error('No data found for this request');
         }
 
-        // Build the detail HTML
+        // Build the detail HTML using the comprehensive admin-style layout
         let detailHTML = `
-            <!-- Request Info Header -->
-            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
-                <h3 class="text-lg font-semibold text-blue-900 mb-3">Request Information</h3>
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div><span class="font-medium">Request ID:</span> #${requestData.id}</div>
-                    <div><span class="font-medium">Status:</span> <span class="px-2 py-1 rounded text-xs status-${requestData.status}">${requestData.status}</span></div>
-                    <div><span class="font-medium">Created by:</span> ${requestData.created_by_user?.username || 'Unknown'} (${requestData.created_by_user?.email || 'No email'})</div>
-                    <div><span class="font-medium">Created:</span> ${formatDate(requestData.created_at)}</div>
-                    ${requestData.reviewed_by_user ? `
-                        <div><span class="font-medium">Reviewer:</span> ${requestData.reviewed_by_user.username}</div>
-                        <div><span class="font-medium">Review Date:</span> ${requestData.reviewed_at ? formatDate(requestData.reviewed_at) : 'Pending'}</div>
-                    ` : ''}
+            <div class="space-y-6">
+                <!-- Request Status & Basic Info -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-lg font-semibold text-blue-900">Request Information</h3>
+                        <span class="px-3 py-1 rounded-full text-sm font-medium ${
+                            requestData.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            requestData.status === 'reviewer_approved' ? 'bg-blue-100 text-blue-800' :
+                            requestData.status === 'admin_approved' ? 'bg-green-100 text-green-800' :
+                            requestData.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                        }">
+                            ${requestData.status.replace('_', ' ').toUpperCase()}
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div><span class="font-medium">Request ID:</span> ${requestData.id}</div>
+                        <div><span class="font-medium">Created:</span> ${formatDate(requestData.created_at)}</div>
+                        <div><span class="font-medium">Requester:</span> ${requestData.created_by_user?.username || 'Unknown'} (${requestData.created_by_user?.email || 'N/A'})</div>
+                        <div><span class="font-medium">Reviewer:</span> ${requestData.reviewed_by_user?.username || 'Not assigned'}</div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Project Context -->
-            ${projectData ? `
-            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
-                <h3 class="text-lg font-semibold text-gray-900 mb-3">Project Context</h3>
-                <div class="space-y-2 text-sm">
-                    <div><span class="font-medium">Project:</span> ${projectData.project_name}</div>
-                    <div><span class="font-medium">CSI Path:</span> ${projectData.division_code} → ${projectData.section_code} → ${projectData.detailed_section_code} → ${projectData.item_code}</div>
-                    ${projectData.additional_level_name ? `<div><span class="font-medium">${projectData.additional_level_name}:</span> ${projectData.additional_level_value || 'Not specified'}</div>` : ''}
+                <!-- Project Information -->
+                ${projectData ? `
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Project Details</h3>
+                    <div class="grid grid-cols-1 gap-3 text-sm">
+                        <div><span class="font-medium">Project Name:</span> ${projectData.project_name || 'N/A'}</div>
+                        <div><span class="font-medium">CSI Code:</span> 
+                            <span class="font-mono">${projectData.division_code}-${projectData.section_code}-${projectData.detailed_section_code}-${projectData.item_code}</span>
+                        </div>
+                        ${projectData.additional_level_value ? `
+                            <div><span class="font-medium">Additional Level:</span> ${projectData.additional_level_name}: ${projectData.additional_level_value}</div>
+                        ` : ''}
+                        <div><span class="font-medium">Project Status:</span> 
+                            <span class="px-2 py-1 rounded text-xs ${
+                                projectData.status === 'admin_approved' ? 'bg-green-100 text-green-800' :
+                                projectData.status === 'reviewer_approved' ? 'bg-blue-100 text-blue-800' :
+                                'bg-yellow-100 text-yellow-800'
+                            }">
+                                ${projectData.status?.replace('_', ' ')?.toUpperCase() || 'UNKNOWN'}
+                            </span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            ` : ''}
+                ` : ''}
         `;
 
         // Request-specific details
@@ -1391,20 +1549,23 @@ async function viewRequestDetails(type, requestId) {
                         </div>
                         
                         <!-- Financial Information -->
-                        <div class="border-t pt-3 mt-3 bg-blue-50 p-3 rounded">
-                            <h4 class="font-semibold text-blue-800 mb-2">💰 Financial Information</h4>
+                        <div class="border-t pt-3 mt-3">
+                            <h4 class="font-semibold text-green-800 mb-2">Financial Information</h4>
                             <div class="grid grid-cols-2 gap-4">
-                                <div><span class="font-medium">Unit Price:</span> <span class="text-green-600 font-semibold">${requestData.unit_price ? (parseFloat(requestData.unit_price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})) : 'Not specified'}</span></div>
-                                <div><span class="font-medium">Currency:</span> <span class="font-mono bg-yellow-100 px-2 py-1 rounded">${requestData.currency_code || 'Not specified'}</span></div>
+                                <div><span class="font-medium">Unit Price:</span> <span class="text-green-600 font-semibold">${requestData.unit_price ? (parseFloat(requestData.unit_price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})) : 'N/A'}</span></div>
+                                <div><span class="font-medium">Currency:</span> <span class="font-mono">${requestData.currency_code || 'N/A'}</span></div>
                             </div>
-                            <div class="mt-2"><span class="font-medium">Manufacturer:</span> <span class="text-blue-600 font-medium bg-blue-100 px-2 py-1 rounded">${requestData.manufacturer || 'Not specified'}</span></div>
+                            <div class="mt-2"><span class="font-medium">Manufacturer:</span> <span class="text-blue-600 font-medium">${requestData.manufacturer || 'N/A'}</span></div>
                         </div>
                         
                         <div><span class="font-medium">Combination Signature:</span> <span class="font-mono text-xs">${requestData.combination_signature || 'N/A'}</span></div>
                     </div>
                 </div>
 
-            
+                <!-- Attribute Selections -->
+                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mt-4">
+                    <h3 class="text-lg font-semibold text-yellow-900 mb-3">Selected Attribute Values</h3>
+                    <div class="space-y-4">
             `;
             
             // Show selected attributes for item code requests
@@ -1415,7 +1576,20 @@ async function viewRequestDetails(type, requestId) {
                     const selectedValue = attr.standard_values.find(val => val.id === selectedValueId);
                     
                     detailHTML += `
-                        
+                        <div class="border border-yellow-200 p-3 rounded bg-white">
+                            <div class="font-medium text-yellow-900 mb-2">${attr.attribute_name} ${attr.is_mandatory ? '(Required)' : '(Optional)'}</div>
+                            <div class="text-sm">
+                                <div class="text-green-600 font-medium mb-2">✓ Selected: ${selectedValue ? selectedValue.name : 'None'}</div>
+                                <div class="text-gray-600">Available values:</div>
+                                <div class="ml-4 mt-1 space-y-1 max-h-32 overflow-y-auto">
+                                    ${attr.standard_values.map(val => `
+                                        <div class="${val.id === selectedValueId ? 'text-green-600 font-bold' : 'text-gray-500'}">
+                                            ${val.id === selectedValueId ? '→ ' : '• '}${val.name}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
                     `;
                 });
             } else {
@@ -1503,12 +1677,17 @@ async function viewRequestDetails(type, requestId) {
         // Add any existing review comments
         if (requestData.review_comments || requestData.reviewer_comments) {
             detailHTML += `
-                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-4">
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
                     <h3 class="text-lg font-semibold text-blue-900 mb-2">Previous Review Comments</h3>
                     <p class="text-sm text-blue-800">${requestData.review_comments || requestData.reviewer_comments}</p>
                 </div>
             `;
         }
+
+        // Close the main container div
+        detailHTML += `
+            </div>
+        `;
 
         // Show the modal
         document.getElementById('review-modal-title').textContent = `Review ${type.charAt(0).toUpperCase() + type.slice(1)} Request #${requestId}`;
@@ -1636,7 +1815,20 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                 const selectedValue = attr.standard_values.find(val => val.id === selectedValueId);
                 
                 detailHTML += `
-                    
+                    <div class="border border-yellow-200 p-3 rounded bg-white">
+                        <div class="font-medium text-yellow-900 mb-2">${attr.attribute_name} ${attr.is_mandatory ? '(Required)' : '(Optional)'}</div>
+                        <div class="text-sm">
+                            <div class="text-green-600 font-medium mb-2">✓ Selected: ${selectedValue ? selectedValue.name : 'None'}</div>
+                            <div class="text-gray-600">Available values:</div>
+                            <div class="ml-4 mt-1 space-y-1 max-h-32 overflow-y-auto">
+                                ${attr.standard_values.map(val => `
+                                    <div class="${val.id === selectedValueId ? 'text-green-600 font-bold' : 'text-gray-500'}">
+                                        ${val.id === selectedValueId ? '→ ' : '• '}${val.name}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
                 `;
             });
         } else {
@@ -1765,6 +1957,7 @@ function updateModalActionButtons(type, itemData) {
     const status = itemData.status || 'unknown';
     
     console.log('Setting up modal buttons for:', { type, userRole, status });
+    console.log('Project data:', itemData);
     
     let buttonsHTML = '';
     
@@ -1794,6 +1987,19 @@ function updateModalActionButtons(type, itemData) {
                         ❌ You Rejected This
                     </span>
                 `;
+            } else {
+                // Fallback for reviewers - show buttons anyway for debugging
+                console.log('Unknown status for reviewer project:', status, '- showing fallback buttons');
+                buttonsHTML = `
+                    <button onclick="submitCurrentReview('approve')" 
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
+                        ✅ Approve (Status: ${status})
+                    </button>
+                    <button onclick="submitCurrentReview('reject')" 
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
+                        ❌ Reject (Status: ${status})
+                    </button>
+                `;
             }
         } else if (userRole === 'admin') {
             if (status === 'reviewer_approved' || status === 'submitted' || status === 'pending') {
@@ -1818,6 +2024,19 @@ function updateModalActionButtons(type, itemData) {
                     <span class="px-4 py-2 bg-red-100 text-red-800 rounded-md text-sm">
                         ❌ Rejected by You
                     </span>
+                `;
+            } else {
+                // Fallback for admins - show buttons anyway for debugging
+                console.log('Unknown status for admin project:', status, '- showing fallback buttons');
+                buttonsHTML = `
+                    <button onclick="submitCurrentReview('approve')" 
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
+                        ✅ Final Approve (Status: ${status})
+                    </button>
+                    <button onclick="submitCurrentReview('reject')" 
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
+                        ❌ Final Reject (Status: ${status})
+                    </button>
                 `;
             }
         }
@@ -1876,13 +2095,35 @@ function updateModalActionButtons(type, itemData) {
         }
     }
     
-    // Fallback for unknown status
+    // Fallback for unknown status or scenarios
     if (!buttonsHTML) {
-        buttonsHTML = `
-            <span class="px-4 py-2 bg-gray-100 text-gray-600 rounded-md text-sm">
-                Status: ${status} - No actions available
-            </span>
-        `;
+        console.warn('No buttons generated for:', { type, userRole, status, itemData });
+        if (type === 'project' && (userRole === 'reviewer' || userRole === 'admin')) {
+            // Force show project buttons for debugging
+            buttonsHTML = `
+                <button onclick="submitCurrentReview('approve')" 
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
+                    ✅ Force Approve
+                </button>
+                <button onclick="submitCurrentReview('reject')" 
+                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
+                    ❌ Force Reject
+                </button>
+                <div class="text-xs text-gray-500 mt-1">Status: ${status} | Role: ${userRole}</div>
+            `;
+        } else {
+            buttonsHTML = `
+                <span class="px-4 py-2 bg-gray-100 text-gray-600 rounded-md text-sm">
+                    Status: ${status} - No actions available (${type})
+                </span>
+            `;
+        }
+    }
+    
+    // Check if button container exists
+    if (!buttonContainer) {
+        console.error('Button container not found! modal-action-buttons element is missing');
+        return;
     }
     
     buttonContainer.innerHTML = buttonsHTML;
