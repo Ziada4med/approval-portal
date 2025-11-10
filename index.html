@@ -933,38 +933,7 @@ async function openItemReviewModal(type, id) {
                             </div>
                         </div>
 
-                        <!-- Attribute Selections -->
-                        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                            <h3 class="text-lg font-semibold text-yellow-900 mb-3">Selected Attribute Values</h3>
-                            <div class="space-y-4">
-                                ${attributeData && data.attribute_selections ? 
-                                    (() => {
-                                        const selections = data.attribute_selections || {};
-                                        return attributeData.map(attr => {
-                                            const selectedValueId = selections[attr.id];
-                                            const selectedValue = attr.standard_values?.find(val => val.id === selectedValueId);
-                                            
-                                            return `
-                                                <div class="border border-yellow-200 p-3 rounded bg-white">
-                                                    <div class="font-medium text-yellow-900 mb-2">${attr.attribute_name} ${attr.is_mandatory ? '(Required)' : '(Optional)'}</div>
-                                                    <div class="text-sm">
-                                                        <div class="text-green-600 font-medium mb-2">✓ Selected: ${selectedValue ? selectedValue.name : 'None'}</div>
-                                                        <div class="text-gray-600">Available values:</div>
-                                                        <div class="ml-4 mt-1 space-y-1 max-h-32 overflow-y-auto">
-                                                            ${(attr.standard_values || []).map(val => `
-                                                                <div class="${val.id === selectedValueId ? 'text-green-600 font-bold' : 'text-gray-500'}">
-                                                                    ${val.id === selectedValueId ? '→ ' : '• '}${val.name}
-                                                                </div>
-                                                            `).join('')}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            `;
-                                        }).join('');
-                                    })()
-                                : '<p class="text-gray-500 italic">No attribute selections found</p>'}
-                            </div>
-                        </div>
+                        
 
                         <!-- Review Comments -->
                         ${data.review_comments || data.reviewer_comments ? `
@@ -1562,10 +1531,7 @@ async function viewRequestDetails(type, requestId) {
                     </div>
                 </div>
 
-                <!-- Attribute Selections -->
-                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mt-4">
-                    <h3 class="text-lg font-semibold text-yellow-900 mb-3">Selected Attribute Values</h3>
-                    <div class="space-y-4">
+                
             `;
             
             // Show selected attributes for item code requests
@@ -1576,20 +1542,7 @@ async function viewRequestDetails(type, requestId) {
                     const selectedValue = attr.standard_values.find(val => val.id === selectedValueId);
                     
                     detailHTML += `
-                        <div class="border border-yellow-200 p-3 rounded bg-white">
-                            <div class="font-medium text-yellow-900 mb-2">${attr.attribute_name} ${attr.is_mandatory ? '(Required)' : '(Optional)'}</div>
-                            <div class="text-sm">
-                                <div class="text-green-600 font-medium mb-2">✓ Selected: ${selectedValue ? selectedValue.name : 'None'}</div>
-                                <div class="text-gray-600">Available values:</div>
-                                <div class="ml-4 mt-1 space-y-1 max-h-32 overflow-y-auto">
-                                    ${attr.standard_values.map(val => `
-                                        <div class="${val.id === selectedValueId ? 'text-green-600 font-bold' : 'text-gray-500'}">
-                                            ${val.id === selectedValueId ? '→ ' : '• '}${val.name}
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        </div>
+                        
                     `;
                 });
             } else {
@@ -1801,10 +1754,7 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                 </div>
             </div>
 
-            <!-- Attribute Selections -->
-            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                <h3 class="text-lg font-semibold text-yellow-900 mb-3">Selected Attribute Values</h3>
-                <div class="space-y-4">
+
         `;
         
         // Show selected attributes for item code requests
@@ -1815,20 +1765,7 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                 const selectedValue = attr.standard_values.find(val => val.id === selectedValueId);
                 
                 detailHTML += `
-                    <div class="border border-yellow-200 p-3 rounded bg-white">
-                        <div class="font-medium text-yellow-900 mb-2">${attr.attribute_name} ${attr.is_mandatory ? '(Required)' : '(Optional)'}</div>
-                        <div class="text-sm">
-                            <div class="text-green-600 font-medium mb-2">✓ Selected: ${selectedValue ? selectedValue.name : 'None'}</div>
-                            <div class="text-gray-600">Available values:</div>
-                            <div class="ml-4 mt-1 space-y-1 max-h-32 overflow-y-auto">
-                                ${attr.standard_values.map(val => `
-                                    <div class="${val.id === selectedValueId ? 'text-green-600 font-bold' : 'text-gray-500'}">
-                                        ${val.id === selectedValueId ? '→ ' : '• '}${val.name}
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
+                    
                 `;
             });
         } else {
