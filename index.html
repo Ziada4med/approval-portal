@@ -1187,16 +1187,63 @@ async function viewRequestDetails(type, requestId) {
             console.log('Unit Price:', requestData.unit_price);
             console.log('Currency:', requestData.currency_code);
             console.log('Manufacturer:', requestData.manufacturer);
+            console.log('Project Data:', projectData);
+            console.log('Attribute Selections:', requestData.attribute_selections);
 
             // Get project attributes for item code requests
             if (projectData) {
-                const { data: attrs, error: attrError } = await supabase
-                    .from('project_attributes')
-                    .select('*')
-                    .eq('project_id', projectData.id);
-                
-                if (attrError) throw attrError;
-                attributeData = attrs;
+                try {
+                    // Try first with standard_values join
+                    const { data: attrs, error: attrError } = await supabase
+                        .from('project_attributes')
+                        .select(`
+                            *,
+                            standard_values (
+                                id,
+                                name,
+                                value,
+                                attribute_id
+                            )
+                        `)
+                        .eq('project_id', projectData.id);
+                    
+                    if (attrError) {
+                        console.warn('Failed to fetch with standard_values join:', attrError);
+                        // Fallback: fetch attributes only
+                        const { data: attrsOnly, error: fallbackError } = await supabase
+                            .from('project_attributes')
+                            .select('*')
+                            .eq('project_id', projectData.id);
+                        
+                        if (fallbackError) throw fallbackError;
+                        
+                        // For each attribute, fetch standard values separately
+                        const attributesWithValues = await Promise.all(
+                            attrsOnly.map(async (attr) => {
+                                const { data: values, error: valueError } = await supabase
+                                    .from('standard_values')
+                                    .select('id, name, value, attribute_id')
+                                    .eq('attribute_id', attr.id);
+                                
+                                if (valueError) {
+                                    console.warn(`Failed to fetch values for attribute ${attr.id}:`, valueError);
+                                    return { ...attr, standard_values: [] };
+                                }
+                                
+                                return { ...attr, standard_values: values || [] };
+                            })
+                        );
+                        
+                        attributeData = attributesWithValues;
+                    } else {
+                        attributeData = attrs;
+                    }
+                    
+                    console.log('Final attributeData for code request:', attributeData);
+                } catch (error) {
+                    console.error('Error fetching attribute data:', error);
+                    attributeData = null;
+                }
             }
 
         } else if (type === 'value') {
@@ -1221,13 +1268,50 @@ async function viewRequestDetails(type, requestId) {
 
             // Get the specific attribute for value requests
             if (data.attribute_id) {
-                const { data: attrs, error: attrError } = await supabase
-                    .from('project_attributes')
-                    .select('*')
-                    .eq('id', data.attribute_id);
-                
-                if (attrError) throw attrError;
-                attributeData = attrs;
+                try {
+                    // Try first with standard_values join
+                    const { data: attrs, error: attrError } = await supabase
+                        .from('project_attributes')
+                        .select(`
+                            *,
+                            standard_values (
+                                id,
+                                name,
+                                value,
+                                attribute_id
+                            )
+                        `)
+                        .eq('id', data.attribute_id);
+                    
+                    if (attrError) {
+                        console.warn('Failed to fetch with standard_values join:', attrError);
+                        // Fallback: fetch attribute only
+                        const { data: attrOnly, error: fallbackError } = await supabase
+                            .from('project_attributes')
+                            .select('*')
+                            .eq('id', data.attribute_id);
+                        
+                        if (fallbackError) throw fallbackError;
+                        
+                        // Fetch standard values separately
+                        const { data: values, error: valueError } = await supabase
+                            .from('standard_values')
+                            .select('id, name, value, attribute_id')
+                            .eq('attribute_id', data.attribute_id);
+                        
+                        if (valueError) {
+                            console.warn(`Failed to fetch values for attribute ${data.attribute_id}:`, valueError);
+                            attributeData = attrOnly.map(attr => ({ ...attr, standard_values: [] }));
+                        } else {
+                            attributeData = attrOnly.map(attr => ({ ...attr, standard_values: values || [] }));
+                        }
+                    } else {
+                        attributeData = attrs;
+                    }
+                } catch (error) {
+                    console.error('Error fetching attribute data:', error);
+                    attributeData = null;
+                }
             }
 
         } else if (type === 'block') {
@@ -1320,10 +1404,7 @@ async function viewRequestDetails(type, requestId) {
                     </div>
                 </div>
 
-                <!-- Attribute Selections -->
-                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mt-4">
-                    <h3 class="text-lg font-semibold text-yellow-900 mb-3">Selected Attribute Values</h3>
-                    <div class="space-y-4">
+            
             `;
             
             // Show selected attributes for item code requests
@@ -1334,20 +1415,7 @@ async function viewRequestDetails(type, requestId) {
                     const selectedValue = attr.standard_values.find(val => val.id === selectedValueId);
                     
                     detailHTML += `
-                        <div class="border border-yellow-200 p-3 rounded bg-white">
-                            <div class="font-medium text-yellow-900 mb-2">${attr.attribute_name} ${attr.is_mandatory ? '(Required)' : '(Optional)'}</div>
-                            <div class="text-sm">
-                                <div class="text-green-600 font-medium mb-2">✓ Selected: ${selectedValue ? selectedValue.name : 'None'}</div>
-                                <div class="text-gray-600">Available values:</div>
-                                <div class="ml-4 mt-1 space-y-1 max-h-32 overflow-y-auto">
-                                    ${attr.standard_values.map(val => `
-                                        <div class="${val.id === selectedValueId ? 'text-green-600 font-bold' : 'text-gray-500'}">
-                                            ${val.id === selectedValueId ? '→ ' : '• '}${val.name}
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        </div>
+                        
                     `;
                 });
             } else {
@@ -1446,8 +1514,12 @@ async function viewRequestDetails(type, requestId) {
         document.getElementById('review-modal-title').textContent = `Review ${type.charAt(0).toUpperCase() + type.slice(1)} Request #${requestId}`;
         document.getElementById('review-modal-content').innerHTML = detailHTML;
 
+        // Store the current review request for the action buttons
+        window.currentReviewRequest = { type: type, id: requestId };
+        currentReviewItem = { type: type, id: requestId };
+
         // Set up action buttons based on user role and request status
-        setupModalActionButtons(type, requestId, requestData.status);
+        updateModalActionButtons(type, requestData);
 
         document.getElementById('review-modal').classList.remove('hidden');
 
@@ -1564,20 +1636,7 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                 const selectedValue = attr.standard_values.find(val => val.id === selectedValueId);
                 
                 detailHTML += `
-                    <div class="border border-yellow-200 p-3 rounded bg-white">
-                        <div class="font-medium text-yellow-900 mb-2">${attr.attribute_name} ${attr.is_mandatory ? '(Required)' : '(Optional)'}</div>
-                        <div class="text-sm">
-                            <div class="text-green-600 font-medium mb-2">✓ Selected: ${selectedValue ? selectedValue.name : 'None'}</div>
-                            <div class="text-gray-600">Available values:</div>
-                            <div class="ml-4 mt-1 space-y-1 max-h-32 overflow-y-auto">
-                                ${attr.standard_values.map(val => `
-                                    <div class="${val.id === selectedValueId ? 'text-green-600 font-bold' : 'text-gray-500'}">
-                                        ${val.id === selectedValueId ? '→ ' : '• '}${val.name}
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
+                    
                 `;
             });
         } else {
@@ -4347,79 +4406,6 @@ async function initializeApp() {
 document.addEventListener('DOMContentLoaded', initializeApp);
 
 </script>
-<script>
-console.log("=== DIAGNOSTIC LOADED ===");
 
-// Override the viewRequestDetails function temporarily for testing
-window.originalViewRequestDetails = window.viewRequestDetails;
-
-window.viewRequestDetails = async function(type, requestId) {
-    console.log("=== DIAGNOSTIC: viewRequestDetails called ===", {type, requestId});
-    
-    if (type !== 'code') {
-        console.log("Not a code request, using original function");
-        return window.originalViewRequestDetails(type, requestId);
-    }
-    
-    try {
-        console.log("=== TESTING DIRECT DATABASE QUERY ===");
-        
-        // Test direct query
-        const result = await supabase
-            .from('item_code_requests')
-            .select('id, item_code, unit_price, currency_code, manufacturer, description1, description2, uom, country_of_origin, model_number')
-            .eq('id', requestId)
-            .single();
-            
-        console.log("Database result:", result);
-        
-        if (result.error) {
-            console.error("Database error:", result.error);
-            alert("Database error: " + result.error.message);
-            return;
-        }
-        
-        const data = result.data;
-        console.log("Raw data from database:", data);
-        console.log("unit_price:", data.unit_price, typeof data.unit_price);
-        console.log("currency_code:", data.currency_code, typeof data.currency_code);
-        console.log("manufacturer:", data.manufacturer, typeof data.manufacturer);
-        
-        // Create simple HTML to test display
-        const testHTML = `
-            <div style="padding: 20px; border: 2px solid red; background: #ffe6e6;">
-                <h2 style="color: red;">🧪 DIAGNOSTIC TEST RESULTS</h2>
-                <p><strong>Request ID:</strong> ${data.id}</p>
-                <p><strong>Item Code:</strong> ${data.item_code || 'NULL'}</p>
-                <p><strong>Unit Price:</strong> ${data.unit_price || 'NULL'} (Type: ${typeof data.unit_price})</p>
-                <p><strong>Currency:</strong> ${data.currency_code || 'NULL'} (Type: ${typeof data.currency_code})</p>
-                <p><strong>Manufacturer:</strong> ${data.manufacturer || 'NULL'} (Type: ${typeof data.manufacturer})</p>
-                <p><strong>Description1:</strong> ${data.description1 || 'NULL'}</p>
-                <p><strong>UOM:</strong> ${data.uom || 'NULL'}</p>
-                <hr>
-                <h3>All Fields in Response:</h3>
-                <pre>${JSON.stringify(data, null, 2)}</pre>
-            </div>
-        `;
-        
-        // Show in modal
-        document.getElementById('review-modal-title').textContent = `🧪 DIAGNOSTIC: Item Code Request #${requestId}`;
-        document.getElementById('review-modal-content').innerHTML = testHTML;
-        document.getElementById('review-modal').classList.remove('hidden');
-        
-        // Also show action buttons area for completeness
-        document.getElementById('modal-action-buttons').innerHTML = `
-            <button onclick="closeReviewModal()" class="px-4 py-2 bg-gray-500 text-white rounded">Close Test</button>
-        `;
-        
-    } catch (error) {
-        console.error("=== DIAGNOSTIC ERROR ===", error);
-        alert("Diagnostic error: " + error.message);
-    }
-};
-
-console.log("=== DIAGNOSTIC OVERRIDE INSTALLED ===");
-console.log("Now click 'View Full Details' on an item code request to see diagnostic results");
-</script>
 </body>
 </html>
