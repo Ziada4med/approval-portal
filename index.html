@@ -29,6 +29,31 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
+        .csi-path-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+        }
+        .csi-path-item {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin: 4px 0;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .csi-path-item:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+        .csi-path-arrow {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            margin: 0 8px;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -395,7 +420,7 @@ async function loadItemRequestModal(type, id, title, content) {
                         <div><strong>Description 2:</strong> ${data.description2 || 'N/A'}</div>
                         
                         <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                            <h4 class="font-semibold text-blue-900 mb-3">💰 Financial Information</h4>
+                            <h4 class="font-semibold text-blue-900 mb-3">ðŸ’° Financial Information</h4>
                             <div class="grid grid-cols-2 gap-4">
                                 <div><strong>Unit Price:</strong> <span class="text-green-600 font-semibold">${data.unit_price ? parseFloat(data.unit_price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : 'Not specified'}</span></div>
                                 <div><strong>Currency:</strong> <span class="font-mono bg-yellow-100 px-2 py-1 rounded">${data.currency_code || 'Not specified'}</span></div>
@@ -672,7 +697,35 @@ async function openProjectReviewModal(projectId) {
                             ${project.status?.replace('_', ' ')?.toUpperCase() || 'UNKNOWN'}
                         </span>
                     </div>
-                    <p class="text-blue-700 font-mono text-sm">${project.division_code}-${project.section_code}-${project.detailed_section_code}-${project.item_code}</p>
+                    
+                    <!-- CSI Code Hierarchy Section -->
+                    <div class="csi-path-container">
+                        <div class="text-xs text-white mb-2 font-medium">CSI Code Hierarchy:</div>
+                        <div class="flex flex-col space-y-1">
+                            <div class="csi-path-item">
+                                <span class="font-bold">${project.division_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${project.division_description || 'Division Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${project.section_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${project.section_description || 'Section Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${project.detailed_section_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${project.detailed_section_description || 'Detailed Section Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${project.item_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${project.item_description || 'Item Description'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="text-blue-700 font-mono text-sm mt-3">${project.division_code}-${project.section_code}-${project.detailed_section_code}-${project.item_code}</p>
                     ${project.additional_level_value ? `<p class="text-sm text-blue-600 mt-1">Additional Level: ${project.additional_level_value}</p>` : ''}
                 </div>
 
@@ -1130,7 +1183,7 @@ function createAdminProjectReviewCard(project) {
             <div class="flex-1">
                 <h4 class="text-lg font-medium text-gray-900">${project.project_name}</h4>
                 <p class="text-sm text-gray-600 mt-1">
-                    ${project.division_code} → ${project.section_code} → ${project.detailed_section_code} → ${project.item_code}
+                    ${project.division_code} â†’ ${project.section_code} â†’ ${project.detailed_section_code} â†’ ${project.item_code}
                 </p>
                 ${project.additional_level_value ? `<p class="text-sm text-purple-600 mt-1">Additional Level: ${project.additional_level_value}</p>` : ''}
             </div>
@@ -1613,7 +1666,7 @@ async function viewRequestDetails(type, requestId) {
                     detailHTML += `
                         <div class="border border-orange-200 p-3 rounded bg-white">
                             <div class="font-medium text-orange-900 mb-2">${attr.attribute_name}</div>
-                            <div class="text-sm text-red-600 font-medium">🚫 Will be blocked: ${selectedValue ? selectedValue.name : 'None selected'}</div>
+                            <div class="text-sm text-red-600 font-medium">ðŸš« Will be blocked: ${selectedValue ? selectedValue.name : 'None selected'}</div>
                         </div>
                     `;
                 });
@@ -1704,6 +1757,36 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                 <h3 class="text-lg font-semibold text-gray-900 mb-3">Project Details</h3>
                 <div class="grid grid-cols-1 gap-3 text-sm">
                     <div><span class="font-medium">Project Name:</span> ${projectData?.project_name || 'N/A'}</div>
+                    
+                    <!-- CSI Code Hierarchy Section -->
+                    ${projectData ? `
+                        <div class="csi-path-container">
+                            <div class="text-xs text-white mb-2 font-medium">CSI Code Hierarchy:</div>
+                            <div class="flex flex-col space-y-1">
+                                <div class="csi-path-item">
+                                    <span class="font-bold">${projectData.division_code || 'N/A'}</span>
+                                    <span class="csi-path-arrow">→</span>
+                                    <span class="text-xs opacity-90">${projectData.division_description || 'Division Description'}</span>
+                                </div>
+                                <div class="csi-path-item">
+                                    <span class="font-bold">${projectData.section_code || 'N/A'}</span>
+                                    <span class="csi-path-arrow">→</span>
+                                    <span class="text-xs opacity-90">${projectData.section_description || 'Section Description'}</span>
+                                </div>
+                                <div class="csi-path-item">
+                                    <span class="font-bold">${projectData.detailed_section_code || 'N/A'}</span>
+                                    <span class="csi-path-arrow">→</span>
+                                    <span class="text-xs opacity-90">${projectData.detailed_section_description || 'Detailed Section Description'}</span>
+                                </div>
+                                <div class="csi-path-item">
+                                    <span class="font-bold">${projectData.item_code || 'N/A'}</span>
+                                    <span class="csi-path-arrow">→</span>
+                                    <span class="text-xs opacity-90">${projectData.item_description || 'Item Description'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
                     <div><span class="font-medium">CSI Code:</span> 
                         <span class="font-mono">${projectData?.division_code}-${projectData?.section_code}-${projectData?.detailed_section_code}-${projectData?.item_code}</span>
                     </div>
@@ -1839,7 +1922,7 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                             <div class="font-medium text-orange-900 mb-2">${attr.attribute_name} ${attr.is_mandatory ? '(Required)' : '(Optional)'}</div>
                             <div class="mt-2">
                                 <span class="bg-red-100 text-red-800 px-3 py-1 rounded font-medium">
-                                    🚫 WILL BE BLOCKED: ${selectedValue.name}
+                                    ðŸš« WILL BE BLOCKED: ${selectedValue.name}
                                 </span>
                             </div>
                         </div>
@@ -1854,7 +1937,7 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                 </div>
                 <div class="mt-4 p-3 bg-red-100 border border-red-200 rounded">
                     <p class="text-red-800 text-sm">
-                        <strong>⚠️ Warning:</strong> Approving this request will prevent users from generating item codes 
+                        <strong>âš ï¸ Warning:</strong> Approving this request will prevent users from generating item codes 
                         using this exact combination of attribute values. This action cannot be easily undone.
                     </p>
                 </div>
@@ -1905,23 +1988,23 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        ✅ Approve
+                        âœ… Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        ❌ Reject
+                        âŒ Reject
                     </button>
                 `;
             } else if (status === 'reviewer_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        ✅ You Approved This
+                        âœ… You Approved This
                     </span>
                 `;
             } else if (status === 'reviewer_rejected') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-red-100 text-red-800 rounded-md text-sm">
-                        ❌ You Rejected This
+                        âŒ You Rejected This
                     </span>
                 `;
             } else {
@@ -1930,11 +2013,11 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        ✅ Approve (Status: ${status})
+                        âœ… Approve (Status: ${status})
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        ❌ Reject (Status: ${status})
+                        âŒ Reject (Status: ${status})
                     </button>
                 `;
             }
@@ -1943,23 +2026,23 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        ✅ Final Approve
+                        âœ… Final Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        ❌ Final Reject
+                        âŒ Final Reject
                     </button>
                 `;
             } else if (status === 'admin_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        ✅ Approved by You
+                        âœ… Approved by You
                     </span>
                 `;
             } else if (status === 'admin_rejected') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-red-100 text-red-800 rounded-md text-sm">
-                        ❌ Rejected by You
+                        âŒ Rejected by You
                     </span>
                 `;
             } else {
@@ -1968,11 +2051,11 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        ✅ Final Approve (Status: ${status})
+                        âœ… Final Approve (Status: ${status})
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        ❌ Final Reject (Status: ${status})
+                        âŒ Final Reject (Status: ${status})
                     </button>
                 `;
             }
@@ -1984,23 +2067,23 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        ✅ Approve
+                        âœ… Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        ❌ Reject
+                        âŒ Reject
                     </button>
                 `;
             } else if (status === 'reviewer_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        ✅ You Approved This
+                        âœ… You Approved This
                     </span>
                 `;
             } else if (status === 'reviewer_rejected') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-red-100 text-red-800 rounded-md text-sm">
-                        ❌ You Rejected This
+                        âŒ You Rejected This
                     </span>
                 `;
             }
@@ -2009,23 +2092,23 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        ✅ Final Approve
+                        âœ… Final Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        ❌ Final Reject
+                        âŒ Final Reject
                     </button>
                 `;
             } else if (status === 'admin_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        ✅ Approved by You
+                        âœ… Approved by You
                     </span>
                 `;
             } else if (status === 'admin_rejected') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-red-100 text-red-800 rounded-md text-sm">
-                        ❌ Rejected by You
+                        âŒ Rejected by You
                     </span>
                 `;
             }
@@ -2040,11 +2123,11 @@ function updateModalActionButtons(type, itemData) {
             buttonsHTML = `
                 <button onclick="submitCurrentReview('approve')" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                    ✅ Force Approve
+                    âœ… Force Approve
                 </button>
                 <button onclick="submitCurrentReview('reject')" 
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                    ❌ Force Reject
+                    âŒ Force Reject
                 </button>
                 <div class="text-xs text-gray-500 mt-1">Status: ${status} | Role: ${userRole}</div>
             `;
@@ -2399,7 +2482,7 @@ async function loadAdminPendingRequests() {
                     *,
                     created_by_user:users!item_code_requests_created_by_fkey(username, email),
                     reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
-                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code)
+                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description)
                 `)
                 .eq('status', 'pending')
                 .order('created_at', { ascending: false }),
@@ -2410,7 +2493,7 @@ async function loadAdminPendingRequests() {
                     *,
                     created_by_user:users!item_code_requests_created_by_fkey(username, email),
                     reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
-                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code)
+                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description)
                 `)
                 .eq('status', 'reviewer_approved')
                 .order('reviewed_at', { ascending: true }),
@@ -2421,7 +2504,7 @@ async function loadAdminPendingRequests() {
                     *,
                     created_by_user:users!standard_value_requests_created_by_fkey(username, email),
                     reviewed_by_user:users!standard_value_requests_reviewed_by_fkey(username, email),
-                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code),
+                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description),
                     project_attributes(attribute_name, standard_values)
                 `)
                 .eq('status', 'pending')
@@ -2433,7 +2516,7 @@ async function loadAdminPendingRequests() {
                     *,
                     created_by_user:users!standard_value_requests_created_by_fkey(username, email),
                     reviewed_by_user:users!standard_value_requests_reviewed_by_fkey(username, email),
-                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code),
+                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description),
                     project_attributes(attribute_name, standard_values)
                 `)
                 .eq('status', 'reviewer_approved')
@@ -2551,7 +2634,7 @@ async function loadAdminPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                         </svg>
-                        🔥 HIGH PRIORITY - Reviewer Approved (${highPriorityItems.length})
+                        ðŸ”¥ HIGH PRIORITY - Reviewer Approved (${highPriorityItems.length})
                     </h3>
                     <p class="text-sm text-orange-700">These items have been approved by reviewers and need your final decision</p>
                 </div>
@@ -2578,7 +2661,7 @@ async function loadAdminPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        📋 PENDING INITIAL REVIEW (${regularPriorityItems.length})
+                        ðŸ“‹ PENDING INITIAL REVIEW (${regularPriorityItems.length})
                     </h3>
                     <p class="text-sm text-blue-700">These items are waiting for initial review and can be assigned to reviewers</p>
                 </div>
@@ -2600,7 +2683,7 @@ async function loadAdminPendingRequests() {
                     <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <p class="text-lg">🎉 All caught up!</p>
+                    <p class="text-lg">ðŸŽ‰ All caught up!</p>
                     <p class="text-sm">No items pending admin review</p>
                 </div>
             `;
@@ -2619,25 +2702,25 @@ function createDetailedAdminReviewCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: '📁', 
+            icon: 'ðŸ“', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: '🏷️', 
+            icon: 'ðŸ·ï¸', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: '➕', 
+            icon: 'âž•', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: '🚫', 
+            icon: 'ðŸš«', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -2664,7 +2747,62 @@ function createDetailedAdminReviewCard(item) {
                     </span>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 mb-1">${item.title}</h3>
-                <p class="text-sm text-gray-600 mb-2">${item.subtitle}</p>
+                ${item.type === 'project' ? `
+                    <div class="csi-path-container">
+                        <div class="text-xs text-white mb-2 font-medium">CSI Code Hierarchy:</div>
+                        <div class="flex flex-col space-y-1">
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.division_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.division_description || 'Division Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.section_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.section_description || 'Section Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.detailed_section_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.detailed_section_description || 'Detailed Section Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.item_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.item_description || 'Item Description'}</span>
+                            </div>
+                        </div>
+                    </div>
+                ` : (item.type === 'code' || item.type === 'value') && item.project ? `
+                    <div class="csi-path-container">
+                        <div class="text-xs text-white mb-2 font-medium">Associated Project CSI Hierarchy:</div>
+                        <div class="flex flex-col space-y-1">
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.project.division_code || item.project?.division_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.project.division_description || item.project?.division_description || 'Division Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.project.section_code || item.project?.section_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.project.section_description || item.project?.section_description || 'Section Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.project.detailed_section_code || item.project?.detailed_section_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.project.detailed_section_description || item.project?.detailed_section_description || 'Detailed Section Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.project.item_code || item.project?.item_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.project.item_description || item.project?.item_description || 'Item Description'}</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-white mt-2 opacity-75">Project: ${item.project.project_name || item.project?.project_name || 'Unknown Project'}</div>
+                    </div>
+                ` : `
+                    <p class="text-sm text-gray-600 mb-2">${item.subtitle}</p>
+                `}
                 
                 <!-- Detailed Information Grid -->
                 <div class="grid grid-cols-2 gap-4 text-xs bg-gray-50 p-3 rounded mt-3">
@@ -2723,21 +2861,21 @@ function createDetailedAdminReviewCard(item) {
         <div class="flex space-x-2 mt-4">
             <button onclick="viewRequestDetails('${item.type}', ${item.id})" 
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                📄 View Full Details
+                ðŸ“„ View Full Details
             </button>
             ${item.priority === 'high' ? `
                 <button onclick="reviewAdminRequest('${item.type}', ${item.id}, 'approve')" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    ✅ Approve
+                    âœ… Approve
                 </button>
                 <button onclick="reviewAdminRequest('${item.type}', ${item.id}, 'reject')" 
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    ❌ Reject
+                    âŒ Reject
                 </button>
             ` : `
                 <button onclick="assignReviewer(${item.id}, '${item.type}')" 
                         class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    👤 Assign Reviewer
+                    ðŸ‘¤ Assign Reviewer
                 </button>
             `}
         </div>
@@ -2816,7 +2954,7 @@ async function loadReviewerPendingRequests() {
                 id, item_code, status, created_at, uom, country_of_origin, 
                 model_number, description1, description2, review_comments,
                 created_by_user:created_by(username, email),
-                project:project_id(project_name)
+                project:project_id(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description)
             `)
             .eq('reviewed_by', currentUser.id)
             .eq('status', 'pending')  // ONLY pending requests
@@ -2835,7 +2973,7 @@ async function loadReviewerPendingRequests() {
             .select(`
                 id, attribute_name, new_value, reason, status, created_at, reviewer_comments,
                 created_by_user:created_by(username, email),
-                project:project_id(project_name)
+                project:project_id(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description)
             `)
             .eq('reviewed_by', currentUser.id)
             .eq('status', 'pending')  // ONLY pending requests
@@ -2877,7 +3015,7 @@ async function loadReviewerPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        📁 PROJECTS AWAITING YOUR REVIEW (${assignedProjects.length})
+                        ðŸ“ PROJECTS AWAITING YOUR REVIEW (${assignedProjects.length})
                     </h3>
                     <p class="text-sm text-purple-700">Classification projects submitted and waiting for your review decision</p>
                 </div>
@@ -2913,7 +3051,7 @@ async function loadReviewerPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                         </svg>
-                        🏷️ ITEM CODE REQUESTS AWAITING YOUR REVIEW (${itemCodeRequests.length})
+                        ðŸ·ï¸ ITEM CODE REQUESTS AWAITING YOUR REVIEW (${itemCodeRequests.length})
                     </h3>
                     <p class="text-sm text-green-700">Item code requests assigned to you and waiting for your review decision</p>
                 </div>
@@ -2946,7 +3084,7 @@ async function loadReviewerPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        ➕ STANDARD VALUE REQUESTS AWAITING YOUR REVIEW (${standardValueRequests.length})
+                        âž• STANDARD VALUE REQUESTS AWAITING YOUR REVIEW (${standardValueRequests.length})
                     </h3>
                     <p class="text-sm text-blue-700">Standard value requests assigned to you and waiting for your review decision</p>
                 </div>
@@ -2979,7 +3117,7 @@ async function loadReviewerPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636"></path>
                         </svg>
-                        🚫 COMBINATION BLOCK REQUESTS AWAITING YOUR REVIEW (${combinationRequests.length})
+                        ðŸš« COMBINATION BLOCK REQUESTS AWAITING YOUR REVIEW (${combinationRequests.length})
                     </h3>
                     <p class="text-sm text-red-700">Combination block requests assigned to you and waiting for your review decision</p>
                 </div>
@@ -3007,7 +3145,7 @@ async function loadReviewerPendingRequests() {
                     <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <p class="text-lg">🎉 All caught up!</p>
+                    <p class="text-lg">ðŸŽ‰ All caught up!</p>
                     <p class="text-sm">No items currently awaiting your review</p>
                     <p class="text-xs text-gray-400 mt-2">When new items are assigned to you, they'll appear here</p>
                 </div>
@@ -3029,10 +3167,10 @@ function createSimpleReviewerCard(item) {
     card.className = 'request-card bg-white border rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow border-l-4 border-l-blue-500';
     
     const typeInfo = {
-        'project': { icon: '📁', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
-        'code': { icon: '🏷️', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
-        'value': { icon: '➕', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
-        'block': { icon: '🚫', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
+        'project': { icon: 'ðŸ“', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
+        'code': { icon: 'ðŸ·ï¸', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
+        'value': { icon: 'âž•', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
+        'block': { icon: 'ðŸš«', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
     };
 
     const info = typeInfo[item.type] || typeInfo['code'];
@@ -3055,7 +3193,62 @@ function createSimpleReviewerCard(item) {
                     </span>
                 </div>
                 <h4 class="font-semibold text-gray-900">${item.title}</h4>
-                <p class="text-sm text-gray-600">${item.subtitle}</p>
+                ${item.type === 'project' ? `
+                    <div class="csi-path-container">
+                        <div class="text-xs text-white mb-2 font-medium">CSI Code Hierarchy:</div>
+                        <div class="flex flex-col space-y-1">
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.division_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.division_description || 'Division Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.section_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.section_description || 'Section Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.detailed_section_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.detailed_section_description || 'Detailed Section Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.item_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.item_description || 'Item Description'}</span>
+                            </div>
+                        </div>
+                    </div>
+                ` : (item.type === 'code' || item.type === 'value') && item.project ? `
+                    <div class="csi-path-container">
+                        <div class="text-xs text-white mb-2 font-medium">Associated Project CSI Hierarchy:</div>
+                        <div class="flex flex-col space-y-1">
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.project.division_code || item.project?.division_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.project.division_description || item.project?.division_description || 'Division Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.project.section_code || item.project?.section_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.project.section_description || item.project?.section_description || 'Section Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.project.detailed_section_code || item.project?.detailed_section_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.project.detailed_section_description || item.project?.detailed_section_description || 'Detailed Section Description'}</span>
+                            </div>
+                            <div class="csi-path-item">
+                                <span class="font-bold">${item.project.item_code || item.project?.item_code || 'N/A'}</span>
+                                <span class="csi-path-arrow">→</span>
+                                <span class="text-xs opacity-90">${item.project.item_description || item.project?.item_description || 'Item Description'}</span>
+                            </div>
+                        </div>
+                        <div class="text-xs text-white mt-2 opacity-75">Project: ${item.project.project_name || item.project?.project_name || 'Unknown Project'}</div>
+                    </div>
+                ` : `
+                    <p class="text-sm text-gray-600">${item.subtitle}</p>
+                `}
                 <div class="text-xs text-gray-500 mt-2">
                     <span>By: ${item.creator_name || 'Unknown'}</span> | 
                     <span>${formatDate(item.date)}</span> | 
@@ -3067,21 +3260,21 @@ function createSimpleReviewerCard(item) {
         <div class="flex space-x-2">
             <button onclick="openReviewModal('${item.type}', ${item.id})" 
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
-                📄 Review Details
+                ðŸ“„ Review Details
             </button>
             ${item.status === 'pending' || item.status === 'submitted' ? `
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'approve'); return false;" 
                         class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm">
-                    ✅ Approve
+                    âœ… Approve
                 </button>
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'reject'); return false;" 
                         class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm">
-                    ❌ Reject
+                    âŒ Reject
                 </button>
             ` : `
                 <span class="px-3 py-2 bg-gray-100 text-gray-600 rounded text-sm">
-                    ${item.status === 'reviewer_approved' ? '✅ Approved' : 
-                      item.status === 'reviewer_rejected' ? '❌ Rejected' : 
+                    ${item.status === 'reviewer_approved' ? 'âœ… Approved' : 
+                      item.status === 'reviewer_rejected' ? 'âŒ Rejected' : 
                       'Reviewed'}
                 </span>
             `}
@@ -3099,25 +3292,25 @@ function createDetailedReviewerCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: '📁', 
+            icon: 'ðŸ“', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: '🏷️', 
+            icon: 'ðŸ·ï¸', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: '➕', 
+            icon: 'âž•', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: '🚫', 
+            icon: 'ðŸš«', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -3199,21 +3392,21 @@ function createDetailedReviewerCard(item) {
         <div class="flex space-x-2 mt-4">
             <button onclick="openReviewModal('${item.type}', ${item.id})" 
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                📄 Review Details
+                ðŸ“„ Review Details
             </button>
             ${item.status === 'pending' || item.status === 'submitted' ? `
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'approve'); return false;" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    ✅ Approve
+                    âœ… Approve
                 </button>
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'reject'); return false;" 
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    ❌ Reject
+                    âŒ Reject
                 </button>
             ` : `
                 <span class="px-4 py-2 bg-gray-100 text-gray-600 rounded-md text-sm font-medium">
-                    ${item.status === 'reviewer_approved' ? '✅ You Approved' : 
-                      item.status === 'reviewer_rejected' ? '❌ You Rejected' : 
+                    ${item.status === 'reviewer_approved' ? 'âœ… You Approved' : 
+                      item.status === 'reviewer_rejected' ? 'âŒ You Rejected' : 
                       'Reviewed'}
                 </span>
             `}
@@ -3797,12 +3990,12 @@ function displayAllRequests(requests) {
 
 function getTypeIcon(type) {
     const icons = {
-        project: '📋',
-        code: '🏷️',
-        block: '🚫',
-        value: '⭐'
+        project: 'ðŸ“‹',
+        code: 'ðŸ·ï¸',
+        block: 'ðŸš«',
+        value: 'â­'
     };
-    return icons[type] || '📄';
+    return icons[type] || 'ðŸ“„';
 }
 
 function createAllRequestCard(request) {
