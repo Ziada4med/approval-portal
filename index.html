@@ -6,6 +6,110 @@
     <title>CSI Code Approval Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+        // EmailJS Configuration
+        const EMAIL_CONFIG = {
+            serviceId: 'service_0xi7zg5',
+            publicKey: 'zx157n_sqPsV0_piq',
+            templates: {
+                decision: 'template_approval_notifi',  // Template for approval/rejection notifications
+                erpIntegration: 'template_erp_integration'  // Template for ERP integration notifications
+            }
+        };
+        
+        // Initialize EmailJS when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            emailjs.init(EMAIL_CONFIG.publicKey);
+        });
+        
+        // Email sending functions
+        async function sendDecisionNotification(requestData, decision, comments, reviewerInfo) {
+            try {
+                const statusClass = decision === 'approve' ? 'approved' : decision === 'reject' ? 'rejected' : 'forwarded';
+                const statusText = decision === 'approve' ? 'Approved' : decision === 'reject' ? 'Rejected' : 'Forwarded for Review';
+                const statusIcon = decision === 'approve' ? '✅' : decision === 'reject' ? '❌' : '📋';
+                
+                const templateParams = {
+                    to_email: requestData.created_by_user?.email,
+                    from_name: 'CSI Code Approval Portal',
+                    decision: statusText, // 'Approved' or 'Rejected'
+                    request_type: requestData.request_type || 'Request',
+                    to_name: requestData.created_by_user?.username || 'User',
+                    request_title: requestData.title || requestData.item_code || requestData.project_name,
+                    request_id: requestData.id,
+                    project_name: requestData.project?.project_name || 'N/A',
+                    reviewer_name: reviewerInfo.username,
+                    reviewer_type: reviewerInfo.role === 'admin' ? 'Admin' : 'Reviewer',
+                    decision_date: new Date().toLocaleDateString(),
+                    comments: comments || 'No comments provided',
+                    status_class: statusClass,
+                    status_text: statusText,
+                    status_icon: statusIcon,
+                    portal_link: window.location.origin + window.location.pathname
+                };
+                
+                console.log('Sending decision notification with params:');
+                console.log('Template ID:', EMAIL_CONFIG.templates.decision);
+                console.log('Service ID:', EMAIL_CONFIG.serviceId);
+                console.log('Template Parameters:', JSON.stringify(templateParams, null, 2));
+                
+                const response = await emailjs.send(
+                    EMAIL_CONFIG.serviceId,
+                    EMAIL_CONFIG.templates.decision,
+                    templateParams
+                );
+                
+                console.log('Decision notification sent successfully:', response);
+                return { success: true };
+                
+            } catch (error) {
+                console.error('Failed to send decision notification:', error);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function sendERPIntegrationNotification(requestData, itemCodeData) {
+            try {
+                const templateParams = {
+                    to_email: 'yogesh.nadesan@nesmapartners.com',
+                    to_name: 'Yogesh',
+                    item_code: itemCodeData.item_code || requestData.item_code,
+                    request_id: requestData.id,
+                    description1: requestData.description1 || '',
+                    description2: requestData.description2 || '',
+                    uom: requestData.uom || '',
+                    country_of_origin: requestData.country_of_origin || '',
+                    model_number: requestData.model_number || '',
+                    project_name: requestData.project?.project_name || 'N/A',
+                    admin_name: currentUser.username,
+                    approval_date: new Date().toLocaleDateString(),
+                    csi_division_code: requestData.csi_division_code || '',
+                    additional_level: requestData.additional_level || '',
+                    combination_signature: requestData.combination_signature || '',
+                    portal_link: window.location.origin + window.location.pathname
+                };
+                
+                console.log('Sending ERP integration notification with params:');
+                console.log('Template ID:', EMAIL_CONFIG.templates.erpIntegration);
+                console.log('Service ID:', EMAIL_CONFIG.serviceId);
+                console.log('Template Parameters:', JSON.stringify(templateParams, null, 2));
+                
+                const response = await emailjs.send(
+                    EMAIL_CONFIG.serviceId,
+                    EMAIL_CONFIG.templates.erpIntegration,
+                    templateParams
+                );
+                
+                console.log('ERP integration notification sent successfully:', response);
+                return { success: true };
+                
+            } catch (error) {
+                console.error('Failed to send ERP integration notification:', error);
+                return { success: false, error: error.message };
+            }
+        }
+    </script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -170,9 +274,6 @@
                 <button class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="all-requests">
                     All Requests
                 </button>
-                <button id="reviewer-history-btn" class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hidden" data-tab="reviewer-history">
-                    My Reviews
-                </button>
                 <button id="admin-tab" class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hidden" data-tab="admin-panel">
                     Admin Panel
                 </button>
@@ -181,40 +282,6 @@
      
         <!-- Pending Requests Tab -->
         <div id="pending-requests-tab" class="tab-content p-6">
-            <!-- Search Controls -->
-            <div class="bg-white border rounded-lg p-4 mb-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">🔍 Search & Filter</h3>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Search by Request ID</label>
-                        <input type="text" id="pending-request-id-search" placeholder="Enter request ID..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeyup="searchPendingRequests()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Search by Project ID</label>
-                        <input type="text" id="pending-project-search" placeholder="Enter project ID..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeyup="searchPendingRequests()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Search by Creator</label>
-                        <input type="text" id="pending-creator-search" placeholder="Enter creator name..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeyup="searchPendingRequests()">
-                    </div>
-                    <div class="flex items-end">
-                        <button onclick="clearPendingSearch()" 
-                                class="w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm">
-                            Clear Filters
-                        </button>
-                    </div>
-                </div>
-                <div class="mt-3">
-                    <span id="pending-search-results" class="text-sm text-gray-600"></span>
-                </div>
-            </div>
-
             <div id="pending-requests-container" class="space-y-4">
                 <!-- Pending requests will be loaded here -->
             </div>
@@ -224,23 +291,11 @@
         <div id="all-requests-tab" class="tab-content p-6 hidden">
             <!-- Filter Controls -->
             <div class="mb-6 bg-gray-50 p-4 rounded-lg">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">🔍 Search & Filter All Requests</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                    <div>
-                        <label for="all-project-search" class="block text-sm font-medium text-gray-700 mb-1">Project ID</label>
-                        <input type="text" id="all-project-search" placeholder="Enter project ID..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeyup="searchAllRequests()">
-                    </div>
-                    <div>
-                        <label for="all-creator-search" class="block text-sm font-medium text-gray-700 mb-1">Creator</label>
-                        <input type="text" id="all-creator-search" placeholder="Enter creator name..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeyup="searchAllRequests()">
-                    </div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Filter Requests</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select id="status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" onchange="searchAllRequests()">
+                        <select id="status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <option value="">All Statuses</option>
                             <option value="pending">Pending</option>
                             <option value="submitted">Submitted</option>
@@ -252,7 +307,7 @@
                     </div>
                     <div>
                         <label for="type-filter" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                        <select id="type-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" onchange="searchAllRequests()">
+                        <select id="type-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <option value="">All Types</option>
                             <option value="project">Classification Projects</option>
                             <option value="code">Item Code Requests</option>
@@ -262,7 +317,7 @@
                     </div>
                     <div>
                         <label for="date-filter" class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-                        <select id="date-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" onchange="searchAllRequests()">
+                        <select id="date-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             <option value="">All Time</option>
                             <option value="today">Today</option>
                             <option value="week">This Week</option>
@@ -271,8 +326,8 @@
                         </select>
                     </div>
                     <div class="flex items-end">
-                        <button onclick="clearAllRequestsSearch()" class="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm">
-                            Clear All
+                        <button onclick="applyFilters()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+                            Apply Filters
                         </button>
                     </div>
                 </div>
@@ -308,119 +363,8 @@
             </div>
         </div>
 
-        <!-- Reviewer History Tab -->
-        <div id="reviewer-history-tab" class="tab-content p-6 hidden">
-            <div class="mb-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">My Review History</h3>
-                <p class="text-sm text-gray-600 mb-4">Items you have reviewed and taken action on (approved/rejected)</p>
-            </div>
-            
-            <!-- Summary Stats for Reviewer History -->
-            <div id="reviewer-history-summary" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
-                    <div class="text-2xl font-bold text-green-600" id="history-approved-count">0</div>
-                    <div class="text-sm text-gray-600">Approved by Me</div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
-                    <div class="text-2xl font-bold text-red-600" id="history-rejected-count">0</div>
-                    <div class="text-sm text-gray-600">Rejected by Me</div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
-                    <div class="text-2xl font-bold text-blue-600" id="history-total-count">0</div>
-                    <div class="text-sm text-gray-600">Total Reviewed</div>
-                </div>
-            </div>
-
-            <!-- Filter for History -->
-            <div class="mb-6 bg-gray-50 p-4 rounded-lg">
-                <h4 class="text-md font-semibold text-gray-800 mb-4">🔍 Search & Filter Review History</h4>
-                <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
-                    <div>
-                        <label for="history-request-id-search" class="block text-sm font-medium text-gray-700 mb-1">Request ID</label>
-                        <input type="text" id="history-request-id-search" placeholder="Enter request ID..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeyup="searchReviewerHistory()">
-                    </div>
-                    <div>
-                        <label for="history-project-search" class="block text-sm font-medium text-gray-700 mb-1">Project ID</label>
-                        <input type="text" id="history-project-search" placeholder="Enter project ID..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeyup="searchReviewerHistory()">
-                    </div>
-                    <div>
-                        <label for="history-creator-search" class="block text-sm font-medium text-gray-700 mb-1">Creator</label>
-                        <input type="text" id="history-creator-search" placeholder="Enter creator name..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeyup="searchReviewerHistory()">
-                    </div>
-                    <div>
-                        <label for="history-status-filter" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select id="history-status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="searchReviewerHistory()">
-                            <option value="">All Actions</option>
-                            <option value="reviewer_approved">Approved</option>
-                            <option value="reviewer_rejected">Rejected</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="history-type-filter" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                        <select id="history-type-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" onchange="searchReviewerHistory()">
-                            <option value="">All Types</option>
-                            <option value="project">Projects</option>
-                            <option value="code">Item Codes</option>
-                            <option value="value">Standard Values</option>
-                            <option value="block">Combinations</option>
-                        </select>
-                    </div>
-                    <div class="flex items-end">
-                        <button onclick="clearHistorySearch()" class="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm">
-                            Clear All
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- History Container -->
-            <div id="reviewer-history-container" class="space-y-4">
-                <!-- Review history will be loaded here -->
-            </div>
-        </div>
-
         <!-- Admin Panel Tab -->
         <div id="admin-panel-tab" class="tab-content p-6 hidden">
-            <!-- Search Controls for Admin -->
-            <div class="bg-white border rounded-lg p-4 mb-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">🔍 Search Admin Requests</h3>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Search by Request ID</label>
-                        <input type="text" id="admin-request-id-search" placeholder="Enter request ID..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeyup="searchAdminRequests()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Search by Creator</label>
-                        <input type="text" id="admin-creator-search" placeholder="Enter creator name..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeyup="searchAdminRequests()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Search by Reviewer</label>
-                        <input type="text" id="admin-reviewer-search" placeholder="Enter reviewer name..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                               onkeyup="searchAdminRequests()">
-                    </div>
-                    <div class="flex items-end">
-                        <button onclick="clearAdminSearch()" 
-                                class="w-full px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md text-sm">
-                            Clear Filters
-                        </button>
-                    </div>
-                </div>
-                <div class="mt-3">
-                    <span id="admin-search-results" class="text-sm text-gray-600"></span>
-                </div>
-            </div>
-            
             <div id="admin-panel-container" class="space-y-4">
                 <!-- Admin panel content will be loaded here -->
             </div>
@@ -432,6 +376,11 @@
 let supabase;
 let currentUser = null;
 let currentReviewItem = null; // Store current item being reviewed
+
+// ===== EMAIL NOTIFICATION SYSTEM ===== (Replaced with new system)
+// All email functions are now handled by the new sendDecisionNotification and sendERPIntegrationNotification functions
+
+// ===== END EMAIL NOTIFICATION SYSTEM =====
 
 // ===== SUPABASE INITIALIZATION =====
 const SUPABASE_URL = 'https://mvftaaxgdygeyzcvzqfr.supabase.co';
@@ -580,7 +529,7 @@ async function loadItemRequestModal(type, id, title, content) {
                         <div><strong>Description 2:</strong> ${data.description2 || 'N/A'}</div>
                         
                         <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                            <h4 class="font-semibold text-blue-900 mb-3">Ã°Å¸â€™Â° Financial Information</h4>
+                            <h4 class="font-semibold text-blue-900 mb-3">Financial Information</h4>
                             <div class="grid grid-cols-2 gap-4">
                                 <div><strong>Unit Price:</strong> <span class="text-green-600 font-semibold">${data.unit_price ? parseFloat(data.unit_price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : 'Not specified'}</span></div>
                                 <div><strong>Currency:</strong> <span class="font-mono bg-yellow-100 px-2 py-1 rounded">${data.currency_code || 'Not specified'}</span></div>
@@ -864,22 +813,22 @@ async function openProjectReviewModal(projectId) {
                         <div class="flex flex-col space-y-1">
                             <div class="csi-path-item">
                                 <span class="font-bold">${project.division_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${project.division_description || 'Division Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${project.section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${project.section_description || 'Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${project.detailed_section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${project.detailed_section_description || 'Detailed Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${project.item_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${project.item_description || 'Item Description'}</span>
                             </div>
                         </div>
@@ -1343,7 +1292,7 @@ function createAdminProjectReviewCard(project) {
             <div class="flex-1">
                 <h4 class="text-lg font-medium text-gray-900">${project.project_name}</h4>
                 <p class="text-sm text-gray-600 mt-1">
-                    ${project.division_code} Ã¢â€ â€™ ${project.section_code} Ã¢â€ â€™ ${project.detailed_section_code} Ã¢â€ â€™ ${project.item_code}
+                    ${project.division_code} ↔️ ${project.section_code} ↔️ ${project.detailed_section_code} ↔️ ${project.item_code}
                 </p>
                 ${project.additional_level_value ? `<p class="text-sm text-purple-600 mt-1">Additional Level: ${project.additional_level_value}</p>` : ''}
             </div>
@@ -1456,6 +1405,8 @@ async function reviewAdminProject(projectId, decision) {
         if (error) throw error;
 
         if (data.success) {
+            // Email notifications are now handled automatically by the new email system in approval functions
+            
             alert(`Project ${decision === 'approve' ? 'approved' : 'rejected'} successfully`);
             loadPendingRequests(); // Reload the pending requests
         } else {
@@ -1826,7 +1777,7 @@ async function viewRequestDetails(type, requestId) {
                     detailHTML += `
                         <div class="border border-orange-200 p-3 rounded bg-white">
                             <div class="font-medium text-orange-900 mb-2">${attr.attribute_name}</div>
-                            <div class="text-sm text-red-600 font-medium">Ã°Å¸Å¡Â« Will be blocked: ${selectedValue ? selectedValue.name : 'None selected'}</div>
+                            <div class="text-sm text-red-600 font-medium">🚫 Will be blocked: ${selectedValue ? selectedValue.name : 'None selected'}</div>
                         </div>
                     `;
                 });
@@ -1925,22 +1876,22 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                             <div class="flex flex-col space-y-1">
                                 <div class="csi-path-item">
                                     <span class="font-bold">${projectData.division_code || 'N/A'}</span>
-                                    <span class="csi-path-arrow">â†’</span>
+                                    <span class="csi-path-arrow">↔️</span>
                                     <span class="text-xs opacity-90">${projectData.division_description || 'Division Description'}</span>
                                 </div>
                                 <div class="csi-path-item">
                                     <span class="font-bold">${projectData.section_code || 'N/A'}</span>
-                                    <span class="csi-path-arrow">â†’</span>
+                                    <span class="csi-path-arrow">↔️</span>
                                     <span class="text-xs opacity-90">${projectData.section_description || 'Section Description'}</span>
                                 </div>
                                 <div class="csi-path-item">
                                     <span class="font-bold">${projectData.detailed_section_code || 'N/A'}</span>
-                                    <span class="csi-path-arrow">â†’</span>
+                                    <span class="csi-path-arrow">↔️</span>
                                     <span class="text-xs opacity-90">${projectData.detailed_section_description || 'Detailed Section Description'}</span>
                                 </div>
                                 <div class="csi-path-item">
                                     <span class="font-bold">${projectData.item_code || 'N/A'}</span>
-                                    <span class="csi-path-arrow">â†’</span>
+                                    <span class="csi-path-arrow">↔️</span>
                                     <span class="text-xs opacity-90">${projectData.item_description || 'Item Description'}</span>
                                 </div>
                             </div>
@@ -2082,7 +2033,7 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                             <div class="font-medium text-orange-900 mb-2">${attr.attribute_name} ${attr.is_mandatory ? '(Required)' : '(Optional)'}</div>
                             <div class="mt-2">
                                 <span class="bg-red-100 text-red-800 px-3 py-1 rounded font-medium">
-                                    Ã°Å¸Å¡Â« WILL BE BLOCKED: ${selectedValue.name}
+                                    🚫 WILL BE BLOCKED: ${selectedValue.name}
                                 </span>
                             </div>
                         </div>
@@ -2097,7 +2048,7 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                 </div>
                 <div class="mt-4 p-3 bg-red-100 border border-red-200 rounded">
                     <p class="text-red-800 text-sm">
-                        <strong>Ã¢Å¡Â Ã¯Â¸Â Warning:</strong> Approving this request will prevent users from generating item codes 
+                        <strong>⚠️ Warning:</strong> Approving this request will prevent users from generating item codes 
                         using this exact combination of attribute values. This action cannot be easily undone.
                     </p>
                 </div>
@@ -2148,23 +2099,23 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        Ã¢Å“â€¦ Approve
+                        ✅¦ Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        Ã¢ÂÅ’ Reject
+                        ❌ Reject
                     </button>
                 `;
             } else if (status === 'reviewer_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        Ã¢Å“â€¦ You Approved This
+                        ✅¦ You Approved This
                     </span>
                 `;
             } else if (status === 'reviewer_rejected') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-red-100 text-red-800 rounded-md text-sm">
-                        Ã¢ÂÅ’ You Rejected This
+                        ❌ You Rejected This
                     </span>
                 `;
             } else {
@@ -2173,11 +2124,11 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        Ã¢Å“â€¦ Approve (Status: ${status})
+                        ✅¦ Approve (Status: ${status})
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        Ã¢ÂÅ’ Reject (Status: ${status})
+                        ❌ Reject (Status: ${status})
                     </button>
                 `;
             }
@@ -2186,23 +2137,23 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        Ã¢Å“â€¦ Final Approve
+                        ✅¦ Final Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        Ã¢ÂÅ’ Final Reject
+                        ❌ Final Reject
                     </button>
                 `;
             } else if (status === 'admin_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        Ã¢Å“â€¦ Approved by You
+                        ✅¦ Approved by You
                     </span>
                 `;
             } else if (status === 'admin_rejected') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-red-100 text-red-800 rounded-md text-sm">
-                        Ã¢ÂÅ’ Rejected by You
+                        ❌ Rejected by You
                     </span>
                 `;
             } else {
@@ -2211,11 +2162,11 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        Ã¢Å“â€¦ Final Approve (Status: ${status})
+                        ✅¦ Final Approve (Status: ${status})
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        Ã¢ÂÅ’ Final Reject (Status: ${status})
+                        ❌ Final Reject (Status: ${status})
                     </button>
                 `;
             }
@@ -2227,23 +2178,23 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        Ã¢Å“â€¦ Approve
+                        ✅¦ Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        Ã¢ÂÅ’ Reject
+                        ❌ Reject
                     </button>
                 `;
             } else if (status === 'reviewer_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        Ã¢Å“â€¦ You Approved This
+                        ✅¦ You Approved This
                     </span>
                 `;
             } else if (status === 'reviewer_rejected') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-red-100 text-red-800 rounded-md text-sm">
-                        Ã¢ÂÅ’ You Rejected This
+                        ❌ You Rejected This
                     </span>
                 `;
             }
@@ -2252,23 +2203,23 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        Ã¢Å“â€¦ Final Approve
+                        ✅¦ Final Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        Ã¢ÂÅ’ Final Reject
+                        ❌ Final Reject
                     </button>
                 `;
             } else if (status === 'admin_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        Ã¢Å“â€¦ Approved by You
+                        ✅¦ Approved by You
                     </span>
                 `;
             } else if (status === 'admin_rejected') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-red-100 text-red-800 rounded-md text-sm">
-                        Ã¢ÂÅ’ Rejected by You
+                        ❌ Rejected by You
                     </span>
                 `;
             }
@@ -2283,11 +2234,11 @@ function updateModalActionButtons(type, itemData) {
             buttonsHTML = `
                 <button onclick="submitCurrentReview('approve')" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                    Ã¢Å“â€¦ Force Approve
+                    ✅¦ Force Approve
                 </button>
                 <button onclick="submitCurrentReview('reject')" 
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                    Ã¢ÂÅ’ Force Reject
+                    ❌ Force Reject
                 </button>
                 <div class="text-xs text-gray-500 mt-1">Status: ${status} | Role: ${userRole}</div>
             `;
@@ -2354,6 +2305,31 @@ async function reviewAdminRequest(type, requestId, decision) {
             
             if (data.success) {
                 updateResult = { success: true, message: data.message };
+                
+                // Send email notification for project admin decision
+                try {
+                    const { data: projectData, error: fetchError } = await supabase
+                        .from('classification_projects')
+                        .select(`
+                            *,
+                            created_by_user:users!classification_projects_created_by_fkey(username, email)
+                        `)
+                        .eq('id', requestId)
+                        .single();
+                        
+                    if (!fetchError && projectData) {
+                        projectData.request_type = 'Classification Project';
+                        projectData.title = projectData.project_name;
+                        projectData.project = { project_name: projectData.project_name };
+                        
+                        console.log('Sending admin email notification for project...');
+                        await sendDecisionNotification(projectData, decision, comments, currentUser);
+                        console.log('Admin project email notification sent successfully');
+                    }
+                } catch (emailError) {
+                    console.error('Failed to send email notification for admin project decision:', emailError);
+                    // Don't fail the approval if email fails
+                }
             } else {
                 throw new Error(data.message || 'Project review failed');
             }
@@ -2394,6 +2370,39 @@ async function reviewAdminRequest(type, requestId, decision) {
             
             console.log('Update response:', updateResponse);
             updateResult = { success: true, message: `Item code request ${decision}d successfully` };
+            
+            // Send email notifications for item code decisions
+            try {
+                // Get request details with creator information
+                const { data: requestData, error: fetchError } = await supabase
+                    .from('item_code_requests')
+                    .select(`
+                        *,
+                        created_by_user:users!item_code_requests_created_by_fkey(username, email),
+                        project:classification_projects(project_name)
+                    `)
+                    .eq('id', requestId)
+                    .single();
+                    
+                if (!fetchError && requestData) {
+                    requestData.request_type = 'Item Code Request';
+                    requestData.title = requestData.item_code;
+                    
+                    console.log('Sending admin email notification for item code...');
+                    await sendDecisionNotification(requestData, decision, comments, currentUser);
+                    console.log('Admin item code email notification sent successfully');
+                    
+                    // If approved, send ERP integration notification
+                    if (decision === 'approve') {
+                        console.log('Sending ERP integration notification...');
+                        await sendERPIntegrationNotification(requestData, { item_code: requestData.item_code });
+                        console.log('ERP integration notification sent successfully');
+                    }
+                }
+            } catch (emailError) {
+                console.error('Failed to send email notification for admin item code decision:', emailError);
+                // Don't fail the approval if email fails
+            }
             
         } else if (type === 'value') {
             console.log('Processing standard value request:', requestId);
@@ -2475,6 +2484,32 @@ async function reviewAdminRequest(type, requestId, decision) {
             console.log('Status update response:', statusResponse);
             updateResult = { success: true, message: `Standard value request ${decision}d successfully` };
             
+            // Send email notifications for standard value decisions
+            try {
+                // Get request details with creator information
+                const { data: requestData, error: fetchError } = await supabase
+                    .from('standard_value_requests')
+                    .select(`
+                        *,
+                        created_by_user:users!standard_value_requests_created_by_fkey(username, email),
+                        project:classification_projects(project_name)
+                    `)
+                    .eq('id', requestId)
+                    .single();
+                    
+                if (!fetchError && requestData) {
+                    requestData.request_type = 'Standard Value Request';
+                    requestData.title = `${requestData.attribute_name}: ${requestData.new_value}`;
+                    
+                    console.log('Sending admin email notification for standard value...');
+                    await sendDecisionNotification(requestData, decision, comments, currentUser);
+                    console.log('Admin standard value email notification sent successfully');
+                }
+            } catch (emailError) {
+                console.error('Failed to send email notification for admin standard value decision:', emailError);
+                // Don't fail the approval if email fails
+            }
+            
         } else if (type === 'block') {
             console.log('Processing combination block request:', requestId);
             
@@ -2501,12 +2536,41 @@ async function reviewAdminRequest(type, requestId, decision) {
             console.log('Combination request update response:', updateResponse);
             updateResult = { success: true, message: `Combination block request ${decision}d successfully` };
             
+            // Send email notifications for combination block decisions
+            try {
+                // Get request details with creator information
+                const { data: requestData, error: fetchError } = await supabase
+                    .from('combination_requests')
+                    .select(`
+                        *,
+                        created_by_user:users!combination_requests_created_by_fkey(username, email),
+                        project:classification_projects(project_name)
+                    `)
+                    .eq('id', requestId)
+                    .single();
+                    
+                if (!fetchError && requestData) {
+                    requestData.request_type = 'Block Combination Request';
+                    requestData.title = 'Block Combination';
+                    
+                    console.log('Sending admin email notification for combination block...');
+                    await sendDecisionNotification(requestData, decision, comments, currentUser);
+                    console.log('Admin combination block email notification sent successfully');
+                }
+            } catch (emailError) {
+                console.error('Failed to send email notification for admin combination decision:', emailError);
+                // Don't fail the approval if email fails
+            }
+            
         } else {
             throw new Error('Unknown request type: ' + type);
         }
         
         // Remove loading message
         document.getElementById('loading-msg')?.remove();
+        
+        // Show success message
+        alert(updateResult.message);
         
         // Show success message
         alert(updateResult.message);
@@ -2612,43 +2676,20 @@ async function loadAdminPendingRequests() {
     let hasContent = false;
 
     try {
-        console.log('=== CHECKING CURRENT ITEM CODE REQUEST STATUSES ===');
-        
-        // Simple check: what item code request statuses currently exist?
-        const { data: allItemCodes, error } = await supabase
-            .from('item_code_requests')
-            .select('id, item_code, status, created_at, reviewed_at')
-            .order('created_at', { ascending: false })
-            .limit(20);
-            
-        if (!error && allItemCodes) {
-            const statusCounts = allItemCodes.reduce((acc, item) => {
-                acc[item.status] = (acc[item.status] || 0) + 1;
-                return acc;
-            }, {});
-            
-            console.log('Current item code request statuses:', statusCounts);
-            console.log('Recent item code requests:', allItemCodes);
-            
-            const reviewerApprovedCount = allItemCodes.filter(item => item.status === 'reviewer_approved').length;
-            console.log('Items with reviewer_approved status:', reviewerApprovedCount);
-            
-            if (reviewerApprovedCount === 0) {
-                console.log('✅ EXPLANATION: No item codes have reviewer_approved status');
-                console.log('✅ This means the SQL fix worked and there are no items pending admin approval');
-                console.log('✅ Admin panel is correctly showing empty');
-            }
-        }
-        
-        console.log('Loading admin pending requests - checking for reviewer_approved items only');
-        
-        // Load ONLY reviewer_approved requests that need admin decision
+        // Load all types of requests that need admin attention
         const [
+            pendingProjects,
             reviewerApprovedProjects,
+            pendingItemCodes,
             reviewerApprovedItemCodes,
+            pendingStandardValues,
             reviewerApprovedStandardValues,
+            pendingCombinations,
             reviewerApprovedCombinations
         ] = await Promise.all([
+            // Projects pending admin review (submitted projects)
+            supabase.rpc('get_pending_admin_reviews', { admin_id_param: currentUser.id }),
+            
             // Projects approved by reviewer, awaiting admin final approval
             supabase.from('classification_projects')
                 .select(`
@@ -2657,10 +2698,20 @@ async function loadAdminPendingRequests() {
                     reviewer:users!classification_projects_assigned_reviewer_id_fkey(username, email)
                 `)
                 .eq('status', 'reviewer_approved')
-                .is('admin_reviewed_at', null)
                 .order('reviewed_at', { ascending: true }),
 
-            // Item code requests approved by reviewer, awaiting admin final approval
+            // Item code requests pending admin review
+            supabase.from('item_code_requests')
+                .select(`
+                    *,
+                    created_by_user:users!item_code_requests_created_by_fkey(username, email),
+                    reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
+                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description)
+                `)
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false }),
+
+            // Item code requests approved by reviewer
             supabase.from('item_code_requests')
                 .select(`
                     *,
@@ -2670,8 +2721,20 @@ async function loadAdminPendingRequests() {
                 `)
                 .eq('status', 'reviewer_approved')
                 .order('reviewed_at', { ascending: true }),
-                
-            // Standard value requests approved by reviewer, awaiting admin final approval
+
+            // Standard value requests pending admin review
+            supabase.from('standard_value_requests')
+                .select(`
+                    *,
+                    created_by_user:users!standard_value_requests_created_by_fkey(username, email),
+                    reviewed_by_user:users!standard_value_requests_reviewed_by_fkey(username, email),
+                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description),
+                    project_attributes(attribute_name, standard_values)
+                `)
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false }),
+
+            // Standard value requests approved by reviewer
             supabase.from('standard_value_requests')
                 .select(`
                     *,
@@ -2681,10 +2744,20 @@ async function loadAdminPendingRequests() {
                     project_attributes(attribute_name, standard_values)
                 `)
                 .eq('status', 'reviewer_approved')
-                .is('admin_reviewed_at', null)
                 .order('reviewed_at', { ascending: true }),
 
-            // Combination requests approved by reviewer, awaiting admin final approval
+            // Combination requests pending admin review
+            supabase.from('combination_requests')
+                .select(`
+                    *,
+                    created_by_user:users!combination_requests_created_by_fkey(username, email),
+                    reviewed_by_user:users!combination_requests_reviewed_by_fkey(username, email),
+                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code)
+                `)
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false }),
+
+            // Combination requests approved by reviewer
             supabase.from('combination_requests')
                 .select(`
                     *,
@@ -2693,53 +2766,11 @@ async function loadAdminPendingRequests() {
                     project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code)
                 `)
                 .eq('status', 'reviewer_approved')
-                .is('admin_reviewed_at', null)
                 .order('reviewed_at', { ascending: true })
         ]);
 
-        console.log('Admin pending query results:', {
-            projects: reviewerApprovedProjects.data?.length || 0,
-            itemCodes: reviewerApprovedItemCodes.data?.length || 0,
-            standardValues: reviewerApprovedStandardValues.data?.length || 0,
-            combinations: reviewerApprovedCombinations.data?.length || 0
-        });
-        
-        if (reviewerApprovedItemCodes.data?.length > 0) {
-            console.log('✅ Item codes pending admin approval:', reviewerApprovedItemCodes.data.map(ic => ({
-                id: ic.id,
-                item_code: ic.item_code,
-                status: ic.status
-            })));
-        } else {
-            console.log('✅ No item codes pending admin approval (this is correct after SQL fix)');
-        }
-
-        // Show only reviewer_approved item codes that need admin approval
-        let filteredItemCodes = reviewerApprovedItemCodes.data || [];
-        console.log('Item codes pending admin approval:', filteredItemCodes.length);
-
-        // Debug: Log some sample data to understand what's being retrieved
-        if (reviewerApprovedProjects.data?.length > 0) {
-            console.log('Sample project pending admin review:', {
-                id: reviewerApprovedProjects.data[0].id,
-                name: reviewerApprovedProjects.data[0].project_name,
-                status: reviewerApprovedProjects.data[0].status,
-                admin_reviewed_at: reviewerApprovedProjects.data[0].admin_reviewed_at,
-                reviewed_at: reviewerApprovedProjects.data[0].reviewed_at
-            });
-        }
-        
-        if (reviewerApprovedItemCodes.data?.length > 0) {
-            console.log('Sample item code pending admin review:', {
-                id: reviewerApprovedItemCodes.data[0].id,
-                item_code: reviewerApprovedItemCodes.data[0].item_code,
-                status: reviewerApprovedItemCodes.data[0].status,
-                reviewed_at: reviewerApprovedItemCodes.data[0].reviewed_at
-            });
-        }
-
-        // Display ONLY items that need admin final decision (reviewer_approved)
-        const adminPendingItems = [
+        // Section 1: High Priority - Reviewer Approved Items (Need Final Admin Decision)
+        const highPriorityItems = [
             ...(reviewerApprovedProjects.data || []).map(p => ({
                 ...p,
                 type: 'project',
@@ -2750,7 +2781,7 @@ async function loadAdminPendingRequests() {
                 reviewer_name: p.reviewer?.username,
                 date: p.reviewed_at
             })),
-            ...filteredItemCodes.map(r => ({
+            ...(reviewerApprovedItemCodes.data || []).map(r => ({
                 ...r,
                 type: 'code',
                 priority: 'high',
@@ -2782,48 +2813,93 @@ async function loadAdminPendingRequests() {
             }))
         ];
 
-        // Store for searching
-        window.originalAdminRequests = adminPendingItems;
+        // Section 2: Regular Priority - Pending Items (Need Initial Review)
+        const regularPriorityItems = [
+            ...(pendingItemCodes.data || []).map(r => ({
+                ...r,
+                type: 'code',
+                priority: 'regular',
+                title: r.item_code || 'Item Code Request',
+                subtitle: r.project?.project_name || 'Unknown Project',
+                creator_name: r.created_by_user?.username,
+                reviewer_name: 'Unassigned',
+                date: r.created_at
+            })),
+            ...(pendingStandardValues.data || []).map(r => ({
+                ...r,
+                type: 'value',
+                priority: 'regular',
+                title: `Add Value: ${r.new_value}`,
+                subtitle: `Attribute: ${r.attribute_name}`,
+                creator_name: r.created_by_user?.username,
+                reviewer_name: 'Unassigned',
+                date: r.created_at
+            })),
+            ...(pendingCombinations.data || []).map(r => ({
+                ...r,
+                type: 'block',
+                priority: 'regular',
+                title: `Block Combination`,
+                subtitle: r.project?.project_name || 'Unknown Project',
+                creator_name: r.created_by_user?.username,
+                reviewer_name: 'Unassigned',
+                date: r.created_at
+            }))
+        ];
 
-        // Display Admin Pending Section
-        if (adminPendingItems.length > 0) {
+        // Display High Priority Section
+        if (highPriorityItems.length > 0) {
             hasContent = true;
-            const adminPendingSection = document.createElement('div');
-            adminPendingSection.className = 'mb-8';
-            adminPendingSection.innerHTML = `
+            const highPrioritySection = document.createElement('div');
+            highPrioritySection.className = 'mb-8';
+            highPrioritySection.innerHTML = `
                 <div class="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4 mb-6">
                     <h3 class="text-lg font-semibold text-orange-800 mb-2 flex items-center">
                         <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                         </svg>
-                        ⏳ AWAITING YOUR ADMIN DECISION (${adminPendingItems.length})
+                        HIGH PRIORITY - Reviewer Approved (${highPriorityItems.length})
                     </h3>
-                    <p class="text-sm text-orange-700">Items approved by reviewers that need your final admin approval/rejection decision</p>
+                    <p class="text-sm text-orange-700">These items have been approved by reviewers and need your final decision</p>
                 </div>
-                <div id="admin-pending-container" class="grid gap-4"></div>
+                <div id="high-priority-container" class="grid gap-4"></div>
             `;
-            container.appendChild(adminPendingSection);
+            container.appendChild(highPrioritySection);
 
-            const adminPendingContainer = document.getElementById('admin-pending-container');
-            
-            // Add debug information
-            if (adminPendingItems.length > 0) {
-                console.log('Displaying admin pending items:', adminPendingItems.map(item => ({
-                    id: item.id,
-                    type: item.type,
-                    title: item.title,
-                    status: item.status,
-                    admin_reviewed_at: item.admin_reviewed_at
-                })));
-            }
-            
-            adminPendingItems
+            const highPriorityContainer = document.getElementById('high-priority-container');
+            highPriorityItems
                 .sort((a, b) => new Date(a.date) - new Date(b.date))
                 .forEach(item => {
-                    adminPendingContainer.appendChild(createDetailedAdminReviewCard(item));
+                    highPriorityContainer.appendChild(createDetailedAdminReviewCard(item));
                 });
         }
 
+        // Display Regular Priority Section
+        if (regularPriorityItems.length > 0) {
+            hasContent = true;
+            const regularPrioritySection = document.createElement('div');
+            regularPrioritySection.className = 'mb-8';
+            regularPrioritySection.innerHTML = `
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <h3 class="text-lg font-semibold text-blue-800 mb-2 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        📁 PENDING INITIAL REVIEW (${regularPriorityItems.length})
+                    </h3>
+                    <p class="text-sm text-blue-700">These items are waiting for initial review and can be assigned to reviewers</p>
+                </div>
+                <div id="regular-priority-container" class="grid gap-4"></div>
+            `;
+            container.appendChild(regularPrioritySection);
+
+            const regularPriorityContainer = document.getElementById('regular-priority-container');
+            regularPriorityItems
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .forEach(item => {
+                    regularPriorityContainer.appendChild(createDetailedAdminReviewCard(item));
+                });
+        }
 
         if (!hasContent) {
             container.innerHTML = `
@@ -2831,7 +2907,7 @@ async function loadAdminPendingRequests() {
                     <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <p class="text-lg">✅ All caught up!</p>
+                    <p class="text-lg">All caught up!</p>
                     <p class="text-sm">No items pending admin review</p>
                 </div>
             `;
@@ -2850,25 +2926,25 @@ function createDetailedAdminReviewCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: 'Ã°Å¸â€œÂ', 
+            icon: '📁', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: 'Ã°Å¸ÂÂ·Ã¯Â¸Â', 
+            icon: '🏷️', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: 'Ã¢Å¾â€¢', 
+            icon: '⚖️', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: 'Ã°Å¸Å¡Â«', 
+            icon: '🚫', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -2901,22 +2977,22 @@ function createDetailedAdminReviewCard(item) {
                         <div class="flex flex-col space-y-1">
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.division_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.division_description || 'Division Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.section_description || 'Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.detailed_section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.detailed_section_description || 'Detailed Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.item_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.item_description || 'Item Description'}</span>
                             </div>
                         </div>
@@ -2927,22 +3003,22 @@ function createDetailedAdminReviewCard(item) {
                         <div class="flex flex-col space-y-1">
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.division_code || item.project?.division_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.project.division_description || item.project?.division_description || 'Division Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.section_code || item.project?.section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.project.section_description || item.project?.section_description || 'Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.detailed_section_code || item.project?.detailed_section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.project.detailed_section_description || item.project?.detailed_section_description || 'Detailed Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.item_code || item.project?.item_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.project.item_description || item.project?.item_description || 'Item Description'}</span>
                             </div>
                         </div>
@@ -3009,21 +3085,21 @@ function createDetailedAdminReviewCard(item) {
         <div class="flex space-x-2 mt-4">
             <button onclick="viewRequestDetails('${item.type}', ${item.id})" 
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                Ã°Å¸â€œâ€ž View Full Details
+                🔍 View Full Details
             </button>
             ${item.priority === 'high' ? `
                 <button onclick="reviewAdminRequest('${item.type}', ${item.id}, 'approve')" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    Ã¢Å“â€¦ Approve
+                    ✅¦ Approve
                 </button>
                 <button onclick="reviewAdminRequest('${item.type}', ${item.id}, 'reject')" 
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    Ã¢ÂÅ’ Reject
+                    ❌ Reject
                 </button>
             ` : `
                 <button onclick="assignReviewer(${item.id}, '${item.type}')" 
                         class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    Ã°Å¸â€˜Â¤ Assign Reviewer
+                    Assign Reviewer
                 </button>
             `}
         </div>
@@ -3038,11 +3114,6 @@ async function loadReviewerPendingRequests() {
 
     try {
         console.log('Loading reviewer pending requests for:', currentUser.id);
-        
-        // Initialize global storage for search functionality
-        if (!window.allPendingItems) {
-            window.allPendingItems = [];
-        }
 
     // Section 1: Load ONLY projects pending review (status = 'submitted')
         console.log('Loading projects pending review...');
@@ -3168,7 +3239,7 @@ async function loadReviewerPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        Ã°Å¸â€œÂ PROJECTS AWAITING YOUR REVIEW (${assignedProjects.length})
+                        📁 PROJECTS AWAITING YOUR REVIEW (${assignedProjects.length})
                     </h3>
                     <p class="text-sm text-purple-700">Classification projects submitted and waiting for your review decision</p>
                 </div>
@@ -3204,7 +3275,7 @@ async function loadReviewerPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                         </svg>
-                        Ã°Å¸ÂÂ·Ã¯Â¸Â ITEM CODE REQUESTS AWAITING YOUR REVIEW (${itemCodeRequests.length})
+                        🏷️ ITEM CODE REQUESTS AWAITING YOUR REVIEW (${itemCodeRequests.length})
                     </h3>
                     <p class="text-sm text-green-700">Item code requests assigned to you and waiting for your review decision</p>
                 </div>
@@ -3237,7 +3308,7 @@ async function loadReviewerPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Ã¢Å¾â€¢ STANDARD VALUE REQUESTS AWAITING YOUR REVIEW (${standardValueRequests.length})
+                        ⚖️ STANDARD VALUE REQUESTS AWAITING YOUR REVIEW (${standardValueRequests.length})
                     </h3>
                     <p class="text-sm text-blue-700">Standard value requests assigned to you and waiting for your review decision</p>
                 </div>
@@ -3270,7 +3341,7 @@ async function loadReviewerPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636"></path>
                         </svg>
-                        Ã°Å¸Å¡Â« COMBINATION BLOCK REQUESTS AWAITING YOUR REVIEW (${combinationRequests.length})
+                        🚫 COMBINATION BLOCK REQUESTS AWAITING YOUR REVIEW (${combinationRequests.length})
                     </h3>
                     <p class="text-sm text-red-700">Combination block requests assigned to you and waiting for your review decision</p>
                 </div>
@@ -3292,62 +3363,13 @@ async function loadReviewerPendingRequests() {
             });
         }
 
-        // Store all pending items globally for search functionality
-        console.log('Storing pending items for search...');
-        window.allPendingItems = [
-            // Projects
-            ...(assignedProjects || []).map(project => ({
-                ...project,
-                type: 'project',
-                title: project.project_name,
-                subtitle: `${project.division_code}-${project.section_code}-${project.detailed_section_code}-${project.item_code}`,
-                creator_name: 'Unknown', // Will be enhanced if creator data is available
-                created_by_name: 'Unknown',
-                project_id: project.id,
-                project_name: project.project_name
-            })),
-            // Item Code Requests
-            ...(itemCodeRequests || []).map(request => ({
-                ...request,
-                type: 'code',
-                title: request.item_code || 'Item Code Request',
-                subtitle: request.project?.project_name || 'Unknown Project',
-                creator_name: request.created_by_user?.username || 'Unknown',
-                created_by_name: request.created_by_user?.username || 'Unknown',
-                project_name: request.project?.project_name
-            })),
-            // Standard Value Requests
-            ...(standardValueRequests || []).map(request => ({
-                ...request,
-                type: 'value',
-                title: `Add Value: ${request.new_value}`,
-                subtitle: `Attribute: ${request.attribute_name}`,
-                creator_name: request.created_by_user?.username || 'Unknown',
-                created_by_name: request.created_by_user?.username || 'Unknown',
-                project_name: request.project?.project_name
-            })),
-            // Combination Requests
-            ...(combinationRequests || []).map(request => ({
-                ...request,
-                type: 'block',
-                title: 'Block Combination',
-                subtitle: request.project?.project_name || 'Unknown Project',
-                creator_name: request.created_by_user?.username || 'Unknown',
-                created_by_name: request.created_by_user?.username || 'Unknown',
-                project_name: request.project?.project_name
-            }))
-        ];
-
-        console.log('Stored pending items for search:', window.allPendingItems.length);
-        console.log('Sample pending items:', window.allPendingItems.slice(0, 2));
-
         if (!hasContent) {
             container.innerHTML = `
                 <div class="text-center text-gray-500 py-12">
                     <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <p class="text-lg">Ã°Å¸Å½â€° All caught up!</p>
+                    <p class="text-lg">All caught up!</p>
                     <p class="text-sm">No items currently awaiting your review</p>
                     <p class="text-xs text-gray-400 mt-2">When new items are assigned to you, they'll appear here</p>
                 </div>
@@ -3369,10 +3391,10 @@ function createSimpleReviewerCard(item) {
     card.className = 'request-card bg-white border rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow border-l-4 border-l-blue-500';
     
     const typeInfo = {
-        'project': { icon: 'Ã°Å¸â€œÂ', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
-        'code': { icon: 'Ã°Å¸ÂÂ·Ã¯Â¸Â', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
-        'value': { icon: 'Ã¢Å¾â€¢', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
-        'block': { icon: 'Ã°Å¸Å¡Â«', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
+        'project': { icon: '📁', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
+        'code': { icon: '🏷️', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
+        'value': { icon: '⚖️', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
+        'block': { icon: '🚫', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
     };
 
     const info = typeInfo[item.type] || typeInfo['code'];
@@ -3401,22 +3423,22 @@ function createSimpleReviewerCard(item) {
                         <div class="flex flex-col space-y-1">
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.division_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.division_description || 'Division Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.section_description || 'Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.detailed_section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.detailed_section_description || 'Detailed Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.item_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.item_description || 'Item Description'}</span>
                             </div>
                         </div>
@@ -3427,22 +3449,22 @@ function createSimpleReviewerCard(item) {
                         <div class="flex flex-col space-y-1">
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.division_code || item.project?.division_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.project.division_description || item.project?.division_description || 'Division Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.section_code || item.project?.section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.project.section_description || item.project?.section_description || 'Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.detailed_section_code || item.project?.detailed_section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.project.detailed_section_description || item.project?.detailed_section_description || 'Detailed Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.item_code || item.project?.item_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">â†’</span>
+                                <span class="csi-path-arrow">↔️</span>
                                 <span class="text-xs opacity-90">${item.project.item_description || item.project?.item_description || 'Item Description'}</span>
                             </div>
                         </div>
@@ -3462,21 +3484,21 @@ function createSimpleReviewerCard(item) {
         <div class="flex space-x-2">
             <button onclick="openReviewModal('${item.type}', ${item.id})" 
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
-                Ã°Å¸â€œâ€ž Review Details
+                🔍 Review Details
             </button>
             ${item.status === 'pending' || item.status === 'submitted' ? `
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'approve'); return false;" 
                         class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm">
-                    Ã¢Å“â€¦ Approve
+                    ✅¦ Approve
                 </button>
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'reject'); return false;" 
                         class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm">
-                    Ã¢ÂÅ’ Reject
+                    ❌ Reject
                 </button>
             ` : `
                 <span class="px-3 py-2 bg-gray-100 text-gray-600 rounded text-sm">
-                    ${item.status === 'reviewer_approved' ? 'Ã¢Å“â€¦ Approved' : 
-                      item.status === 'reviewer_rejected' ? 'Ã¢ÂÅ’ Rejected' : 
+                    ${item.status === 'reviewer_approved' ? '✅¦ Approved' : 
+                      item.status === 'reviewer_rejected' ? '❌ Rejected' : 
                       'Reviewed'}
                 </span>
             `}
@@ -3494,25 +3516,25 @@ function createDetailedReviewerCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: 'Ã°Å¸â€œÂ', 
+            icon: '📁', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: 'Ã°Å¸ÂÂ·Ã¯Â¸Â', 
+            icon: '🏷️', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: 'Ã¢Å¾â€¢', 
+            icon: '⚖️', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: 'Ã°Å¸Å¡Â«', 
+            icon: '🚫', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -3594,21 +3616,21 @@ function createDetailedReviewerCard(item) {
         <div class="flex space-x-2 mt-4">
             <button onclick="openReviewModal('${item.type}', ${item.id})" 
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                Ã°Å¸â€œâ€ž Review Details
+                🔍 Review Details
             </button>
             ${item.status === 'pending' || item.status === 'submitted' ? `
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'approve'); return false;" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    Ã¢Å“â€¦ Approve
+                    ✅¦ Approve
                 </button>
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'reject'); return false;" 
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    Ã¢ÂÅ’ Reject
+                    ❌ Reject
                 </button>
             ` : `
                 <span class="px-4 py-2 bg-gray-100 text-gray-600 rounded-md text-sm font-medium">
-                    ${item.status === 'reviewer_approved' ? 'Ã¢Å“â€¦ You Approved' : 
-                      item.status === 'reviewer_rejected' ? 'Ã¢ÂÅ’ You Rejected' : 
+                    ${item.status === 'reviewer_approved' ? '✅¦ You Approved' : 
+                      item.status === 'reviewer_rejected' ? '❌ You Rejected' : 
                       'Reviewed'}
                 </span>
             `}
@@ -3671,6 +3693,90 @@ async function reviewReviewerRequest(type, requestId, decision) {
             
             console.log('Project status updated successfully');
             
+            // Send email notification for project decisions - ONLY for rejections
+            // (Approvals go to admin, so we don't want to notify requester twice)
+            if (decision === 'reject') {
+                try {
+                    // Get project details with creator information
+                    const { data: projectData, error: fetchError } = await supabase
+                        .from('classification_projects')
+                        .select(`
+                            *,
+                            created_by_user:users!classification_projects_created_by_fkey(username, email)
+                        `)
+                        .eq('id', requestId)
+                        .single();
+                        
+                    if (!fetchError && projectData) {
+                        projectData.request_type = 'Classification Project';
+                        projectData.title = projectData.project_name;
+                        projectData.project = { project_name: projectData.project_name };
+                        
+                        console.log('Sending email notification for project rejection...');
+                        await sendDecisionNotification(projectData, decision, comments, currentUser);
+                        console.log('Project rejection email notification sent successfully');
+                    }
+                } catch (emailError) {
+                    console.error('Failed to send email notification for project rejection:', emailError);
+                    // Don't fail the approval if email fails
+                }
+            } else {
+                console.log('Project approved - skipping email notification (admin will handle final notification)');
+                
+                // NOTIFY ADMIN about new project awaiting their review
+                try {
+                    // Get admin users
+                    const { data: adminUsers, error: adminError } = await supabase
+                        .from('users')
+                        .select('email, username')
+                        .eq('role', 'admin')
+                        .eq('status', 'active');
+                    
+                    if (!adminError && adminUsers && adminUsers.length > 0) {
+                        // Get project details
+                        const { data: projectData, error: fetchError } = await supabase
+                            .from('classification_projects')
+                            .select(`
+                                *,
+                                created_by_user:users!classification_projects_created_by_fkey(username, email)
+                            `)
+                            .eq('id', requestId)
+                            .single();
+                        
+                        if (!fetchError && projectData) {
+                            // Send notification to each admin
+                            for (const admin of adminUsers) {
+                                const adminNotificationData = {
+                                    created_by_user: {
+                                        email: admin.email,
+                                        username: admin.username
+                                    },
+                                    request_type: 'Classification Project - Admin Review Required',
+                                    title: projectData.project_name,
+                                    project_name: projectData.project_name,
+                                    project: { project_name: projectData.project_name },
+                                    id: projectData.id
+                                };
+                                
+                                const adminReviewerInfo = {
+                                    username: currentUser.username,
+                                    role: 'reviewer'
+                                };
+                                
+                                console.log(`Sending admin notification to ${admin.email}...`);
+                                await sendDecisionNotification(adminNotificationData, 'forwarded', 
+                                    `This project has been approved by reviewer ${currentUser.username} and is now awaiting your admin review.\n\nReviewer Comments: ${comments || 'No comments provided'}`, 
+                                    adminReviewerInfo);
+                                console.log(`Admin notification sent to ${admin.email}`);
+                            }
+                        }
+                    }
+                } catch (emailError) {
+                    console.error('Failed to send admin notification:', emailError);
+                    // Don't fail the approval if admin notification fails
+                }
+            }
+            
             result = {
                 success: true,
                 message: decision === 'approve' ? 
@@ -3686,6 +3792,8 @@ async function reviewReviewerRequest(type, requestId, decision) {
         document.getElementById('loading-msg-reviewer')?.remove();
         
         if (result && result.success) {
+            // Email notifications are now handled automatically by submitReviewerReview function
+            
             alert(result.message || 'Review submitted successfully');
             await loadPendingRequests();
             await loadDashboardStats();
@@ -4192,12 +4300,12 @@ function displayAllRequests(requests) {
 
 function getTypeIcon(type) {
     const icons = {
-        project: 'Ã°Å¸â€œâ€¹',
-        code: 'Ã°Å¸ÂÂ·Ã¯Â¸Â',
-        block: 'Ã°Å¸Å¡Â«',
-        value: 'Ã¢Â­Â'
+        project: '📁',
+        code: '🏷️',
+        block: '🚫',
+        value: '⚖️'
     };
-    return icons[type] || 'Ã°Å¸â€œâ€ž';
+    return icons[type] || '🔍';
 }
 
 function createAllRequestCard(request) {
@@ -4712,6 +4820,7 @@ async function submitReviewerReview(type, id, decision, comments) {
             break;
     }
     
+    // Update database
     const { error } = await supabase
         .from(table)
         .update(updateData)
@@ -4720,6 +4829,105 @@ async function submitReviewerReview(type, id, decision, comments) {
     if (error) {
         console.error('Database update error:', error);
         throw error;
+    }
+    
+    // Send email notification to request creator - ONLY for rejections
+    // (Approvals go to admin, so we don't want to notify requester twice)
+    if (decision === 'reject') {
+        try {
+            // Get request details with creator information
+            const { data: requestData, error: fetchError } = await supabase
+                .from(table)
+                .select(`
+                    *,
+                    created_by_user:users!${table}_created_by_fkey(username, email),
+                    project:classification_projects(project_name)
+                `)
+                .eq('id', id)
+                .single();
+                
+            if (!fetchError && requestData) {
+                // Add request type for display
+                requestData.request_type = {
+                    'item_code_requests': 'Item Code Request',
+                    'combination_requests': 'Block Combination Request', 
+                    'standard_value_requests': 'Standard Value Request'
+                }[table];
+                
+                requestData.title = requestData.item_code || requestData.request_type || 'Request';
+                
+                console.log('Sending email notification for item request rejection...');
+                await sendDecisionNotification(requestData, decision, comments, currentUser);
+                console.log('Item request rejection email notification sent successfully');
+            }
+        } catch (emailError) {
+            console.error('Failed to send email notification:', emailError);
+            // Don't fail the approval if email fails
+        }
+    } else {
+        console.log('Item request approved - skipping email notification (admin will handle final notification)');
+        
+        // NOTIFY ADMIN about new item request awaiting their review
+        try {
+            // Get admin users
+            const { data: adminUsers, error: adminError } = await supabase
+                .from('users')
+                .select('email, username')
+                .eq('role', 'admin')
+                .eq('status', 'active');
+            
+            if (!adminError && adminUsers && adminUsers.length > 0) {
+                // Get request details
+                const { data: requestData, error: fetchError } = await supabase
+                    .from(table)
+                    .select(`
+                        *,
+                        created_by_user:users!${table}_created_by_fkey(username, email),
+                        project:classification_projects(project_name)
+                    `)
+                    .eq('id', id)
+                    .single();
+                
+                if (!fetchError && requestData) {
+                    const requestTypeName = {
+                        'item_code_requests': 'Item Code Request',
+                        'combination_requests': 'Block Combination Request', 
+                        'standard_value_requests': 'Standard Value Request'
+                    }[table];
+                    
+                    const requestTitle = requestData.item_code || requestData.new_value || requestTypeName;
+                    
+                    // Send notification to each admin
+                    for (const admin of adminUsers) {
+                        const adminNotificationData = {
+                            created_by_user: {
+                                email: admin.email,
+                                username: admin.username
+                            },
+                            request_type: requestTypeName + ' - Admin Review Required',
+                            title: requestTitle,
+                            project_name: requestData.project?.project_name || 'N/A',
+                            project: { project_name: requestData.project?.project_name || 'N/A' },
+                            id: requestData.id
+                        };
+                        
+                        const adminReviewerInfo = {
+                            username: currentUser.username,
+                            role: 'reviewer'
+                        };
+                        
+                        console.log(`Sending admin notification to ${admin.email} for ${requestTypeName}...`);
+                        await sendDecisionNotification(adminNotificationData, 'forwarded', 
+                            `This ${requestTypeName.toLowerCase()} has been approved by reviewer ${currentUser.username} and is now awaiting your admin review.\n\nOriginal Request: ${requestTitle}\nRequester: ${requestData.created_by_user?.username}\nReviewer Comments: ${comments || 'No comments provided'}`, 
+                            adminReviewerInfo);
+                        console.log(`Admin notification sent to ${admin.email}`);
+                    }
+                }
+            }
+        } catch (emailError) {
+            console.error('Failed to send admin notification:', emailError);
+            // Don't fail the approval if admin notification fails
+        }
     }
     
     return {
@@ -4745,6 +4953,28 @@ async function submitAdminReview(type, id, decision, comments) {
             if (error) {
                 console.error('RPC error:', error);
                 throw error;
+            }
+            
+            // Send email notification for project decisions
+            try {
+                const { data: projectData, error: fetchError } = await supabase
+                    .from('classification_projects')
+                    .select(`
+                        *,
+                        created_by_user:users!classification_projects_created_by_fkey(username, email)
+                    `)
+                    .eq('id', id)
+                    .single();
+                    
+                if (!fetchError && projectData) {
+                    projectData.request_type = 'Classification Project';
+                    projectData.title = projectData.project_name;
+                    projectData.project = { project_name: projectData.project_name };
+                    
+                    await sendDecisionNotification(projectData, decision, comments, currentUser);
+                }
+            } catch (emailError) {
+                console.error('Failed to send email notification for project:', emailError);
             }
             
             console.log('Admin review decision response:', data);
@@ -4790,6 +5020,17 @@ async function submitAdminReview(type, id, decision, comments) {
         
         console.log('Updating table:', table, 'with data:', updateData);
         
+        // Get request details before updating for email notification
+        const { data: requestData, error: fetchError } = await supabase
+            .from(table)
+            .select(`
+                *,
+                created_by_user:users!${table}_created_by_fkey(username, email),
+                project:classification_projects(project_name)
+            `)
+            .eq('id', id)
+            .single();
+        
         const { error } = await supabase
             .from(table)
             .update(updateData)
@@ -4801,16 +5042,41 @@ async function submitAdminReview(type, id, decision, comments) {
         }
 
         // ADDED: Handle item code creation for admin-approved item_code_requests
+        let itemCodeData = null;
         if (table === 'item_code_requests' && newStatus === 'admin_approved') {
             console.log('Creating item code for admin-approved request...');
             try {
-                await createItemCodeFromRequest(id);
+                itemCodeData = await createItemCodeFromRequest(id);
                 console.log('Item code created successfully for request:', id);
+                
+                // Send ERP integration notification to Yogesh
+                if (requestData) {
+                    await sendERPIntegrationNotification(requestData, itemCodeData);
+                }
             } catch (createError) {
                 console.error('Error creating item code:', createError);
                 // Note: We don't throw here to avoid rolling back the approval
                 // The request is still approved, but item code creation failed
             }
+        }
+        
+        // Send email notification to request creator
+        try {
+            if (requestData) {
+                // Add request type for display
+                requestData.request_type = {
+                    'item_code_requests': 'Item Code Request',
+                    'combination_requests': 'Block Combination Request', 
+                    'standard_value_requests': 'Standard Value Request'
+                }[table];
+                
+                requestData.title = requestData.item_code || requestData.request_type || 'Request';
+                
+                await sendDecisionNotification(requestData, normalizedDecision, comments, currentUser);
+            }
+        } catch (emailError) {
+            console.error('Failed to send email notification:', emailError);
+            // Don't fail the approval if email fails
         }
         
         return {
@@ -4900,11 +5166,6 @@ async function handleLogin(event) {
                 document.getElementById('admin-tab').classList.remove('hidden');
             }
             
-            // Show reviewer history tab if user is reviewer
-            if (currentUser.role === 'reviewer') {
-                document.getElementById('reviewer-history-btn').classList.remove('hidden');
-            }
-            
             await loadDashboardStats();
             await loadPendingRequests();
         } else {
@@ -4924,13 +5185,10 @@ function handleLogout() {
     document.getElementById('login-modal').classList.remove('hidden');
     document.getElementById('login-error').classList.add('hidden');
     document.getElementById('admin-tab').classList.add('hidden');
-    document.getElementById('reviewer-history-btn').classList.add('hidden');
 }
 
 // ===== TAB FUNCTIONS =====
 function switchTab(tabName) {
-    console.log('=== SWITCHING TO TAB:', tabName, '===');
-    
     // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
@@ -4943,33 +5201,7 @@ function switchTab(tabName) {
     });
     
     // Show selected tab
-    const targetTab = document.getElementById(tabName + '-tab');
-    console.log('Target tab element:', targetTab);
-    console.log('Target tab tagName:', targetTab?.tagName);
-    console.log('Target tab classes:', targetTab?.className);
-    
-    if (targetTab) {
-        if (targetTab.tagName === 'BUTTON') {
-            console.error('ERROR: Found button instead of content div! ID conflict detected.');
-            console.log('Looking for content div with class tab-content...');
-            
-            // Try to find the actual content div
-            const contentDivs = document.querySelectorAll('.tab-content');
-            console.log('Available content divs:', contentDivs);
-            
-            contentDivs.forEach(div => {
-                if (div.id === tabName + '-tab') {
-                    console.log('Found correct content div:', div);
-                    div.classList.remove('hidden');
-                }
-            });
-        } else {
-            targetTab.classList.remove('hidden');
-            console.log('Tab should now be visible');
-        }
-    } else {
-        console.error('Target tab not found:', tabName + '-tab');
-    }
+    document.getElementById(tabName + '-tab').classList.remove('hidden');
     
     // Add active state to clicked button
     const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
@@ -4981,8 +5213,6 @@ function switchTab(tabName) {
         loadPendingRequests();
     } else if (tabName === 'all-requests') {
         loadAllRequests();
-    } else if (tabName === 'reviewer-history') {
-        loadReviewerHistory();
     } else if (tabName === 'admin-panel') {
         loadAdminPanel();
     }
@@ -4991,363 +5221,6 @@ function switchTab(tabName) {
 async function loadAdminPanel() {
     const container = document.getElementById('admin-panel-container');
     container.innerHTML = '<div class="text-center text-gray-500 py-8">Admin panel functionality - to be implemented</div>';
-}
-
-// ===== REVIEWER HISTORY FUNCTIONS =====
-async function loadReviewerHistory() {
-    try {
-        console.log('=== LOADING REVIEWER HISTORY ===');
-        console.log('Current user:', currentUser);
-        console.log('User role:', currentUser?.role);
-        console.log('User ID:', currentUser?.id);
-        
-        if (currentUser.role !== 'reviewer') {
-            console.log('User is not a reviewer, showing access denied message');
-            const container = document.getElementById('reviewer-history-container');
-            container.innerHTML = '<div class="text-center text-gray-500 py-8">This section is only available for reviewers</div>';
-            return;
-        }
-
-        console.log('Starting queries for reviewer history...');
-        
-        // Load all requests reviewed by this user (approved or rejected)
-        const [
-            reviewedProjects,
-            reviewedItemCodes,
-            reviewedStandardValues,
-            reviewedCombinations
-        ] = await Promise.all([
-            // Projects reviewed by this reviewer
-            supabase.from('classification_projects')
-                .select(`
-                    *,
-                    creator:users!classification_projects_created_by_fkey(username, email)
-                `)
-                .eq('assigned_reviewer_id', currentUser.id)
-                .in('status', ['reviewer_approved', 'reviewer_rejected', 'admin_approved', 'admin_rejected'])
-                .not('reviewed_at', 'is', null)  // Only get items that have been reviewed
-                .order('reviewed_at', { ascending: false }),
-
-            // Item code requests reviewed by this reviewer
-            supabase.from('item_code_requests')
-                .select(`
-                    *,
-                    created_by_user:users!item_code_requests_created_by_fkey(username, email),
-                    project:classification_projects(project_name)
-                `)
-                .eq('reviewed_by', currentUser.id)
-                .in('status', ['reviewer_approved', 'reviewer_rejected', 'admin_approved', 'admin_rejected'])
-                .not('reviewed_at', 'is', null)  // Only get items that have been reviewed
-                .order('reviewed_at', { ascending: false }),
-
-            // Standard value requests reviewed by this reviewer
-            supabase.from('standard_value_requests')
-                .select(`
-                    *,
-                    created_by_user:users!standard_value_requests_created_by_fkey(username, email),
-                    project:classification_projects(project_name)
-                `)
-                .eq('reviewed_by', currentUser.id)
-                .in('status', ['reviewer_approved', 'reviewer_rejected', 'admin_approved', 'admin_rejected'])
-                .not('reviewed_at', 'is', null)  // Only get items that have been reviewed
-                .order('reviewed_at', { ascending: false }),
-
-            // Combination requests reviewed by this reviewer
-            supabase.from('combination_requests')
-                .select(`
-                    *,
-                    created_by_user:users!combination_requests_created_by_fkey(username, email),
-                    project:classification_projects(project_name)
-                `)
-                .eq('reviewed_by', currentUser.id)
-                .in('status', ['reviewer_approved', 'reviewer_rejected', 'admin_approved', 'admin_rejected'])
-                .not('reviewed_at', 'is', null)  // Only get items that have been reviewed
-                .order('reviewed_at', { ascending: false })
-        ]);
-
-        console.log('=== QUERY RESULTS ===');
-        console.log('Projects query result:', reviewedProjects);
-        console.log('Item codes query result:', reviewedItemCodes);
-        console.log('Standard values query result:', reviewedStandardValues);
-        console.log('Combinations query result:', reviewedCombinations);
-
-        console.log('=== DATA COUNTS ===');
-        console.log('Projects:', reviewedProjects.data?.length || 0);
-        console.log('Item codes:', reviewedItemCodes.data?.length || 0);
-        console.log('Standard values:', reviewedStandardValues.data?.length || 0);
-        console.log('Combinations:', reviewedCombinations.data?.length || 0);
-
-        // Check for errors
-        if (reviewedProjects.error) console.error('Projects query error:', reviewedProjects.error);
-        if (reviewedItemCodes.error) console.error('Item codes query error:', reviewedItemCodes.error);
-        if (reviewedStandardValues.error) console.error('Standard values query error:', reviewedStandardValues.error);
-        if (reviewedCombinations.error) console.error('Combinations query error:', reviewedCombinations.error);
-
-        // Combine all reviewed items
-        const allReviewedItems = [
-            ...(reviewedProjects.data || []).map(p => ({
-                ...p,
-                type: 'project',
-                title: p.project_name,
-                subtitle: `${p.division_code}-${p.section_code}-${p.detailed_section_code}-${p.item_code}`,
-                creator_name: p.creator?.username,
-                date: p.reviewed_at,
-                my_action: p.status.startsWith('reviewer_') ? p.status : (p.status.includes('approved') ? 'reviewer_approved' : 'reviewer_rejected'),
-                final_status: p.status
-            })),
-            ...(reviewedItemCodes.data || []).map(r => ({
-                ...r,
-                type: 'code',
-                title: r.item_code || 'Item Code Request',
-                subtitle: r.project?.project_name || 'Unknown Project',
-                creator_name: r.created_by_user?.username,
-                date: r.reviewed_at,
-                my_action: r.status.startsWith('reviewer_') ? r.status : (r.status.includes('approved') ? 'reviewer_approved' : 'reviewer_rejected'),
-                final_status: r.status
-            })),
-            ...(reviewedStandardValues.data || []).map(r => ({
-                ...r,
-                type: 'value',
-                title: `Add Value: ${r.new_value}`,
-                subtitle: `Attribute: ${r.attribute_name}`,
-                creator_name: r.created_by_user?.username,
-                date: r.reviewed_at,
-                my_action: r.status.startsWith('reviewer_') ? r.status : (r.status.includes('approved') ? 'reviewer_approved' : 'reviewer_rejected'),
-                final_status: r.status
-            })),
-            ...(reviewedCombinations.data || []).map(r => ({
-                ...r,
-                type: 'block',
-                title: 'Block Combination',
-                subtitle: r.project?.project_name || 'Unknown Project',
-                creator_name: r.created_by_user?.username,
-                date: r.reviewed_at,
-                my_action: r.status.startsWith('reviewer_') ? r.status : (r.status.includes('approved') ? 'reviewer_approved' : 'reviewer_rejected'),
-                final_status: r.status
-            }))
-        ];
-
-        console.log('=== PROCESSED DATA ===');
-        console.log('Total reviewed items:', allReviewedItems.length);
-        console.log('Sample items:', allReviewedItems.slice(0, 3));
-
-        // Check for any null dates that might cause issues
-        if (allReviewedItems.length > 0) {
-            const itemsWithNullDates = allReviewedItems.filter(item => !item.date);
-            if (itemsWithNullDates.length > 0) {
-                console.warn('Items with null dates found:', itemsWithNullDates);
-            }
-        }
-
-        // Add a test message if we have no data but expect some
-        if (allReviewedItems.length === 0) {
-            console.log('No reviewed items found. This could be because:');
-            console.log('1. The reviewer has not reviewed any items yet');
-            console.log('2. The items do not have status: reviewer_approved/rejected/admin_approved/rejected');
-            console.log('3. The items do not have reviewed_by = currentUser.id');
-            console.log('4. The reviewed_at field is null');
-            console.log('5. There might be a database connection issue');
-        }
-
-        // Store globally for filtering
-        window.allReviewedItems = allReviewedItems;
-
-        // Update summary stats
-        console.log('Updating summary stats...');
-        updateHistorySummary(allReviewedItems);
-
-        // Display all reviewed items
-        console.log('Displaying reviewer history...');
-        displayReviewerHistory(allReviewedItems);
-
-        console.log('=== REVIEWER HISTORY LOAD COMPLETE ===');
-
-    } catch (error) {
-        console.error('Error loading reviewer history:', error);
-        const container = document.getElementById('reviewer-history-container');
-        container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading review history</div>';
-    }
-}
-
-function updateHistorySummary(items) {
-    const approved = items.filter(item => item.my_action === 'reviewer_approved').length;
-    const rejected = items.filter(item => item.my_action === 'reviewer_rejected').length;
-    const total = items.length;
-
-    document.getElementById('history-approved-count').textContent = approved;
-    document.getElementById('history-rejected-count').textContent = rejected;
-    document.getElementById('history-total-count').textContent = total;
-}
-
-function displayReviewerHistory(items) {
-    console.log('=== DISPLAYING REVIEWER HISTORY ===');
-    console.log('Items received:', items.length);
-    console.log('Container element:', document.getElementById('reviewer-history-container'));
-    
-    const container = document.getElementById('reviewer-history-container');
-    
-    if (!container) {
-        console.error('ERROR: reviewer-history-container not found!');
-        return;
-    }
-    
-    container.innerHTML = '';
-    console.log('Container cleared');
-
-    if (items.length === 0) {
-        console.log('No items to display, showing empty message');
-        container.innerHTML = `
-            <div class="text-center text-gray-500 py-12">
-                <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <p class="text-lg">No Review History</p>
-                <p class="text-sm">You haven't reviewed any items yet</p>
-                <p class="text-xs text-gray-400 mt-2">Debug: Container found but no items to display</p>
-            </div>
-        `;
-        return;
-    }
-
-    // Group by action type
-    const approvedItems = items.filter(item => item.my_action === 'reviewer_approved');
-    const rejectedItems = items.filter(item => item.my_action === 'reviewer_rejected');
-    
-    console.log('Approved items:', approvedItems.length);
-    console.log('Rejected items:', rejectedItems.length);
-
-    // Display approved section
-    if (approvedItems.length > 0) {
-        const approvedSection = document.createElement('div');
-        approvedSection.className = 'mb-8';
-        approvedSection.innerHTML = `
-            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-6">
-                <h3 class="text-lg font-semibold text-green-800 mb-2 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    ✅ ITEMS I APPROVED (${approvedItems.length})
-                </h3>
-                <p class="text-sm text-green-700">Items you reviewed and approved</p>
-            </div>
-            <div id="approved-history-container" class="space-y-4"></div>
-        `;
-        container.appendChild(approvedSection);
-
-        const approvedContainer = document.getElementById('approved-history-container');
-        approvedItems.forEach(item => {
-            approvedContainer.appendChild(createHistoryCard(item));
-        });
-    }
-
-    // Display rejected section
-    if (rejectedItems.length > 0) {
-        const rejectedSection = document.createElement('div');
-        rejectedSection.className = 'mb-8';
-        rejectedSection.innerHTML = `
-            <div class="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-4 mb-6">
-                <h3 class="text-lg font-semibold text-red-800 mb-2 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                    ❌ ITEMS I REJECTED (${rejectedItems.length})
-                </h3>
-                <p class="text-sm text-red-700">Items you reviewed and rejected</p>
-            </div>
-            <div id="rejected-history-container" class="space-y-4"></div>
-        `;
-        container.appendChild(rejectedSection);
-
-        const rejectedContainer = document.getElementById('rejected-history-container');
-        rejectedItems.forEach(item => {
-            rejectedContainer.appendChild(createHistoryCard(item));
-        });
-    }
-    
-    console.log('=== DISPLAY COMPLETE ===');
-    console.log('Final container HTML length:', container.innerHTML.length);
-    console.log('Container visibility check:', {
-        display: getComputedStyle(container).display,
-        visibility: getComputedStyle(container).visibility,
-        opacity: getComputedStyle(container).opacity,
-        height: getComputedStyle(container).height
-    });
-    
-    // Force visibility to ensure it's not hidden by CSS
-    container.style.display = 'block';
-    container.style.visibility = 'visible';
-    container.style.opacity = '1';
-}
-
-function createHistoryCard(item) {
-    const card = document.createElement('div');
-    card.className = 'bg-white border rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow border-l-4 ' + 
-        (item.my_action === 'reviewer_approved' ? 'border-l-green-500' : 'border-l-red-500');
-    
-    const typeInfo = {
-        'project': { icon: '📋', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
-        'code': { icon: '🏷️', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
-        'value': { icon: '⭐', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
-        'block': { icon: '🚫', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
-    };
-
-    const info = typeInfo[item.type] || typeInfo['code'];
-    
-    card.innerHTML = `
-        <div class="flex justify-between items-start mb-3">
-            <div class="flex-1">
-                <div class="flex items-center space-x-2 mb-2">
-                    <span class="text-lg">${info.icon}</span>
-                    <span class="px-2 py-1 rounded text-xs font-medium ${info.bgClass}">
-                        ${info.label}
-                    </span>
-                    <span class="px-2 py-1 rounded text-xs font-medium ${
-                        item.my_action === 'reviewer_approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }">
-                        MY ACTION: ${item.my_action === 'reviewer_approved' ? 'APPROVED' : 'REJECTED'}
-                    </span>
-                    <span class="px-2 py-1 rounded text-xs font-medium ${
-                        item.final_status.includes('approved') ? 'bg-green-100 text-green-800' : 
-                        item.final_status.includes('rejected') ? 'bg-red-100 text-red-800' : 
-                        'bg-yellow-100 text-yellow-800'
-                    }">
-                        FINAL: ${item.final_status.replace('_', ' ').toUpperCase()}
-                    </span>
-                </div>
-                <h4 class="font-semibold text-gray-900">${item.title}</h4>
-                <p class="text-sm text-gray-600">${item.subtitle}</p>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm bg-gray-50 p-3 rounded">
-            <div>
-                <span class="font-medium text-gray-600">Created by:</span>
-                <p>${item.creator_name || 'Unknown'}</p>
-            </div>
-            <div>
-                <span class="font-medium text-gray-600">My Review Date:</span>
-                <p>${new Date(item.date).toLocaleDateString()}</p>
-            </div>
-            <div>
-                <span class="font-medium text-gray-600">Request ID:</span>
-                <p class="font-mono text-xs">${item.id}</p>
-            </div>
-        </div>
-
-        ${(item.reviewer_comments || item.review_comments) ? `
-        <div class="mt-4 p-3 bg-blue-50 rounded border-l-4 border-blue-200">
-            <span class="font-medium text-gray-600">My Comments:</span>
-            <p class="text-sm text-gray-800 mt-1">${item.reviewer_comments || item.review_comments}</p>
-        </div>
-        ` : ''}
-    `;
-    
-    return card;
-}
-
-async function applyHistoryFilters() {
-    // Use the new comprehensive search function instead
-    searchReviewerHistory();
 }
 
 // ===== INITIALIZATION =====
@@ -5369,820 +5242,6 @@ async function initializeApp() {
 }
 
 // Start the app when page loads
-// ===== SEARCH FUNCTIONS =====
-
-// Store original data for filtering
-window.originalPendingRequests = [];
-window.originalReviewHistory = [];
-window.originalAdminRequests = [];
-
-function searchPendingRequests() {
-    const requestIdSearch = document.getElementById('pending-request-id-search').value.toLowerCase();
-    const projectIdSearch = document.getElementById('pending-project-search').value.toLowerCase();
-    const creatorSearch = document.getElementById('pending-creator-search').value.toLowerCase();
-    
-    if (!window.originalPendingRequests || window.originalPendingRequests.length === 0) {
-        console.log('No pending requests data to search');
-        return;
-    }
-
-    let filteredRequests = window.originalPendingRequests;
-
-    // Filter by request ID
-    if (requestIdSearch) {
-        filteredRequests = filteredRequests.filter(request => 
-            request.id.toString().toLowerCase().includes(requestIdSearch)
-        );
-    }
-
-    // Filter by project ID
-    if (projectIdSearch) {
-        filteredRequests = filteredRequests.filter(request => 
-            (request.project_id && request.project_id.toString().toLowerCase().includes(projectIdSearch)) ||
-            (request.project?.id && request.project.id.toString().toLowerCase().includes(projectIdSearch))
-        );
-    }
-
-    // Filter by creator
-    if (creatorSearch) {
-        filteredRequests = filteredRequests.filter(request => 
-            (request.created_by_user?.username && request.created_by_user.username.toLowerCase().includes(creatorSearch)) ||
-            (request.creator?.username && request.creator.username.toLowerCase().includes(creatorSearch)) ||
-            (request.creator_name && request.creator_name.toLowerCase().includes(creatorSearch))
-        );
-    }
-
-    // Update search results count
-    document.getElementById('pending-search-results').textContent = 
-        `Showing ${filteredRequests.length} of ${window.originalPendingRequests.length} requests`;
-
-    // Re-display the filtered results
-    displayFilteredPendingRequests(filteredRequests);
-}
-
-function displayFilteredPendingRequests(requests) {
-    const container = document.getElementById('pending-requests-container');
-    container.innerHTML = '';
-
-    if (requests.length === 0) {
-        container.innerHTML = `
-            <div class="text-center text-gray-500 py-12">
-                <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-                <p class="text-lg">No matching requests found</p>
-                <p class="text-sm">Try adjusting your search criteria</p>
-            </div>
-        `;
-        return;
-    }
-
-    // Group by type and display
-    const projects = requests.filter(r => r.type === 'project');
-    const itemCodes = requests.filter(r => r.type === 'code');
-    const standardValues = requests.filter(r => r.type === 'value');
-    const combinations = requests.filter(r => r.type === 'block');
-
-    // Display projects
-    if (projects.length > 0) {
-        const projectSection = document.createElement('div');
-        projectSection.innerHTML = `
-            <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4 mb-6">
-                <h3 class="text-lg font-semibold text-purple-800 mb-2">📋 Classification Projects (${projects.length})</h3>
-            </div>
-            <div id="filtered-projects-container" class="grid gap-4 mb-8"></div>
-        `;
-        container.appendChild(projectSection);
-
-        const projectsContainer = document.getElementById('filtered-projects-container');
-        projects.forEach(project => {
-            projectsContainer.appendChild(createSimpleReviewerCard(project));
-        });
-    }
-
-    // Display other types similarly...
-    if (itemCodes.length > 0) {
-        const itemCodesSection = document.createElement('div');
-        itemCodesSection.innerHTML = `
-            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-6">
-                <h3 class="text-lg font-semibold text-green-800 mb-2">🏷️ Item Code Requests (${itemCodes.length})</h3>
-            </div>
-            <div id="filtered-itemcodes-container" class="grid gap-4 mb-8"></div>
-        `;
-        container.appendChild(itemCodesSection);
-
-        const itemCodesContainer = document.getElementById('filtered-itemcodes-container');
-        itemCodes.forEach(request => {
-            itemCodesContainer.appendChild(createSimpleReviewerCard(request));
-        });
-    }
-}
-
-// Search functions for Pending Requests tab
-function searchPendingRequests() {
-    const requestIdSearch = document.getElementById('pending-request-id-search').value.toLowerCase();
-    const projectSearch = document.getElementById('pending-project-search').value.toLowerCase();
-    const creatorSearch = document.getElementById('pending-creator-search').value.toLowerCase();
-    
-    console.log('Searching pending requests:', { requestIdSearch, projectSearch, creatorSearch });
-    
-    if (!window.allPendingItems) {
-        console.log('No pending items data available - reloading pending requests');
-        loadPendingRequests();
-        return;
-    }
-    
-    let filteredItems = window.allPendingItems.filter(item => {
-        const requestIdMatch = !requestIdSearch || 
-            (item.id && item.id.toString().toLowerCase().includes(requestIdSearch));
-            
-        const projectMatch = !projectSearch || 
-            (item.id && item.id.toString().includes(projectSearch)) ||
-            (item.project_id && item.project_id.toString().includes(projectSearch)) ||
-            (item.project_name && item.project_name.toLowerCase().includes(projectSearch));
-            
-        const creatorMatch = !creatorSearch || 
-            (item.creator_name && item.creator_name.toLowerCase().includes(creatorSearch)) ||
-            (item.created_by_name && item.created_by_name.toLowerCase().includes(creatorSearch));
-            
-        return requestIdMatch && projectMatch && creatorMatch;
-    });
-    
-    console.log(`Filtered pending requests: ${window.allPendingItems.length} -> ${filteredItems.length}`);
-    
-    // Update search results display
-    document.getElementById('pending-search-results').textContent = 
-        `Showing ${filteredItems.length} of ${window.allPendingItems.length} requests`;
-    
-    // Store filtered items globally
-    window.filteredPendingItems = filteredItems;
-    
-    // Display filtered results directly
-    displayFilteredPendingRequests(filteredItems);
-}
-
-function displayFilteredPendingRequests(filteredItems) {
-    const container = document.getElementById('pending-requests-container');
-    container.innerHTML = '';
-
-    if (filteredItems.length === 0) {
-        container.innerHTML = `
-            <div class="text-center text-gray-500 py-12">
-                <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-                <p class="text-lg">No matching requests found</p>
-                <p class="text-sm">Try adjusting your search criteria</p>
-            </div>
-        `;
-        return;
-    }
-
-    // Group by type
-    const projects = filteredItems.filter(item => item.type === 'project');
-    const itemCodes = filteredItems.filter(item => item.type === 'code');
-    const standardValues = filteredItems.filter(item => item.type === 'value');
-    const combinations = filteredItems.filter(item => item.type === 'block');
-
-    // Display Projects Section
-    if (projects.length > 0) {
-        const projectsSection = document.createElement('div');
-        projectsSection.className = 'mb-8';
-        projectsSection.innerHTML = `
-            <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4 mb-6">
-                <h3 class="text-lg font-semibold text-purple-800 mb-2 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    📋 PROJECTS (${projects.length})
-                </h3>
-            </div>
-            <div id="filtered-projects-container" class="grid gap-4"></div>
-        `;
-        container.appendChild(projectsSection);
-
-        const projectsContainer = document.getElementById('filtered-projects-container');
-        projects.forEach(project => {
-            projectsContainer.appendChild(createSimpleReviewerCard({
-                ...project,
-                canReview: true
-            }));
-        });
-    }
-
-    // Display Item Codes Section
-    if (itemCodes.length > 0) {
-        const itemCodesSection = document.createElement('div');
-        itemCodesSection.className = 'mb-8';
-        itemCodesSection.innerHTML = `
-            <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-6">
-                <h3 class="text-lg font-semibold text-green-800 mb-2 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-                    </svg>
-                    🏷️ ITEM CODES (${itemCodes.length})
-                </h3>
-            </div>
-            <div id="filtered-itemcodes-container" class="grid gap-4"></div>
-        `;
-        container.appendChild(itemCodesSection);
-
-        const itemCodesContainer = document.getElementById('filtered-itemcodes-container');
-        itemCodes.forEach(request => {
-            itemCodesContainer.appendChild(createSimpleReviewerCard({
-                ...request,
-                canReview: true
-            }));
-        });
-    }
-
-    // Display Standard Values Section
-    if (standardValues.length > 0) {
-        const standardValuesSection = document.createElement('div');
-        standardValuesSection.className = 'mb-8';
-        standardValuesSection.innerHTML = `
-            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <h3 class="text-lg font-semibold text-blue-800 mb-2 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    ⭐ STANDARD VALUES (${standardValues.length})
-                </h3>
-            </div>
-            <div id="filtered-values-container" class="grid gap-4"></div>
-        `;
-        container.appendChild(standardValuesSection);
-
-        const standardValuesContainer = document.getElementById('filtered-values-container');
-        standardValues.forEach(request => {
-            standardValuesContainer.appendChild(createSimpleReviewerCard({
-                ...request,
-                canReview: true
-            }));
-        });
-    }
-
-    // Display Combinations Section
-    if (combinations.length > 0) {
-        const combinationsSection = document.createElement('div');
-        combinationsSection.className = 'mb-8';
-        combinationsSection.innerHTML = `
-            <div class="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-4 mb-6">
-                <h3 class="text-lg font-semibold text-red-800 mb-2 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636"></path>
-                    </svg>
-                    🚫 BLOCK COMBINATIONS (${combinations.length})
-                </h3>
-            </div>
-            <div id="filtered-combinations-container" class="grid gap-4"></div>
-        `;
-        container.appendChild(combinationsSection);
-
-        const combinationsContainer = document.getElementById('filtered-combinations-container');
-        combinations.forEach(request => {
-            combinationsContainer.appendChild(createSimpleReviewerCard({
-                ...request,
-                canReview: true
-            }));
-        });
-    }
-}
-
-function clearPendingSearch() {
-    document.getElementById('pending-request-id-search').value = '';
-    document.getElementById('pending-project-search').value = '';
-    document.getElementById('pending-creator-search').value = '';
-    document.getElementById('pending-search-results').textContent = '';
-    window.filteredPendingItems = null;
-    loadPendingRequests();
-}
-
-// Search functions for Reviewer History tab  
-function searchReviewerHistory() {
-    const requestIdSearch = document.getElementById('history-request-id-search').value.toLowerCase();
-    const projectSearch = document.getElementById('history-project-search').value.toLowerCase();
-    const creatorSearch = document.getElementById('history-creator-search').value.toLowerCase();
-    const statusFilter = document.getElementById('history-status-filter').value;
-    const typeFilter = document.getElementById('history-type-filter').value;
-    
-    console.log('Searching reviewer history:', { requestIdSearch, projectSearch, creatorSearch, statusFilter, typeFilter });
-    
-    if (!window.allReviewedItems) {
-        console.log('No reviewed items data available');
-        return;
-    }
-    
-    let filteredItems = window.allReviewedItems.filter(item => {
-        const requestIdMatch = !requestIdSearch || 
-            (item.id && item.id.toString().toLowerCase().includes(requestIdSearch));
-            
-        const projectMatch = !projectSearch || 
-            (item.id && item.id.toString().includes(projectSearch)) ||
-            (item.project_id && item.project_id.toString().includes(projectSearch)) ||
-            (item.project_name && item.project_name.toLowerCase().includes(projectSearch));
-            
-        const creatorMatch = !creatorSearch || 
-            (item.creator_name && item.creator_name.toLowerCase().includes(creatorSearch));
-            
-        const statusMatch = !statusFilter || item.my_action === statusFilter;
-        const typeMatch = !typeFilter || item.type === typeFilter;
-            
-        return requestIdMatch && projectMatch && creatorMatch && statusMatch && typeMatch;
-    });
-    
-    console.log(`Filtered reviewer history: ${window.allReviewedItems.length} -> ${filteredItems.length}`);
-    
-    // Update summary stats with filtered data
-    updateHistorySummary(filteredItems);
-    
-    // Display filtered results
-    displayReviewerHistory(filteredItems);
-}
-
-function clearHistorySearch() {
-    document.getElementById('history-request-id-search').value = '';
-    document.getElementById('history-project-search').value = '';
-    document.getElementById('history-creator-search').value = '';
-    document.getElementById('history-status-filter').value = '';
-    document.getElementById('history-type-filter').value = '';
-    
-    // Reset to show all items
-    if (window.allReviewedItems) {
-        updateHistorySummary(window.allReviewedItems);
-        displayReviewerHistory(window.allReviewedItems);
-    }
-}
-
-// Search functions for All Requests tab
-function searchAllRequests() {
-    const projectSearch = document.getElementById('all-project-search').value.toLowerCase();
-    const creatorSearch = document.getElementById('all-creator-search').value.toLowerCase();
-    const statusFilter = document.getElementById('status-filter').value;
-    const typeFilter = document.getElementById('type-filter').value;
-    const dateFilter = document.getElementById('date-filter').value;
-    
-    console.log('Searching all requests:', { projectSearch, creatorSearch, statusFilter, typeFilter, dateFilter });
-    
-    if (!window.allRequestsData) {
-        console.log('No all requests data available');
-        return;
-    }
-    
-    let filteredItems = window.allRequestsData.filter(item => {
-        const projectMatch = !projectSearch || 
-            (item.id && item.id.toString().includes(projectSearch)) ||
-            (item.project_id && item.project_id.toString().includes(projectSearch)) ||
-            (item.project_name && item.project_name.toLowerCase().includes(projectSearch));
-            
-        const creatorMatch = !creatorSearch || 
-            (item.creator_name && item.creator_name.toLowerCase().includes(creatorSearch)) ||
-            (item.created_by_name && item.created_by_name.toLowerCase().includes(creatorSearch));
-            
-        const statusMatch = !statusFilter || item.status === statusFilter;
-        const typeMatch = !typeFilter || item.type === typeFilter;
-        
-        // Date filtering logic
-        let dateMatch = true;
-        if (dateFilter && item.created_at) {
-            const itemDate = new Date(item.created_at);
-            const now = new Date();
-            
-            switch(dateFilter) {
-                case 'today':
-                    dateMatch = itemDate.toDateString() === now.toDateString();
-                    break;
-                case 'week':
-                    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                    dateMatch = itemDate >= weekAgo;
-                    break;
-                case 'month':
-                    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-                    dateMatch = itemDate >= monthAgo;
-                    break;
-                case 'quarter':
-                    const quarterAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-                    dateMatch = itemDate >= quarterAgo;
-                    break;
-            }
-        }
-            
-        return projectMatch && creatorMatch && statusMatch && typeMatch && dateMatch;
-    });
-    
-    console.log(`Filtered all requests: ${window.allRequestsData.length} -> ${filteredItems.length}`);
-    
-    // Store filtered data and reload
-    window.filteredAllRequestsData = filteredItems;
-    // TODO: Implement re-rendering for all requests tab
-}
-
-function clearAllRequestsSearch() {
-    document.getElementById('all-project-search').value = '';
-    document.getElementById('all-creator-search').value = '';
-    document.getElementById('status-filter').value = '';
-    document.getElementById('type-filter').value = '';
-    document.getElementById('date-filter').value = '';
-    
-    window.filteredAllRequestsData = null;
-    // TODO: Reload all requests tab
-}
-
-// ===== ADMIN SEARCH FUNCTIONS =====
-function searchAdminRequests() {
-    const requestIdSearch = document.getElementById('admin-request-id-search').value.toLowerCase();
-    const creatorSearch = document.getElementById('admin-creator-search').value.toLowerCase();
-    const reviewerSearch = document.getElementById('admin-reviewer-search').value.toLowerCase();
-    
-    console.log('Searching admin requests:', { requestIdSearch, creatorSearch, reviewerSearch });
-    
-    if (!window.originalAdminRequests) {
-        console.log('No admin requests data available');
-        return;
-    }
-    
-    let filteredRequests = window.originalAdminRequests.filter(request => {
-        const requestIdMatch = !requestIdSearch || 
-            (request.id && request.id.toString().toLowerCase().includes(requestIdSearch));
-            
-        const creatorMatch = !creatorSearch || 
-            (request.creator_name && request.creator_name.toLowerCase().includes(creatorSearch));
-            
-        const reviewerMatch = !reviewerSearch || 
-            (request.reviewer_name && request.reviewer_name.toLowerCase().includes(reviewerSearch));
-            
-        return requestIdMatch && creatorMatch && reviewerMatch;
-    });
-    
-    console.log(`Filtered admin requests: ${window.originalAdminRequests.length} -> ${filteredRequests.length}`);
-    
-    // Update search results display
-    document.getElementById('admin-search-results').textContent = 
-        `Showing ${filteredRequests.length} of ${window.originalAdminRequests.length} requests`;
-    
-    // Re-display filtered results
-    displayFilteredAdminRequests(filteredRequests);
-}
-
-function displayFilteredAdminRequests(requests) {
-    const container = document.getElementById('admin-panel-container');
-    container.innerHTML = '';
-
-    if (requests.length === 0) {
-        container.innerHTML = `
-            <div class="text-center text-gray-500 py-12">
-                <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-                <p class="text-lg">No matching requests found</p>
-                <p class="text-sm">Try adjusting your search criteria</p>
-            </div>
-        `;
-        return;
-    }
-
-    // Create admin pending section with filtered results
-    const adminPendingSection = document.createElement('div');
-    adminPendingSection.className = 'mb-8';
-    adminPendingSection.innerHTML = `
-        <div class="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4 mb-6">
-            <h3 class="text-lg font-semibold text-orange-800 mb-2 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                </svg>
-                ⏳ FILTERED ADMIN REQUESTS (${requests.length})
-            </h3>
-        </div>
-        <div id="filtered-admin-container" class="grid gap-4"></div>
-    `;
-    container.appendChild(adminPendingSection);
-
-    const adminContainer = document.getElementById('filtered-admin-container');
-    requests.forEach(item => {
-        adminContainer.appendChild(createDetailedAdminReviewCard(item));
-    });
-}
-
-function clearAdminSearch() {
-    document.getElementById('admin-request-id-search').value = '';
-    document.getElementById('admin-creator-search').value = '';
-    document.getElementById('admin-reviewer-search').value = '';
-    document.getElementById('admin-search-results').textContent = '';
-    
-    // Reset to show all admin requests
-    if (currentUser.role === 'admin') {
-        loadAdminPendingRequests();
-    }
-}
-
-// ===== DIAGNOSTIC FUNCTIONS FOR ADMIN =====
-async function fixItemCodeStatus(requestId) {
-    if (!confirm('This will update the item code request status to "admin_approved". Continue?')) {
-        return;
-    }
-    
-    try {
-        console.log('Fixing status for item code request:', requestId);
-        
-        const { error } = await supabase
-            .from('item_code_requests')
-            .update({
-                status: 'admin_approved'
-            })
-            .eq('id', requestId);
-        
-        if (error) {
-            console.error('Error fixing status:', error);
-            alert('Error fixing status: ' + error.message);
-        } else {
-            console.log('Status fixed successfully');
-            alert('Status updated successfully!');
-            
-            // Reload admin panel
-            loadAdminPendingRequests();
-        }
-    } catch (error) {
-        console.error('Error fixing status:', error);
-        alert('Error fixing status: ' + error.message);
-    }
-}
-
-async function showItemDetails(requestId) {
-    try {
-        const { data: item, error } = await supabase
-            .from('item_code_requests')
-            .select(`
-                *,
-                created_by_user:users!item_code_requests_created_by_fkey(username, email),
-                reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
-                project:classification_projects(project_name)
-            `)
-            .eq('id', requestId)
-            .single();
-        
-        if (error) {
-            console.error('Error fetching item details:', error);
-            alert('Error fetching details: ' + error.message);
-            return;
-        }
-        
-        const details = `
-Item Code Request Details:
-
-ID: ${item.id}
-Item Code: ${item.item_code || 'N/A'}
-Status: ${item.status}
-Project: ${item.project?.project_name || 'N/A'}
-Created by: ${item.created_by_user?.username || 'N/A'}
-Reviewed by: ${item.reviewed_by_user?.username || 'N/A'}
-Created: ${new Date(item.created_at).toLocaleString()}
-Reviewed: ${item.reviewed_at ? new Date(item.reviewed_at).toLocaleString() : 'N/A'}
-
-Description: ${item.description1 || 'N/A'}
-UOM: ${item.uom || 'N/A'}
-Country: ${item.country_of_origin || 'N/A'}
-
-This item appears to have been processed into final item codes but still shows as "reviewer_approved" status.
-        `;
-        
-        alert(details);
-    } catch (error) {
-        console.error('Error showing item details:', error);
-        alert('Error showing details: ' + error.message);
-    }
-}
-
-// ===== BATCH STATUS FIX FUNCTION =====
-async function batchFixAllStatuses() {
-    if (!confirm('This will update ALL item code requests that have been processed to final item codes to "admin_approved" status. Continue?')) {
-        return;
-    }
-    
-    try {
-        console.log('Starting batch status fix...');
-        
-        // Get all reviewer_approved item code requests
-        const { data: reviewerApprovedRequests, error: getError } = await supabase
-            .from('item_code_requests')
-            .select('id, item_code, project_id, combination_signature, status')
-            .eq('status', 'reviewer_approved');
-        
-        if (getError) {
-            console.error('Error fetching requests:', getError);
-            alert('Error fetching requests: ' + getError.message);
-            return;
-        }
-        
-        if (!reviewerApprovedRequests || reviewerApprovedRequests.length === 0) {
-            alert('No reviewer_approved item code requests found to fix.');
-            return;
-        }
-        
-        console.log('Found', reviewerApprovedRequests.length, 'reviewer_approved requests');
-        
-        // Get all existing final item codes
-        const { data: existingItemCodes, error: itemCodesError } = await supabase
-            .from('item_codes')
-            .select('item_code, project_id, combination_signature');
-        
-        if (itemCodesError) {
-            console.error('Error fetching existing item codes:', itemCodesError);
-            alert('Error fetching existing item codes: ' + itemCodesError.message);
-            return;
-        }
-        
-        // Create lookup sets
-        const existingSignatures = new Set();
-        const existingItemCodeNames = new Set();
-        
-        existingItemCodes.forEach(ic => {
-            if (ic.project_id && ic.combination_signature) {
-                existingSignatures.add(`${ic.project_id}-${ic.combination_signature}`);
-            }
-            if (ic.item_code) {
-                existingItemCodeNames.add(ic.item_code.toLowerCase());
-            }
-        });
-        
-        // Find requests that need fixing
-        const requestsToFix = reviewerApprovedRequests.filter(request => {
-            if (request.project_id && request.combination_signature) {
-                const signature = `${request.project_id}-${request.combination_signature}`;
-                if (existingSignatures.has(signature)) {
-                    return true;
-                }
-            }
-            
-            if (request.item_code && existingItemCodeNames.has(request.item_code.toLowerCase())) {
-                return true;
-            }
-            
-            return false;
-        });
-        
-        console.log('Found', requestsToFix.length, 'requests that need status fixing');
-        
-        if (requestsToFix.length === 0) {
-            alert('No requests found that need status fixing. All statuses are consistent.');
-            return;
-        }
-        
-        // Update all problematic requests
-        console.log('Updating requests:', requestsToFix.map(r => r.id));
-        
-        const updatePromises = requestsToFix.map(async (request) => {
-            try {
-                const { error } = await supabase
-                    .from('item_code_requests')
-                    .update({
-                        status: 'admin_approved'
-                        // Removed review_comments field in case it's causing issues
-                    })
-                    .eq('id', request.id);
-                
-                if (error) {
-                    console.error(`Failed to update request ${request.id}:`, error);
-                    return { error, requestId: request.id };
-                }
-                
-                console.log(`Successfully updated request ${request.id}`);
-                return { success: true, requestId: request.id };
-            } catch (err) {
-                console.error(`Exception updating request ${request.id}:`, err);
-                return { error: err, requestId: request.id };
-            }
-        });
-        
-        const results = await Promise.all(updatePromises);
-        
-        // Check for errors
-        const errors = results.filter(result => result.error);
-        const successes = results.filter(result => result.success);
-        
-        if (errors.length > 0) {
-            console.error('Update failures:', errors);
-            console.log('Update successes:', successes);
-            
-            // Log detailed error information
-            errors.forEach(e => {
-                console.error(`Detailed error for request ${e.requestId}:`, e.error);
-            });
-            
-            // Show detailed error information and manual solution
-            const errorDetails = errors.map(e => `Request ${e.requestId}: ${e.error.message || JSON.stringify(e.error)}`).join('\n');
-            
-            const manualSql = `-- STEP 1: Temporarily disable the duplicate check trigger
-ALTER TABLE item_code_requests DISABLE TRIGGER check_duplicate_before_request_insert;
-
--- STEP 2: Update the problematic statuses  
-UPDATE item_code_requests 
-SET status = 'admin_approved' 
-WHERE id IN (${errors.map(e => e.requestId).join(', ')})
-AND status = 'reviewer_approved';
-
--- STEP 3: Re-enable the trigger for normal operation
-ALTER TABLE item_code_requests ENABLE TRIGGER check_duplicate_before_request_insert;
-
--- STEP 4: Verify the updates worked
-SELECT id, status, item_code 
-FROM item_code_requests 
-WHERE id IN (${errors.map(e => e.requestId).join(', ')});
-            `;
-            
-            console.log('Manual SQL solution with trigger bypass:', manualSql);
-            
-            alert(`Fixed ${successes.length} requests successfully.\n\nFailed to fix ${errors.length} requests due to API restrictions.\n\n${errorDetails}\n\nManual SQL solution has been logged to console. You can run this directly in your database:\n\n${manualSql}`);
-        } else {
-            console.log('All updates successful');
-            alert(`Successfully fixed ${requestsToFix.length} item code request statuses!`);
-        }
-        
-        // Reload admin panel
-        loadAdminPendingRequests();
-        
-    } catch (error) {
-        console.error('Error in batch fix:', error);
-        alert('Error in batch fix: ' + error.message);
-    }
-}
-
-// ===== PROPER DUPLICATE HANDLING SOLUTION =====
-async function handleDuplicateRequests() {
-    if (!confirm('This will mark these item code requests as processed duplicates since they already exist as final item codes. This is the correct action. Continue?')) {
-        return;
-    }
-    
-    try {
-        console.log('Handling duplicate item code requests...');
-        
-        // Instead of updating to admin_approved, we should mark them as duplicates/rejected
-        // since they're triggering the duplicate prevention system
-        
-        const { data: reviewerApprovedRequests, error: getError } = await supabase
-            .from('item_code_requests')
-            .select('id, item_code, project_id, combination_signature, status')
-            .eq('status', 'reviewer_approved');
-        
-        if (getError) {
-            console.error('Error fetching requests:', getError);
-            alert('Error fetching requests: ' + getError.message);
-            return;
-        }
-        
-        if (!reviewerApprovedRequests || reviewerApprovedRequests.length === 0) {
-            alert('No reviewer_approved item code requests found.');
-            return;
-        }
-        
-        console.log('Processing', reviewerApprovedRequests.length, 'requests as handled duplicates');
-        
-        // Update these to a status that acknowledges they're duplicates
-        const updatePromises = reviewerApprovedRequests.map(async (request) => {
-            try {
-                // Use admin_rejected with clear reason instead of admin_approved
-                const { error } = await supabase
-                    .from('item_code_requests')
-                    .update({
-                        status: 'admin_rejected',
-                        review_comments: 'DUPLICATE: Item code already exists in final item codes table'
-                    })
-                    .eq('id', request.id);
-                
-                if (error) {
-                    console.error(`Failed to mark request ${request.id} as duplicate:`, error);
-                    return { error, requestId: request.id };
-                }
-                
-                console.log(`Successfully marked request ${request.id} as processed duplicate`);
-                return { success: true, requestId: request.id };
-            } catch (err) {
-                console.error(`Exception marking request ${request.id} as duplicate:`, err);
-                return { error: err, requestId: request.id };
-            }
-        });
-        
-        const results = await Promise.all(updatePromises);
-        const errors = results.filter(result => result.error);
-        const successes = results.filter(result => result.success);
-        
-        if (errors.length > 0) {
-            console.error('Some updates failed:', errors);
-            alert(`Marked ${successes.length} requests as duplicates.\n\n${errors.length} requests still failed. These may need manual database intervention.`);
-        } else {
-            console.log('All requests marked as duplicates successfully');
-            alert(`Successfully marked ${reviewerApprovedRequests.length} duplicate item code requests as processed!`);
-        }
-        
-        // Reload admin panel
-        loadAdminPendingRequests();
-        
-    } catch (error) {
-        console.error('Error handling duplicates:', error);
-        alert('Error handling duplicates: ' + error.message);
-    }
-}
-
-// ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', initializeApp);
 
 </script>
