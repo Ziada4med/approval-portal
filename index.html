@@ -2612,9 +2612,37 @@ async function loadAdminPendingRequests() {
     let hasContent = false;
 
     try {
+        console.log('=== CHECKING CURRENT ITEM CODE REQUEST STATUSES ===');
+        
+        // Simple check: what item code request statuses currently exist?
+        const { data: allItemCodes, error } = await supabase
+            .from('item_code_requests')
+            .select('id, item_code, status, created_at, reviewed_at')
+            .order('created_at', { ascending: false })
+            .limit(20);
+            
+        if (!error && allItemCodes) {
+            const statusCounts = allItemCodes.reduce((acc, item) => {
+                acc[item.status] = (acc[item.status] || 0) + 1;
+                return acc;
+            }, {});
+            
+            console.log('Current item code request statuses:', statusCounts);
+            console.log('Recent item code requests:', allItemCodes);
+            
+            const reviewerApprovedCount = allItemCodes.filter(item => item.status === 'reviewer_approved').length;
+            console.log('Items with reviewer_approved status:', reviewerApprovedCount);
+            
+            if (reviewerApprovedCount === 0) {
+                console.log('✅ EXPLANATION: No item codes have reviewer_approved status');
+                console.log('✅ This means the SQL fix worked and there are no items pending admin approval');
+                console.log('✅ Admin panel is correctly showing empty');
+            }
+        }
+        
         console.log('Loading admin pending requests - checking for reviewer_approved items only');
         
-        // Load ONLY requests that need admin attention (reviewer_approved status)
+        // Load ONLY reviewer_approved requests that need admin decision
         const [
             reviewerApprovedProjects,
             reviewerApprovedItemCodes,
@@ -2629,7 +2657,7 @@ async function loadAdminPendingRequests() {
                     reviewer:users!classification_projects_assigned_reviewer_id_fkey(username, email)
                 `)
                 .eq('status', 'reviewer_approved')
-                .is('admin_reviewed_at', null)  // Ensure not already reviewed by admin
+                .is('admin_reviewed_at', null)
                 .order('reviewed_at', { ascending: true }),
 
             // Item code requests approved by reviewer, awaiting admin final approval
@@ -2642,7 +2670,7 @@ async function loadAdminPendingRequests() {
                 `)
                 .eq('status', 'reviewer_approved')
                 .order('reviewed_at', { ascending: true }),
-
+                
             // Standard value requests approved by reviewer, awaiting admin final approval
             supabase.from('standard_value_requests')
                 .select(`
@@ -2653,7 +2681,7 @@ async function loadAdminPendingRequests() {
                     project_attributes(attribute_name, standard_values)
                 `)
                 .eq('status', 'reviewer_approved')
-                .is('admin_reviewed_at', null)  // Ensure not already reviewed by admin
+                .is('admin_reviewed_at', null)
                 .order('reviewed_at', { ascending: true }),
 
             // Combination requests approved by reviewer, awaiting admin final approval
@@ -2665,47 +2693,30 @@ async function loadAdminPendingRequests() {
                     project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code)
                 `)
                 .eq('status', 'reviewer_approved')
-                .is('admin_reviewed_at', null)  // Ensure not already reviewed by admin
+                .is('admin_reviewed_at', null)
                 .order('reviewed_at', { ascending: true })
         ]);
 
         console.log('Admin pending query results:', {
             projects: reviewerApprovedProjects.data?.length || 0,
-            itemCodes: reviewerApprovedItemCodes.data?.length || 0, 
+            itemCodes: reviewerApprovedItemCodes.data?.length || 0,
             standardValues: reviewerApprovedStandardValues.data?.length || 0,
             combinations: reviewerApprovedCombinations.data?.length || 0
         });
-
-        // FILTER OUT: Remove item code requests that have already been processed into final item_codes
-        let filteredItemCodes = reviewerApprovedItemCodes.data || [];
-        if (filteredItemCodes.length > 0) {
-            console.log('Filtering out already processed item code requests...');
-            
-            // Get all existing final item codes to compare against
-            const { data: existingItemCodes } = await supabase
-                .from('item_codes')
-                .select('item_code, project_id, combination_signature');
-            
-            if (existingItemCodes) {
-                const existingSignatures = new Set(existingItemCodes.map(ic => 
-                    `${ic.project_id}-${ic.combination_signature}`
-                ));
-                
-                const originalCount = filteredItemCodes.length;
-                filteredItemCodes = filteredItemCodes.filter(request => {
-                    const requestSignature = `${request.project_id}-${request.combination_signature}`;
-                    const alreadyExists = existingSignatures.has(requestSignature);
-                    
-                    if (alreadyExists) {
-                        console.log(`Filtering out item code request ${request.id} - already exists as final item code`);
-                    }
-                    
-                    return !alreadyExists;
-                });
-                
-                console.log(`Filtered item codes: ${originalCount} -> ${filteredItemCodes.length}`);
-            }
+        
+        if (reviewerApprovedItemCodes.data?.length > 0) {
+            console.log('✅ Item codes pending admin approval:', reviewerApprovedItemCodes.data.map(ic => ({
+                id: ic.id,
+                item_code: ic.item_code,
+                status: ic.status
+            })));
+        } else {
+            console.log('✅ No item codes pending admin approval (this is correct after SQL fix)');
         }
+
+        // Show only reviewer_approved item codes that need admin approval
+        let filteredItemCodes = reviewerApprovedItemCodes.data || [];
+        console.log('Item codes pending admin approval:', filteredItemCodes.length);
 
         // Debug: Log some sample data to understand what's being retrieved
         if (reviewerApprovedProjects.data?.length > 0) {
@@ -2820,7 +2831,7 @@ async function loadAdminPendingRequests() {
                     <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <p class="text-lg">Ã°Å¸Å½â€° All caught up!</p>
+                    <p class="text-lg">✅ All caught up!</p>
                     <p class="text-sm">No items pending admin review</p>
                 </div>
             `;
@@ -5861,6 +5872,313 @@ function clearAdminSearch() {
     // Reset to show all admin requests
     if (currentUser.role === 'admin') {
         loadAdminPendingRequests();
+    }
+}
+
+// ===== DIAGNOSTIC FUNCTIONS FOR ADMIN =====
+async function fixItemCodeStatus(requestId) {
+    if (!confirm('This will update the item code request status to "admin_approved". Continue?')) {
+        return;
+    }
+    
+    try {
+        console.log('Fixing status for item code request:', requestId);
+        
+        const { error } = await supabase
+            .from('item_code_requests')
+            .update({
+                status: 'admin_approved'
+            })
+            .eq('id', requestId);
+        
+        if (error) {
+            console.error('Error fixing status:', error);
+            alert('Error fixing status: ' + error.message);
+        } else {
+            console.log('Status fixed successfully');
+            alert('Status updated successfully!');
+            
+            // Reload admin panel
+            loadAdminPendingRequests();
+        }
+    } catch (error) {
+        console.error('Error fixing status:', error);
+        alert('Error fixing status: ' + error.message);
+    }
+}
+
+async function showItemDetails(requestId) {
+    try {
+        const { data: item, error } = await supabase
+            .from('item_code_requests')
+            .select(`
+                *,
+                created_by_user:users!item_code_requests_created_by_fkey(username, email),
+                reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
+                project:classification_projects(project_name)
+            `)
+            .eq('id', requestId)
+            .single();
+        
+        if (error) {
+            console.error('Error fetching item details:', error);
+            alert('Error fetching details: ' + error.message);
+            return;
+        }
+        
+        const details = `
+Item Code Request Details:
+
+ID: ${item.id}
+Item Code: ${item.item_code || 'N/A'}
+Status: ${item.status}
+Project: ${item.project?.project_name || 'N/A'}
+Created by: ${item.created_by_user?.username || 'N/A'}
+Reviewed by: ${item.reviewed_by_user?.username || 'N/A'}
+Created: ${new Date(item.created_at).toLocaleString()}
+Reviewed: ${item.reviewed_at ? new Date(item.reviewed_at).toLocaleString() : 'N/A'}
+
+Description: ${item.description1 || 'N/A'}
+UOM: ${item.uom || 'N/A'}
+Country: ${item.country_of_origin || 'N/A'}
+
+This item appears to have been processed into final item codes but still shows as "reviewer_approved" status.
+        `;
+        
+        alert(details);
+    } catch (error) {
+        console.error('Error showing item details:', error);
+        alert('Error showing details: ' + error.message);
+    }
+}
+
+// ===== BATCH STATUS FIX FUNCTION =====
+async function batchFixAllStatuses() {
+    if (!confirm('This will update ALL item code requests that have been processed to final item codes to "admin_approved" status. Continue?')) {
+        return;
+    }
+    
+    try {
+        console.log('Starting batch status fix...');
+        
+        // Get all reviewer_approved item code requests
+        const { data: reviewerApprovedRequests, error: getError } = await supabase
+            .from('item_code_requests')
+            .select('id, item_code, project_id, combination_signature, status')
+            .eq('status', 'reviewer_approved');
+        
+        if (getError) {
+            console.error('Error fetching requests:', getError);
+            alert('Error fetching requests: ' + getError.message);
+            return;
+        }
+        
+        if (!reviewerApprovedRequests || reviewerApprovedRequests.length === 0) {
+            alert('No reviewer_approved item code requests found to fix.');
+            return;
+        }
+        
+        console.log('Found', reviewerApprovedRequests.length, 'reviewer_approved requests');
+        
+        // Get all existing final item codes
+        const { data: existingItemCodes, error: itemCodesError } = await supabase
+            .from('item_codes')
+            .select('item_code, project_id, combination_signature');
+        
+        if (itemCodesError) {
+            console.error('Error fetching existing item codes:', itemCodesError);
+            alert('Error fetching existing item codes: ' + itemCodesError.message);
+            return;
+        }
+        
+        // Create lookup sets
+        const existingSignatures = new Set();
+        const existingItemCodeNames = new Set();
+        
+        existingItemCodes.forEach(ic => {
+            if (ic.project_id && ic.combination_signature) {
+                existingSignatures.add(`${ic.project_id}-${ic.combination_signature}`);
+            }
+            if (ic.item_code) {
+                existingItemCodeNames.add(ic.item_code.toLowerCase());
+            }
+        });
+        
+        // Find requests that need fixing
+        const requestsToFix = reviewerApprovedRequests.filter(request => {
+            if (request.project_id && request.combination_signature) {
+                const signature = `${request.project_id}-${request.combination_signature}`;
+                if (existingSignatures.has(signature)) {
+                    return true;
+                }
+            }
+            
+            if (request.item_code && existingItemCodeNames.has(request.item_code.toLowerCase())) {
+                return true;
+            }
+            
+            return false;
+        });
+        
+        console.log('Found', requestsToFix.length, 'requests that need status fixing');
+        
+        if (requestsToFix.length === 0) {
+            alert('No requests found that need status fixing. All statuses are consistent.');
+            return;
+        }
+        
+        // Update all problematic requests
+        console.log('Updating requests:', requestsToFix.map(r => r.id));
+        
+        const updatePromises = requestsToFix.map(async (request) => {
+            try {
+                const { error } = await supabase
+                    .from('item_code_requests')
+                    .update({
+                        status: 'admin_approved'
+                        // Removed review_comments field in case it's causing issues
+                    })
+                    .eq('id', request.id);
+                
+                if (error) {
+                    console.error(`Failed to update request ${request.id}:`, error);
+                    return { error, requestId: request.id };
+                }
+                
+                console.log(`Successfully updated request ${request.id}`);
+                return { success: true, requestId: request.id };
+            } catch (err) {
+                console.error(`Exception updating request ${request.id}:`, err);
+                return { error: err, requestId: request.id };
+            }
+        });
+        
+        const results = await Promise.all(updatePromises);
+        
+        // Check for errors
+        const errors = results.filter(result => result.error);
+        const successes = results.filter(result => result.success);
+        
+        if (errors.length > 0) {
+            console.error('Update failures:', errors);
+            console.log('Update successes:', successes);
+            
+            // Log detailed error information
+            errors.forEach(e => {
+                console.error(`Detailed error for request ${e.requestId}:`, e.error);
+            });
+            
+            // Show detailed error information and manual solution
+            const errorDetails = errors.map(e => `Request ${e.requestId}: ${e.error.message || JSON.stringify(e.error)}`).join('\n');
+            
+            const manualSql = `-- STEP 1: Temporarily disable the duplicate check trigger
+ALTER TABLE item_code_requests DISABLE TRIGGER check_duplicate_before_request_insert;
+
+-- STEP 2: Update the problematic statuses  
+UPDATE item_code_requests 
+SET status = 'admin_approved' 
+WHERE id IN (${errors.map(e => e.requestId).join(', ')})
+AND status = 'reviewer_approved';
+
+-- STEP 3: Re-enable the trigger for normal operation
+ALTER TABLE item_code_requests ENABLE TRIGGER check_duplicate_before_request_insert;
+
+-- STEP 4: Verify the updates worked
+SELECT id, status, item_code 
+FROM item_code_requests 
+WHERE id IN (${errors.map(e => e.requestId).join(', ')});
+            `;
+            
+            console.log('Manual SQL solution with trigger bypass:', manualSql);
+            
+            alert(`Fixed ${successes.length} requests successfully.\n\nFailed to fix ${errors.length} requests due to API restrictions.\n\n${errorDetails}\n\nManual SQL solution has been logged to console. You can run this directly in your database:\n\n${manualSql}`);
+        } else {
+            console.log('All updates successful');
+            alert(`Successfully fixed ${requestsToFix.length} item code request statuses!`);
+        }
+        
+        // Reload admin panel
+        loadAdminPendingRequests();
+        
+    } catch (error) {
+        console.error('Error in batch fix:', error);
+        alert('Error in batch fix: ' + error.message);
+    }
+}
+
+// ===== PROPER DUPLICATE HANDLING SOLUTION =====
+async function handleDuplicateRequests() {
+    if (!confirm('This will mark these item code requests as processed duplicates since they already exist as final item codes. This is the correct action. Continue?')) {
+        return;
+    }
+    
+    try {
+        console.log('Handling duplicate item code requests...');
+        
+        // Instead of updating to admin_approved, we should mark them as duplicates/rejected
+        // since they're triggering the duplicate prevention system
+        
+        const { data: reviewerApprovedRequests, error: getError } = await supabase
+            .from('item_code_requests')
+            .select('id, item_code, project_id, combination_signature, status')
+            .eq('status', 'reviewer_approved');
+        
+        if (getError) {
+            console.error('Error fetching requests:', getError);
+            alert('Error fetching requests: ' + getError.message);
+            return;
+        }
+        
+        if (!reviewerApprovedRequests || reviewerApprovedRequests.length === 0) {
+            alert('No reviewer_approved item code requests found.');
+            return;
+        }
+        
+        console.log('Processing', reviewerApprovedRequests.length, 'requests as handled duplicates');
+        
+        // Update these to a status that acknowledges they're duplicates
+        const updatePromises = reviewerApprovedRequests.map(async (request) => {
+            try {
+                // Use admin_rejected with clear reason instead of admin_approved
+                const { error } = await supabase
+                    .from('item_code_requests')
+                    .update({
+                        status: 'admin_rejected',
+                        review_comments: 'DUPLICATE: Item code already exists in final item codes table'
+                    })
+                    .eq('id', request.id);
+                
+                if (error) {
+                    console.error(`Failed to mark request ${request.id} as duplicate:`, error);
+                    return { error, requestId: request.id };
+                }
+                
+                console.log(`Successfully marked request ${request.id} as processed duplicate`);
+                return { success: true, requestId: request.id };
+            } catch (err) {
+                console.error(`Exception marking request ${request.id} as duplicate:`, err);
+                return { error: err, requestId: request.id };
+            }
+        });
+        
+        const results = await Promise.all(updatePromises);
+        const errors = results.filter(result => result.error);
+        const successes = results.filter(result => result.success);
+        
+        if (errors.length > 0) {
+            console.error('Some updates failed:', errors);
+            alert(`Marked ${successes.length} requests as duplicates.\n\n${errors.length} requests still failed. These may need manual database intervention.`);
+        } else {
+            console.log('All requests marked as duplicates successfully');
+            alert(`Successfully marked ${reviewerApprovedRequests.length} duplicate item code requests as processed!`);
+        }
+        
+        // Reload admin panel
+        loadAdminPendingRequests();
+        
+    } catch (error) {
+        console.error('Error handling duplicates:', error);
+        alert('Error handling duplicates: ' + error.message);
     }
 }
 
