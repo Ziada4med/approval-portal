@@ -75,18 +75,17 @@
                     to_email: 'yogesh.nadesan@nesmapartners.com',
                     to_name: 'Yogesh',
                     item_code: itemCodeData.item_code || requestData.item_code,
-                    request_id: requestData.id,
                     description1: requestData.description1 || '',
                     description2: requestData.description2 || '',
                     uom: requestData.uom || '',
                     country_of_origin: requestData.country_of_origin || '',
                     model_number: requestData.model_number || '',
+                    unit_price: requestData.unit_price || '',
+                    currency_code: requestData.currency_code || '',
+                    manufacturer: requestData.manufacturer || '',
                     project_name: requestData.project?.project_name || 'N/A',
                     admin_name: currentUser.username,
                     approval_date: new Date().toLocaleDateString(),
-                    csi_division_code: requestData.csi_division_code || '',
-                    additional_level: requestData.additional_level || '',
-                    combination_signature: requestData.combination_signature || '',
                     portal_link: window.location.origin + window.location.pathname
                 };
                 
@@ -2048,7 +2047,7 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                 </div>
                 <div class="mt-4 p-3 bg-red-100 border border-red-200 rounded">
                     <p class="text-red-800 text-sm">
-                        <strong>Warning:</strong> Approving this request will prevent users from generating item codes 
+                        <strong> Warning:</strong> Approving this request will prevent users from generating item codes 
                         using this exact combination of attribute values. This action cannot be easily undone.
                     </p>
                 </div>
@@ -2099,7 +2098,7 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        Approve
+                         Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
@@ -2109,7 +2108,7 @@ function updateModalActionButtons(type, itemData) {
             } else if (status === 'reviewer_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        You Approved This
+                         You Approved This
                     </span>
                 `;
             } else if (status === 'reviewer_rejected') {
@@ -2124,7 +2123,7 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        Approve (Status: ${status})
+                         Approve (Status: ${status})
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
@@ -2137,7 +2136,7 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        Final Approve
+                         Final Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
@@ -2147,7 +2146,7 @@ function updateModalActionButtons(type, itemData) {
             } else if (status === 'admin_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        Approved by You
+                         Approved by You
                     </span>
                 `;
             } else if (status === 'admin_rejected') {
@@ -2162,7 +2161,7 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        Final Approve (Status: ${status})
+                         Final Approve (Status: ${status})
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
@@ -2178,7 +2177,7 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        Approve
+                         Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
@@ -2188,7 +2187,7 @@ function updateModalActionButtons(type, itemData) {
             } else if (status === 'reviewer_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        You Approved This
+                         You Approved This
                     </span>
                 `;
             } else if (status === 'reviewer_rejected') {
@@ -2203,7 +2202,7 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        Final Approve
+                         Final Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
@@ -2213,7 +2212,7 @@ function updateModalActionButtons(type, itemData) {
             } else if (status === 'admin_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        Approved by You
+                         Approved by You
                     </span>
                 `;
             } else if (status === 'admin_rejected') {
@@ -2234,7 +2233,7 @@ function updateModalActionButtons(type, itemData) {
             buttonsHTML = `
                 <button onclick="submitCurrentReview('approve')" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                    Force Approve
+                     Force Approve
                 </button>
                 <button onclick="submitCurrentReview('reject')" 
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
@@ -2371,6 +2370,18 @@ async function reviewAdminRequest(type, requestId, decision) {
             
             console.log('Update response:', updateResponse);
             updateResult = { success: true, message: `Item code request ${decision}d successfully` };
+            
+            // ADDED: Call createItemCodeFromRequest if approved to set approved_by and approved_at fields
+            if (decision === 'approve') {
+                try {
+                    console.log('Setting final approval fields for approved item code...');
+                    await createItemCodeFromRequest(requestId);
+                    console.log('Final approval fields set successfully');
+                } catch (approvalError) {
+                    console.error('Error setting final approval fields:', approvalError);
+                    // Don't fail the approval if this fails
+                }
+            }
             
             // Send email notifications for item code decisions
             try {
@@ -3086,12 +3097,12 @@ function createDetailedAdminReviewCard(item) {
         <div class="flex space-x-2 mt-4">
             <button onclick="viewRequestDetails('${item.type}', ${item.id})" 
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                View Full Details
+                 View Full Details
             </button>
             ${item.priority === 'high' ? `
                 <button onclick="reviewAdminRequest('${item.type}', ${item.id}, 'approve')" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    Approve
+                     Approve
                 </button>
                 <button onclick="reviewAdminRequest('${item.type}', ${item.id}, 'reject')" 
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
@@ -3485,12 +3496,12 @@ function createSimpleReviewerCard(item) {
         <div class="flex space-x-2">
             <button onclick="openReviewModal('${item.type}', ${item.id})" 
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
-                Review Details
+                 Review Details
             </button>
             ${item.status === 'pending' || item.status === 'submitted' ? `
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'approve'); return false;" 
                         class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm">
-                    Approve
+                     Approve
                 </button>
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'reject'); return false;" 
                         class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm">
@@ -3498,7 +3509,7 @@ function createSimpleReviewerCard(item) {
                 </button>
             ` : `
                 <span class="px-3 py-2 bg-gray-100 text-gray-600 rounded text-sm">
-                    ${item.status === 'reviewer_approved' ? 'Approved' : 
+                    ${item.status === 'reviewer_approved' ? ' Approved' : 
                       item.status === 'reviewer_rejected' ? ' Rejected' : 
                       'Reviewed'}
                 </span>
@@ -3617,12 +3628,12 @@ function createDetailedReviewerCard(item) {
         <div class="flex space-x-2 mt-4">
             <button onclick="openReviewModal('${item.type}', ${item.id})" 
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                Review Details
+                 Review Details
             </button>
             ${item.status === 'pending' || item.status === 'submitted' ? `
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'approve'); return false;" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    Approve
+                     Approve
                 </button>
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'reject'); return false;" 
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
@@ -3630,7 +3641,7 @@ function createDetailedReviewerCard(item) {
                 </button>
             ` : `
                 <span class="px-4 py-2 bg-gray-100 text-gray-600 rounded-md text-sm font-medium">
-                    ${item.status === 'reviewer_approved' ? 'You Approved' : 
+                    ${item.status === 'reviewer_approved' ? ' You Approved' : 
                       item.status === 'reviewer_rejected' ? ' You Rejected' : 
                       'Reviewed'}
                 </span>
