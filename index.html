@@ -28,7 +28,7 @@
             try {
                 const statusClass = decision === 'approve' ? 'approved' : decision === 'reject' ? 'rejected' : 'forwarded';
                 const statusText = decision === 'approve' ? 'Approved' : decision === 'reject' ? 'Rejected' : 'Forwarded for Review';
-                const statusIcon = decision === 'approve' ? '✅' : decision === 'reject' ? '❌' : '📋';
+                const statusIcon = decision === 'approve' ? '' : decision === 'reject' ? '' : '';
                 
                 const templateParams = {
                     to_email: requestData.created_by_user?.email,
@@ -444,7 +444,7 @@ async function performAssignment(requestId, requestType) {
     try {
         let table;
         switch(requestType) {
-            case 'code': table = 'item_code_requests'; break;
+            case "code": table = "item_code_workflow"; break;
             case 'block': table = 'combination_requests'; break;
             case 'value': table = 'standard_value_requests'; break;
             default: throw new Error('Unknown request type');
@@ -497,11 +497,11 @@ async function loadItemRequestModal(type, id, title, content) {
         switch(type) {
             case 'code':
                 const { data: codeData, error: codeError } = await supabase
-                    .from('item_code_requests')
+                    .from("item_code_workflow")
                     .select(`
                         *,
-                        created_by_user:users!item_code_requests_created_by_fkey(username, email),
-                        reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
+                        created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                        reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
                         project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code)
                     `)
                     .eq('id', id)
@@ -813,22 +813,22 @@ async function openProjectReviewModal(projectId) {
                         <div class="flex flex-col space-y-1">
                             <div class="csi-path-item">
                                 <span class="font-bold">${project.division_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${project.division_description || 'Division Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${project.section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${project.section_description || 'Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${project.detailed_section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${project.detailed_section_description || 'Detailed Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${project.item_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${project.item_description || 'Item Description'}</span>
                             </div>
                         </div>
@@ -945,11 +945,11 @@ async function openItemReviewModal(type, id) {
         let query, table;
         switch(type) {
             case 'code':
-                table = 'item_code_requests';
+                table = 'item_code_workflow';
                 query = supabase.from(table).select(`
                     *,
-                    created_by_user:users!item_code_requests_created_by_fkey(username, email),
-                    reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
+                    created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                    reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
                     project:classification_projects(project_name)
                 `);
                 break;
@@ -1292,7 +1292,7 @@ function createAdminProjectReviewCard(project) {
             <div class="flex-1">
                 <h4 class="text-lg font-medium text-gray-900">${project.project_name}</h4>
                 <p class="text-sm text-gray-600 mt-1">
-                    ${project.division_code} ↔️ ${project.section_code} ↔️ ${project.detailed_section_code} ↔️ ${project.item_code}
+                    ${project.division_code}  ${project.section_code}  ${project.detailed_section_code}  ${project.item_code}
                 </p>
                 ${project.additional_level_value ? `<p class="text-sm text-purple-600 mt-1">Additional Level: ${project.additional_level_value}</p>` : ''}
             </div>
@@ -1434,11 +1434,11 @@ async function viewRequestDetails(type, requestId) {
         // Get request details based on type
         if (type === 'code') {
             const { data, error } = await supabase
-                .from('item_code_requests')
+                .from("item_code_workflow")
                 .select(`
                     *,
-                    created_by_user:users!item_code_requests_created_by_fkey(username, email),
-                    reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
+                    created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                    reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
                     classification_projects (
                         id, project_name, division_code, section_code, 
                         detailed_section_code, item_code, additional_level_name, 
@@ -1777,7 +1777,7 @@ async function viewRequestDetails(type, requestId) {
                     detailHTML += `
                         <div class="border border-orange-200 p-3 rounded bg-white">
                             <div class="font-medium text-orange-900 mb-2">${attr.attribute_name}</div>
-                            <div class="text-sm text-red-600 font-medium">🚫 Will be blocked: ${selectedValue ? selectedValue.name : 'None selected'}</div>
+                            <div class="text-sm text-red-600 font-medium"> Will be blocked: ${selectedValue ? selectedValue.name : 'None selected'}</div>
                         </div>
                     `;
                 });
@@ -1876,22 +1876,22 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                             <div class="flex flex-col space-y-1">
                                 <div class="csi-path-item">
                                     <span class="font-bold">${projectData.division_code || 'N/A'}</span>
-                                    <span class="csi-path-arrow">↔️</span>
+                                    <span class="csi-path-arrow"></span>
                                     <span class="text-xs opacity-90">${projectData.division_description || 'Division Description'}</span>
                                 </div>
                                 <div class="csi-path-item">
                                     <span class="font-bold">${projectData.section_code || 'N/A'}</span>
-                                    <span class="csi-path-arrow">↔️</span>
+                                    <span class="csi-path-arrow"></span>
                                     <span class="text-xs opacity-90">${projectData.section_description || 'Section Description'}</span>
                                 </div>
                                 <div class="csi-path-item">
                                     <span class="font-bold">${projectData.detailed_section_code || 'N/A'}</span>
-                                    <span class="csi-path-arrow">↔️</span>
+                                    <span class="csi-path-arrow"></span>
                                     <span class="text-xs opacity-90">${projectData.detailed_section_description || 'Detailed Section Description'}</span>
                                 </div>
                                 <div class="csi-path-item">
                                     <span class="font-bold">${projectData.item_code || 'N/A'}</span>
-                                    <span class="csi-path-arrow">↔️</span>
+                                    <span class="csi-path-arrow"></span>
                                     <span class="text-xs opacity-90">${projectData.item_description || 'Item Description'}</span>
                                 </div>
                             </div>
@@ -2033,7 +2033,7 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                             <div class="font-medium text-orange-900 mb-2">${attr.attribute_name} ${attr.is_mandatory ? '(Required)' : '(Optional)'}</div>
                             <div class="mt-2">
                                 <span class="bg-red-100 text-red-800 px-3 py-1 rounded font-medium">
-                                    🚫 WILL BE BLOCKED: ${selectedValue.name}
+                                     WILL BE BLOCKED: ${selectedValue.name}
                                 </span>
                             </div>
                         </div>
@@ -2048,7 +2048,7 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
                 </div>
                 <div class="mt-4 p-3 bg-red-100 border border-red-200 rounded">
                     <p class="text-red-800 text-sm">
-                        <strong>⚠️ Warning:</strong> Approving this request will prevent users from generating item codes 
+                        <strong>Warning:</strong> Approving this request will prevent users from generating item codes 
                         using this exact combination of attribute values. This action cannot be easily undone.
                     </p>
                 </div>
@@ -2099,23 +2099,23 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        ✅¦ Approve
+                        Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        ❌ Reject
+                         Reject
                     </button>
                 `;
             } else if (status === 'reviewer_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        ✅¦ You Approved This
+                        You Approved This
                     </span>
                 `;
             } else if (status === 'reviewer_rejected') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-red-100 text-red-800 rounded-md text-sm">
-                        ❌ You Rejected This
+                         You Rejected This
                     </span>
                 `;
             } else {
@@ -2124,11 +2124,11 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        ✅¦ Approve (Status: ${status})
+                        Approve (Status: ${status})
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        ❌ Reject (Status: ${status})
+                         Reject (Status: ${status})
                     </button>
                 `;
             }
@@ -2137,23 +2137,23 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        ✅¦ Final Approve
+                        Final Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        ❌ Final Reject
+                         Final Reject
                     </button>
                 `;
             } else if (status === 'admin_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        ✅¦ Approved by You
+                        Approved by You
                     </span>
                 `;
             } else if (status === 'admin_rejected') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-red-100 text-red-800 rounded-md text-sm">
-                        ❌ Rejected by You
+                         Rejected by You
                     </span>
                 `;
             } else {
@@ -2162,11 +2162,11 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        ✅¦ Final Approve (Status: ${status})
+                        Final Approve (Status: ${status})
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        ❌ Final Reject (Status: ${status})
+                         Final Reject (Status: ${status})
                     </button>
                 `;
             }
@@ -2178,23 +2178,23 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        ✅¦ Approve
+                        Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        ❌ Reject
+                         Reject
                     </button>
                 `;
             } else if (status === 'reviewer_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        ✅¦ You Approved This
+                        You Approved This
                     </span>
                 `;
             } else if (status === 'reviewer_rejected') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-red-100 text-red-800 rounded-md text-sm">
-                        ❌ You Rejected This
+                         You Rejected This
                     </span>
                 `;
             }
@@ -2203,23 +2203,23 @@ function updateModalActionButtons(type, itemData) {
                 buttonsHTML = `
                     <button onclick="submitCurrentReview('approve')" 
                             class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                        ✅¦ Final Approve
+                        Final Approve
                     </button>
                     <button onclick="submitCurrentReview('reject')" 
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                        ❌ Final Reject
+                         Final Reject
                     </button>
                 `;
             } else if (status === 'admin_approved') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-green-100 text-green-800 rounded-md text-sm">
-                        ✅¦ Approved by You
+                        Approved by You
                     </span>
                 `;
             } else if (status === 'admin_rejected') {
                 buttonsHTML = `
                     <span class="px-4 py-2 bg-red-100 text-red-800 rounded-md text-sm">
-                        ❌ Rejected by You
+                         Rejected by You
                     </span>
                 `;
             }
@@ -2234,11 +2234,11 @@ function updateModalActionButtons(type, itemData) {
             buttonsHTML = `
                 <button onclick="submitCurrentReview('approve')" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
-                    ✅¦ Force Approve
+                    Force Approve
                 </button>
                 <button onclick="submitCurrentReview('reject')" 
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
-                    ❌ Force Reject
+                     Force Reject
                 </button>
                 <div class="text-xs text-gray-500 mt-1">Status: ${status} | Role: ${userRole}</div>
             `;
@@ -2337,7 +2337,7 @@ async function reviewAdminRequest(type, requestId, decision) {
         } else if (type === 'code') {
             console.log('Processing item code request:', requestId);
             const { data: beforeUpdate, error: fetchError } = await supabase
-                .from('item_code_requests')
+                .from("item_code_workflow")
                 .select('*')
                 .eq('id', requestId)
                 .single();
@@ -2351,14 +2351,15 @@ async function reviewAdminRequest(type, requestId, decision) {
             
             const updateData = {
                 status: decision === 'approve' ? 'admin_approved' : 'admin_rejected',
-                review_comments: comments,
-                reviewed_at: new Date().toISOString()
+                admin_comments: comments,
+                admin_reviewed_by: currentUser.id,
+                admin_reviewed_at: new Date().toISOString()
             };
             
             console.log('Updating item code request with:', updateData);
             
             const { data: updateResponse, error: updateError } = await supabase
-                .from('item_code_requests')
+                .from("item_code_workflow")
                 .update(updateData)
                 .eq('id', requestId)
                 .select();
@@ -2375,10 +2376,10 @@ async function reviewAdminRequest(type, requestId, decision) {
             try {
                 // Get request details with creator information
                 const { data: requestData, error: fetchError } = await supabase
-                    .from('item_code_requests')
+                    .from("item_code_workflow")
                     .select(`
                         *,
-                        created_by_user:users!item_code_requests_created_by_fkey(username, email),
+                        created_by_user:users!item_code_workflow_created_by_fkey(username, email),
                         project:classification_projects(project_name)
                     `)
                     .eq('id', requestId)
@@ -2701,22 +2702,22 @@ async function loadAdminPendingRequests() {
                 .order('reviewed_at', { ascending: true }),
 
             // Item code requests pending admin review
-            supabase.from('item_code_requests')
+            supabase.from("item_code_workflow")
                 .select(`
                     *,
-                    created_by_user:users!item_code_requests_created_by_fkey(username, email),
-                    reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
+                    created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                    reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
                     project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description)
                 `)
                 .eq('status', 'pending')
                 .order('created_at', { ascending: false }),
 
             // Item code requests approved by reviewer
-            supabase.from('item_code_requests')
+            supabase.from("item_code_workflow")
                 .select(`
                     *,
-                    created_by_user:users!item_code_requests_created_by_fkey(username, email),
-                    reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
+                    created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                    reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
                     project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description)
                 `)
                 .eq('status', 'reviewer_approved')
@@ -2885,7 +2886,7 @@ async function loadAdminPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        📁 PENDING INITIAL REVIEW (${regularPriorityItems.length})
+                         PENDING INITIAL REVIEW (${regularPriorityItems.length})
                     </h3>
                     <p class="text-sm text-blue-700">These items are waiting for initial review and can be assigned to reviewers</p>
                 </div>
@@ -2926,25 +2927,25 @@ function createDetailedAdminReviewCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: '📁', 
+            icon: '', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: '🏷️', 
+            icon: '', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: '⚖️', 
+            icon: '', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: '🚫', 
+            icon: '', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -2977,22 +2978,22 @@ function createDetailedAdminReviewCard(item) {
                         <div class="flex flex-col space-y-1">
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.division_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.division_description || 'Division Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.section_description || 'Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.detailed_section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.detailed_section_description || 'Detailed Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.item_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.item_description || 'Item Description'}</span>
                             </div>
                         </div>
@@ -3003,22 +3004,22 @@ function createDetailedAdminReviewCard(item) {
                         <div class="flex flex-col space-y-1">
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.division_code || item.project?.division_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.project.division_description || item.project?.division_description || 'Division Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.section_code || item.project?.section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.project.section_description || item.project?.section_description || 'Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.detailed_section_code || item.project?.detailed_section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.project.detailed_section_description || item.project?.detailed_section_description || 'Detailed Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.item_code || item.project?.item_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.project.item_description || item.project?.item_description || 'Item Description'}</span>
                             </div>
                         </div>
@@ -3085,16 +3086,16 @@ function createDetailedAdminReviewCard(item) {
         <div class="flex space-x-2 mt-4">
             <button onclick="viewRequestDetails('${item.type}', ${item.id})" 
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                🔍 View Full Details
+                View Full Details
             </button>
             ${item.priority === 'high' ? `
                 <button onclick="reviewAdminRequest('${item.type}', ${item.id}, 'approve')" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    ✅¦ Approve
+                    Approve
                 </button>
                 <button onclick="reviewAdminRequest('${item.type}', ${item.id}, 'reject')" 
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    ❌ Reject
+                     Reject
                 </button>
             ` : `
                 <button onclick="assignReviewer(${item.id}, '${item.type}')" 
@@ -3173,12 +3174,12 @@ async function loadReviewerPendingRequests() {
         // Section 2: Load ONLY item code requests with status 'pending' assigned to this reviewer
         console.log('Loading item code requests pending review...');
         const { data: itemCodeRequests, error: itemCodeError } = await supabase
-            .from('item_code_requests')
+            .from('item_code_workflow')
             .select(`
                 id, item_code, status, created_at, uom, country_of_origin, 
-                model_number, description1, description2, review_comments,
-                created_by_user:created_by(username, email),
-                project:project_id(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description)
+                model_number, description1, description2, reviewer_comments,
+                created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description)
             `)
             .eq('reviewed_by', currentUser.id)
             .eq('status', 'pending')  // ONLY pending requests
@@ -3239,7 +3240,7 @@ async function loadReviewerPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        📁 PROJECTS AWAITING YOUR REVIEW (${assignedProjects.length})
+                         PROJECTS AWAITING YOUR REVIEW (${assignedProjects.length})
                     </h3>
                     <p class="text-sm text-purple-700">Classification projects submitted and waiting for your review decision</p>
                 </div>
@@ -3275,7 +3276,7 @@ async function loadReviewerPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                         </svg>
-                        🏷️ ITEM CODE REQUESTS AWAITING YOUR REVIEW (${itemCodeRequests.length})
+                         ITEM CODE REQUESTS AWAITING YOUR REVIEW (${itemCodeRequests.length})
                     </h3>
                     <p class="text-sm text-green-700">Item code requests assigned to you and waiting for your review decision</p>
                 </div>
@@ -3308,7 +3309,7 @@ async function loadReviewerPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        ⚖️ STANDARD VALUE REQUESTS AWAITING YOUR REVIEW (${standardValueRequests.length})
+                         STANDARD VALUE REQUESTS AWAITING YOUR REVIEW (${standardValueRequests.length})
                     </h3>
                     <p class="text-sm text-blue-700">Standard value requests assigned to you and waiting for your review decision</p>
                 </div>
@@ -3341,7 +3342,7 @@ async function loadReviewerPendingRequests() {
                         <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636"></path>
                         </svg>
-                        🚫 COMBINATION BLOCK REQUESTS AWAITING YOUR REVIEW (${combinationRequests.length})
+                         COMBINATION BLOCK REQUESTS AWAITING YOUR REVIEW (${combinationRequests.length})
                     </h3>
                     <p class="text-sm text-red-700">Combination block requests assigned to you and waiting for your review decision</p>
                 </div>
@@ -3391,10 +3392,10 @@ function createSimpleReviewerCard(item) {
     card.className = 'request-card bg-white border rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow border-l-4 border-l-blue-500';
     
     const typeInfo = {
-        'project': { icon: '📁', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
-        'code': { icon: '🏷️', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
-        'value': { icon: '⚖️', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
-        'block': { icon: '🚫', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
+        'project': { icon: '', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
+        'code': { icon: '', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
+        'value': { icon: '', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
+        'block': { icon: '', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
     };
 
     const info = typeInfo[item.type] || typeInfo['code'];
@@ -3423,22 +3424,22 @@ function createSimpleReviewerCard(item) {
                         <div class="flex flex-col space-y-1">
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.division_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.division_description || 'Division Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.section_description || 'Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.detailed_section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.detailed_section_description || 'Detailed Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.item_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.item_description || 'Item Description'}</span>
                             </div>
                         </div>
@@ -3449,22 +3450,22 @@ function createSimpleReviewerCard(item) {
                         <div class="flex flex-col space-y-1">
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.division_code || item.project?.division_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.project.division_description || item.project?.division_description || 'Division Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.section_code || item.project?.section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.project.section_description || item.project?.section_description || 'Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.detailed_section_code || item.project?.detailed_section_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.project.detailed_section_description || item.project?.detailed_section_description || 'Detailed Section Description'}</span>
                             </div>
                             <div class="csi-path-item">
                                 <span class="font-bold">${item.project.item_code || item.project?.item_code || 'N/A'}</span>
-                                <span class="csi-path-arrow">↔️</span>
+                                <span class="csi-path-arrow"></span>
                                 <span class="text-xs opacity-90">${item.project.item_description || item.project?.item_description || 'Item Description'}</span>
                             </div>
                         </div>
@@ -3484,21 +3485,21 @@ function createSimpleReviewerCard(item) {
         <div class="flex space-x-2">
             <button onclick="openReviewModal('${item.type}', ${item.id})" 
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
-                🔍 Review Details
+                Review Details
             </button>
             ${item.status === 'pending' || item.status === 'submitted' ? `
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'approve'); return false;" 
                         class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm">
-                    ✅¦ Approve
+                    Approve
                 </button>
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'reject'); return false;" 
                         class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm">
-                    ❌ Reject
+                     Reject
                 </button>
             ` : `
                 <span class="px-3 py-2 bg-gray-100 text-gray-600 rounded text-sm">
-                    ${item.status === 'reviewer_approved' ? '✅¦ Approved' : 
-                      item.status === 'reviewer_rejected' ? '❌ Rejected' : 
+                    ${item.status === 'reviewer_approved' ? 'Approved' : 
+                      item.status === 'reviewer_rejected' ? ' Rejected' : 
                       'Reviewed'}
                 </span>
             `}
@@ -3516,25 +3517,25 @@ function createDetailedReviewerCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: '📁', 
+            icon: '', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: '🏷️', 
+            icon: '', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: '⚖️', 
+            icon: '', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: '🚫', 
+            icon: '', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -3616,21 +3617,21 @@ function createDetailedReviewerCard(item) {
         <div class="flex space-x-2 mt-4">
             <button onclick="openReviewModal('${item.type}', ${item.id})" 
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                🔍 Review Details
+                Review Details
             </button>
             ${item.status === 'pending' || item.status === 'submitted' ? `
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'approve'); return false;" 
                         class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    ✅¦ Approve
+                    Approve
                 </button>
                 <button onclick="event.preventDefault(); reviewReviewerRequest('${item.type}', ${item.id}, 'reject'); return false;" 
                         class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                    ❌ Reject
+                     Reject
                 </button>
             ` : `
                 <span class="px-4 py-2 bg-gray-100 text-gray-600 rounded-md text-sm font-medium">
-                    ${item.status === 'reviewer_approved' ? '✅¦ You Approved' : 
-                      item.status === 'reviewer_rejected' ? '❌ You Rejected' : 
+                    ${item.status === 'reviewer_approved' ? 'You Approved' : 
+                      item.status === 'reviewer_rejected' ? ' You Rejected' : 
                       'Reviewed'}
                 </span>
             `}
@@ -3817,7 +3818,7 @@ async function claimRequest(type, requestId) {
         
         let table;
         switch(type) {
-            case 'code': table = 'item_code_requests'; break;
+            case "code": table = "item_code_workflow"; break;
             case 'value': table = 'standard_value_requests'; break;
             case 'block': table = 'combination_requests'; break;
             default: throw new Error('Unknown request type');
@@ -3883,9 +3884,9 @@ async function loadPendingItemRequests() {
         
         // Get assigned requests
         const [codeRequests, blockRequests, valueRequests] = await Promise.all([
-            supabase.from('item_code_requests').select(`
+            supabase.from("item_code_workflow").select(`
                 *, 
-                created_by_user:users!item_code_requests_created_by_fkey(username, email),
+                created_by_user:users!item_code_workflow_created_by_fkey(username, email),
                 project:classification_projects(project_name)
             `).eq('reviewed_by', currentUser.id).eq('status', 'pending').order('created_at', { ascending: false }),
             
@@ -3904,9 +3905,9 @@ async function loadPendingItemRequests() {
 
         // Get unassigned requests
         const [unassignedCodes, unassignedBlocks, unassignedValues] = await Promise.all([
-            supabase.from('item_code_requests').select(`
+            supabase.from("item_code_workflow").select(`
                 *, 
-                created_by_user:users!item_code_requests_created_by_fkey(username, email),
+                created_by_user:users!item_code_workflow_created_by_fkey(username, email),
                 project:classification_projects(project_name)
             `).is('reviewed_by', null).eq('status', 'pending').order('created_at', { ascending: false }),
             
@@ -4112,10 +4113,10 @@ async function loadUserItemRequests() {
         if (currentUser.role === 'reviewer') {
             // Load requests assigned to this reviewer
             const [codes, blocks, values] = await Promise.all([
-                supabase.from('item_code_requests').select(`
+                supabase.from('item_code_workflow').select(`
                     *,
-                    created_by_user:users!item_code_requests_created_by_fkey(username, email),
-                    reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
+                    created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                    reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
                     project:classification_projects(project_name)
                 `).eq('reviewed_by', currentUser.id).order('created_at', { ascending: false }),
                 
@@ -4140,10 +4141,10 @@ async function loadUserItemRequests() {
         } else if (currentUser.role === 'admin') {
             // Load all requests for admin
             const [codes, blocks, values] = await Promise.all([
-                supabase.from('item_code_requests').select(`
+                supabase.from('item_code_workflow').select(`
                     *,
-                    created_by_user:users!item_code_requests_created_by_fkey(username, email),
-                    reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
+                    created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                    reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
                     project:classification_projects(project_name)
                 `).order('created_at', { ascending: false }),
                 
@@ -4168,10 +4169,10 @@ async function loadUserItemRequests() {
         } else {
             // Load requests created by this user
             const [codes, blocks, values] = await Promise.all([
-                supabase.from('item_code_requests').select(`
+                supabase.from('item_code_workflow').select(`
                     *,
-                    created_by_user:users!item_code_requests_created_by_fkey(username, email),
-                    reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
+                    created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                    reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
                     project:classification_projects(project_name)
                 `).eq('created_by', currentUser.id).order('created_at', { ascending: false }),
                 
@@ -4300,12 +4301,12 @@ function displayAllRequests(requests) {
 
 function getTypeIcon(type) {
     const icons = {
-        project: '📁',
-        code: '🏷️',
-        block: '🚫',
-        value: '⚖️'
+        project: '',
+        code: '',
+        block: '',
+        value: ''
     };
-    return icons[type] || '🔍';
+    return icons[type] || '';
 }
 
 function createAllRequestCard(request) {
@@ -4524,10 +4525,10 @@ async function loadAdminAwaitingApproval() {
         // Load all types of requests that need admin approval
         const [codeRequests, blockRequests, valueRequests] = await Promise.all([
             // Item code requests pending admin approval
-            supabase.from('item_code_requests').select(`
+            supabase.from('item_code_workflow').select(`
                 *,
-                created_by_user:users!item_code_requests_created_by_fkey(username, email),
-                reviewed_by_user:users!item_code_requests_reviewed_by_fkey(username, email),
+                created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
                 project:classification_projects(project_name)
             `).in('status', ['reviewer_approved', 'pending']).order('created_at', { ascending: false }),
             
@@ -4692,92 +4693,31 @@ pendingContainer.appendChild(cardElement.firstElementChild);
 // ===== CREATE ITEM CODE FROM APPROVED REQUEST =====
 async function createItemCodeFromRequest(requestId) {
     try {
-        console.log('Creating item code from request ID:', requestId);
+        console.log('Finalizing item code approval for request ID:', requestId);
         
-        // Get the approved request details
-        const { data: request, error: fetchError } = await supabase
-            .from('item_code_requests')
-            .select('*')
-            .eq('id', requestId)
-            .single();
-            
-        if (fetchError) {
-            console.error('Error fetching request:', fetchError);
-            throw fetchError;
-        }
-        
-        if (!request) {
-            throw new Error('Request not found');
-        }
-        
-        console.log('Request data:', request);
-        
-        // Generate duplicate check hash
-        const hashInput = [
-            request.project_id || '',
-            JSON.stringify(request.attribute_selections || {}),
-            request.uom || '',
-            request.country_of_origin || '',
-            request.model_number || ''
-        ].join('|');
-        
-        // Simple hash function
-        let hash = 0;
-        for (let i = 0; i < hashInput.length; i++) {
-            const char = hashInput.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // Convert to 32-bit integer
-        }
-        const duplicateCheckHash = Math.abs(hash).toString(16);
-        
-        // Extract serial number from item code (last part after final dash)
-        let serialNumber = 1;
-        if (request.item_code) {
-            const parts = request.item_code.split('-');
-            const lastPart = parts[parts.length - 1];
-            if (!isNaN(lastPart)) {
-                serialNumber = parseInt(lastPart);
-            }
-        }
-        
-        // Create the item code entry
-        const itemCodeData = {
-            project_id: request.project_id,
-            csi_base_code: request.csi_division_code,
-            csi_description: null, // Will be populated by trigger if needed
-            additional_level: request.additional_level,
-            item_code: request.item_code,
-            description1: request.description1,
-            description2: request.description2,
-            combination_signature: request.combination_signature,
-            attribute_selections: request.attribute_selections,
-            uom: request.uom,
-            country_of_origin: request.country_of_origin,
-            model_number: request.model_number,
-            serial_number: serialNumber,
-            created_by: request.created_by,
-            status: 'approved',
+        // Since the record is already in item_code_workflow, we just update the final approval fields
+        const updateData = {
             approved_by: currentUser.id,
             approved_at: new Date().toISOString(),
-            duplicate_check_hash: duplicateCheckHash,
             erp_integrated: false
         };
         
-        console.log('Creating item code with data:', itemCodeData);
+        console.log('Updating item code workflow with final approval data:', updateData);
         
-        const { data: newItemCode, error: insertError } = await supabase
-            .from('item_codes')
-            .insert([itemCodeData])
+        const { data: updatedItemCode, error: updateError } = await supabase
+            .from('item_code_workflow')
+            .update(updateData)
+            .eq('id', requestId)
             .select()
             .single();
             
-        if (insertError) {
-            console.error('Error creating item code:', insertError);
-            throw insertError;
+        if (updateError) {
+            console.error('Error updating item code workflow:', updateError);
+            throw updateError;
         }
         
-        console.log('Item code created successfully:', newItemCode);
-        return newItemCode;
+        console.log('Item code workflow updated successfully:', updatedItemCode);
+        return updatedItemCode;
         
     } catch (error) {
         console.error('Error in createItemCodeFromRequest:', error);
@@ -4792,10 +4732,10 @@ async function submitReviewerReview(type, id, decision, comments) {
     
     switch(type) {
         case 'code':
-            table = 'item_code_requests';
+            table = 'item_code_workflow';
             updateData = {
                 status: newStatus,
-                review_comments: comments,
+                reviewer_comments: comments,
                 reviewed_by: currentUser.id,
                 reviewed_at: new Date().toISOString()
             };
@@ -4849,7 +4789,7 @@ async function submitReviewerReview(type, id, decision, comments) {
             if (!fetchError && requestData) {
                 // Add request type for display
                 requestData.request_type = {
-                    'item_code_requests': 'Item Code Request',
+                    'item_code_workflow': 'Item Code Request',
                     'combination_requests': 'Block Combination Request', 
                     'standard_value_requests': 'Standard Value Request'
                 }[table];
@@ -4890,7 +4830,7 @@ async function submitReviewerReview(type, id, decision, comments) {
                 
                 if (!fetchError && requestData) {
                     const requestTypeName = {
-                        'item_code_requests': 'Item Code Request',
+                        'item_code_workflow': 'Item Code Request',
                         'combination_requests': 'Block Combination Request', 
                         'standard_value_requests': 'Standard Value Request'
                     }[table];
@@ -4989,11 +4929,12 @@ async function submitAdminReview(type, id, decision, comments) {
         
         switch(type) {
             case 'code':
-                table = 'item_code_requests';
+                table = 'item_code_workflow';
                 updateData = {
                     status: newStatus,
-                    review_comments: comments,
-                    reviewed_at: new Date().toISOString()
+                    admin_comments: comments,
+                    admin_reviewed_by: currentUser.id,
+                    admin_reviewed_at: new Date().toISOString()
                 };
                 break;
             case 'block':
@@ -5041,13 +4982,13 @@ async function submitAdminReview(type, id, decision, comments) {
             throw error;
         }
 
-        // ADDED: Handle item code creation for admin-approved item_code_requests
+        // ADDED: Handle item code finalization for admin-approved item_code_workflow requests
         let itemCodeData = null;
-        if (table === 'item_code_requests' && newStatus === 'admin_approved') {
-            console.log('Creating item code for admin-approved request...');
+        if (table === 'item_code_workflow' && newStatus === 'admin_approved') {
+            console.log('Finalizing item code for admin-approved request...');
             try {
                 itemCodeData = await createItemCodeFromRequest(id);
-                console.log('Item code created successfully for request:', id);
+                console.log('Item code finalized successfully for request:', id);
                 
                 // Send ERP integration notification to Yogesh
                 if (requestData) {
@@ -5065,7 +5006,7 @@ async function submitAdminReview(type, id, decision, comments) {
             if (requestData) {
                 // Add request type for display
                 requestData.request_type = {
-                    'item_code_requests': 'Item Code Request',
+                    'item_code_workflow': 'Item Code Request',
                     'combination_requests': 'Block Combination Request', 
                     'standard_value_requests': 'Standard Value Request'
                 }[table];
