@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSI Code Approval Portal</title>
+    <!-- Note: Tailwind CDN is used for development. For production, install as PostCSS plugin -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -157,6 +158,250 @@
             font-size: 14px;
             margin: 0 8px;
         }
+        
+        /* Workflow Dashboard Styles */
+        .workflow-chart {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 16px 0;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .workflow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            min-width: 120px;
+            margin: 0 8px;
+        }
+        
+        .workflow-milestone {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-bottom: 12px;
+            border: 3px solid;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .workflow-milestone:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .milestone-submitted {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-color: #d97706;
+            color: white;
+        }
+        
+        .milestone-reviewer-approved {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            border-color: #2563eb;
+            color: white;
+        }
+        
+        .milestone-reviewer-rejected {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            border-color: #dc2626;
+            color: white;
+        }
+        
+        .milestone-admin-approved {
+            background: linear-gradient(135deg, #34d399, #10b981);
+            border-color: #059669;
+            color: white;
+        }
+        
+        .milestone-admin-rejected {
+            background: linear-gradient(135deg, #fca5a5, #f87171);
+            border-color: #dc2626;
+            color: white;
+        }
+        
+        .milestone-erp-integrated {
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            border-color: #7c3aed;
+            color: white;
+        }
+        
+        .milestone-erp-pending {
+            background: linear-gradient(135deg, #fde047, #eab308);
+            border-color: #ca8a04;
+            color: white;
+        }
+        
+        .milestone-count {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .milestone-label {
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .workflow-arrow {
+            position: absolute;
+            top: 40px;
+            right: -20px;
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, #64748b, #94a3b8);
+            z-index: 1;
+        }
+        
+        .workflow-arrow::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid #64748b;
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+        }
+        
+        .workflow-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin-left: 40px;
+        }
+        
+        .workflow-branch-connector {
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(180deg, #64748b, #94a3b8);
+            position: relative;
+        }
+        
+        .workflow-branch-connector::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 20px;
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, #64748b, #94a3b8);
+        }
+        
+        .workflow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .workflow-section-title {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .workflow-tab-btn.active {
+            border-color: #3b82f6 !important;
+            color: #2563eb !important;
+            background-color: #dbeafe !important;
+        }
+        
+        .workflow-content {
+            min-height: 300px;
+        }
+        
+        .workflow-detail-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            padding: 24px;
+            z-index: 1000;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .workflow-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        /* Pending Requests Sub-tabs Styles */
+        .pending-subtab-btn {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .pending-subtab-btn:hover {
+            color: #374151;
+        }
+        
+        .pending-subtab-btn.active {
+            border-color: #3b82f6 !important;
+            color: #2563eb !important;
+        }
+        
+        .pending-subtab-content {
+            min-height: 400px;
+        }
+        
+        .request-type-badge {
+            display: inline-flex;
+            align-items: center;
+            px-2 py-1;
+            text-xs;
+            font-medium;
+            rounded-full;
+        }
+        
+        .badge-project {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .badge-item-code {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        .badge-standard-value {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-combination {
+            background-color: #fde2e8;
+            color: #be185d;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -243,24 +488,48 @@
 
         <!-- Dashboard Stats -->
         <div id="dashboard-stats" class="p-6 border-b bg-gray-50">
-            <h2 class="text-xl font-semibold mb-4">Dashboard Overview</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-yellow-500">
-                    <div class="text-2xl font-bold text-yellow-600" id="pending-count">0</div>
-                    <div class="text-sm text-gray-600">Pending Review</div>
+            <h2 class="text-xl font-semibold mb-6">Workflow Dashboard Overview</h2>
+            
+            <!-- Dashboard Navigation -->
+            <div class="mb-6">
+                <div class="flex flex-wrap gap-2 border-b">
+                    <button class="workflow-tab-btn px-4 py-2 text-sm font-medium border-b-2 border-blue-500 text-blue-600 bg-blue-50" data-workflow="all">
+                        All Types Combined
+                    </button>
+                    <button class="workflow-tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50" data-workflow="projects">
+                        Classification Projects
+                    </button>
+                    <button class="workflow-tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50" data-workflow="item-codes">
+                        Item Code Requests
+                    </button>
+                    <button class="workflow-tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50" data-workflow="standard-values">
+                        Standard Value Requests
+                    </button>
+                    <button class="workflow-tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50" data-workflow="combinations">
+                        Combination Requests
+                    </button>
                 </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
-                    <div class="text-2xl font-bold text-blue-600" id="reviewer-approved-count">0</div>
-                    <div class="text-sm text-gray-600">Awaiting Admin</div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
-                    <div class="text-2xl font-bold text-green-600" id="approved-count">0</div>
-                    <div class="text-sm text-gray-600">Approved</div>
-                </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
-                    <div class="text-2xl font-bold text-red-600" id="rejected-count">0</div>
-                    <div class="text-sm text-gray-600">Rejected</div>
-                </div>
+            </div>
+
+            <!-- Workflow Content Sections -->
+            <div id="workflow-all" class="workflow-content">
+                <div id="all-workflow-chart"></div>
+            </div>
+
+            <div id="workflow-projects" class="workflow-content hidden">
+                <div id="projects-workflow-chart"></div>
+            </div>
+
+            <div id="workflow-item-codes" class="workflow-content hidden">
+                <div id="item-codes-workflow-chart"></div>
+            </div>
+
+            <div id="workflow-standard-values" class="workflow-content hidden">
+                <div id="standard-values-workflow-chart"></div>
+            </div>
+
+            <div id="workflow-combinations" class="workflow-content hidden">
+                <div id="combinations-workflow-chart"></div>
             </div>
         </div>
 
@@ -281,8 +550,65 @@
      
         <!-- Pending Requests Tab -->
         <div id="pending-requests-tab" class="tab-content p-6">
-            <div id="pending-requests-container" class="space-y-4">
-                <!-- Pending requests will be loaded here -->
+            <!-- Sub-tabs Navigation -->
+            <div class="mb-6">
+                <div class="border-b">
+                    <nav class="flex space-x-6">
+                        <button class="pending-subtab-btn py-3 px-1 border-b-2 border-blue-500 text-blue-600 font-medium text-sm" data-subtab="classification-projects">
+                            Classification Projects
+                        </button>
+                        <button class="pending-subtab-btn py-3 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm" data-subtab="item-codes">
+                            Item Code Requests
+                        </button>
+                        <button class="pending-subtab-btn py-3 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm" data-subtab="standard-values">
+                            Standard Value Requests
+                        </button>
+                        <button class="pending-subtab-btn py-3 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-sm" data-subtab="combinations">
+                            Combination Requests
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Sub-tab Content Areas -->
+            <div id="classification-projects-subtab" class="pending-subtab-content">
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Pending Classification Projects</h3>
+                    <p class="text-sm text-gray-600">Projects awaiting your review decision</p>
+                </div>
+                <div id="classification-projects-container" class="space-y-4">
+                    <!-- Classification projects will be loaded here -->
+                </div>
+            </div>
+
+            <div id="item-codes-subtab" class="pending-subtab-content hidden">
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Pending Item Code Requests</h3>
+                    <p class="text-sm text-gray-600">Item code requests awaiting your review decision</p>
+                </div>
+                <div id="item-codes-container" class="space-y-4">
+                    <!-- Item code requests will be loaded here -->
+                </div>
+            </div>
+
+            <div id="standard-values-subtab" class="pending-subtab-content hidden">
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Pending Standard Value Requests</h3>
+                    <p class="text-sm text-gray-600">Standard value requests awaiting your review decision</p>
+                </div>
+                <div id="standard-values-container" class="space-y-4">
+                    <!-- Standard value requests will be loaded here -->
+                </div>
+            </div>
+
+            <div id="combinations-subtab" class="pending-subtab-content hidden">
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Pending Combination Requests</h3>
+                    <p class="text-sm text-gray-600">Combination requests awaiting your review decision</p>
+                </div>
+                <div id="combinations-container" class="space-y-4">
+                    <!-- Combination requests will be loaded here -->
+                </div>
             </div>
         </div>
 
@@ -881,18 +1207,36 @@ async function openProjectReviewModal(projectId) {
                                         Standard Values: ${attr.standard_values?.length || 0}
                                         ${attr.standard_values?.length > 0 ? `
                                             <div class="mt-2 max-h-20 overflow-y-auto">
-                                                ${attr.standard_values.map(val => {
-                                                    // Handle both object and string formats
-                                                    const valueName = typeof val === 'object' ? val.name : val;
-                                                    const valueUnit = typeof val === 'object' && val.unit ? val.unit : '';
-                                                    const displayText = valueUnit ? `${valueName} (${valueUnit})` : valueName;
+                                                ${(() => {
+                                                    // Ensure standard_values is properly parsed
+                                                    let values = attr.standard_values;
+                                                    if (typeof values === 'string') {
+                                                        try {
+                                                            values = JSON.parse(values);
+                                                        } catch(e) {
+                                                            console.warn('Failed to parse standard_values:', values);
+                                                            return '<span class="text-red-500">Invalid standard values format</span>';
+                                                        }
+                                                    }
                                                     
-                                                    return `
-                                                        <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1 mb-1" title="${displayText}">
-                                                            ${displayText}
-                                                        </span>
-                                                    `;
-                                                }).join('')}
+                                                    if (!Array.isArray(values)) {
+                                                        console.warn('Standard values is not an array:', values);
+                                                        return '<span class="text-yellow-600">Standard values format error</span>';
+                                                    }
+                                                    
+                                                    return values.map(val => {
+                                                        // Handle both object and string formats
+                                                        const valueName = typeof val === 'object' && val !== null ? (val.name || String(val)) : String(val);
+                                                        const valueUnit = typeof val === 'object' && val !== null && val.unit ? val.unit : '';
+                                                        const displayText = valueUnit ? `${valueName} (${valueUnit})` : valueName;
+                                                        
+                                                        return `
+                                                            <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1 mb-1" title="${displayText}">
+                                                                ${displayText}
+                                                            </span>
+                                                        `;
+                                                    }).join('');
+                                                })()}
                                             </div>
                                         ` : '<div class="text-gray-500 italic mt-1">No standard values defined</div>'}
                                     </div>
@@ -1195,7 +1539,7 @@ async function submitCurrentReview(decision) {
         // Close modal and refresh data
         closeReviewModal();
         await loadPendingRequests();
-        await loadDashboardStats();
+        await loadWorkflowDashboard();
         
         console.log('Review submitted successfully');
         
@@ -2591,7 +2935,7 @@ async function reviewAdminRequest(type, requestId, decision) {
         
         // Refresh the data
         await loadPendingRequests();
-        await loadDashboardStats();
+        await loadWorkflowDashboard();
         
         console.log('Review completed successfully');
         
@@ -2667,269 +3011,2026 @@ function createPendingRequestCard(request) {
 async function loadPendingRequests() {
     console.log('Loading pending requests for user:', currentUser);
     
-    const container = document.getElementById('pending-requests-container');
-    container.innerHTML = ''; // Clear existing content
-    
     try {
-        if (currentUser.role === 'admin') {
-            await loadAdminPendingRequests();
-        } else if (currentUser.role === 'reviewer') {
-            await loadReviewerPendingRequests();
-        } else {
-            container.innerHTML = '<div class="text-center text-gray-500 py-8">No pending requests for your role</div>';
-        }
+        // Initialize sub-tabs
+        initializePendingSubTabs();
+        
+        // Load the default sub-tab (classification projects)
+        await switchPendingSubTab('classification-projects');
+        
     } catch (error) {
         console.error('Error loading pending requests:', error);
-        container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading pending requests</div>';
+        document.getElementById('classification-projects-container').innerHTML = 
+            '<div class="text-center text-red-500 py-8">Error loading pending requests</div>';
     }
 }
-async function loadAdminPendingRequests() {
-    const container = document.getElementById('pending-requests-container');
-    let hasContent = false;
 
+function initializePendingSubTabs() {
+    // Add event listeners for sub-tab buttons
+    document.querySelectorAll('.pending-subtab-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const subtab = btn.dataset.subtab;
+            await switchPendingSubTab(subtab);
+        });
+    });
+}
+
+async function switchPendingSubTab(subtabName) {
+    // Update sub-tab buttons
+    document.querySelectorAll('.pending-subtab-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-blue-500', 'text-blue-600');
+        btn.classList.add('border-transparent', 'text-gray-500');
+    });
+    
+    const activeBtn = document.querySelector(`[data-subtab="${subtabName}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active', 'border-blue-500', 'text-blue-600');
+        activeBtn.classList.remove('border-transparent', 'text-gray-500');
+    }
+    
+    // Hide all sub-tab content
+    document.querySelectorAll('.pending-subtab-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    
+    // Show selected sub-tab content
+    const activeContent = document.getElementById(`${subtabName}-subtab`);
+    if (activeContent) {
+        activeContent.classList.remove('hidden');
+    }
+    
+    // Load appropriate data
+    await loadPendingRequestsByType(subtabName);
+}
+
+async function loadPendingRequestsByType(requestType) {
+    const containerMap = {
+        'classification-projects': 'classification-projects-container',
+        'item-codes': 'item-codes-container', 
+        'standard-values': 'standard-values-container',
+        'combinations': 'combinations-container'
+    };
+    
+    const containerId = containerMap[requestType];
+    const container = document.getElementById(containerId);
+    
+    if (!container) {
+        console.error('Container not found:', containerId);
+        return;
+    }
+    
+    // Show loading state
+    container.innerHTML = '<div class="text-center text-gray-500 py-8">Loading...</div>';
+    
     try {
-        // Load all types of requests that need admin attention
-        const [
-            pendingProjects,
-            reviewerApprovedProjects,
-            pendingItemCodes,
-            reviewerApprovedItemCodes,
-            pendingStandardValues,
-            reviewerApprovedStandardValues,
-            pendingCombinations,
-            reviewerApprovedCombinations
-        ] = await Promise.all([
-            // Projects pending admin review (submitted projects)
-            supabase.rpc('get_pending_admin_reviews', { admin_id_param: currentUser.id }),
-            
-            // Projects approved by reviewer, awaiting admin final approval
-            supabase.from('classification_projects')
+        switch (requestType) {
+            case 'classification-projects':
+                await loadPendingClassificationProjects();
+                break;
+            case 'item-codes':
+                await loadPendingItemCodes();
+                break;
+            case 'standard-values':
+                await loadPendingStandardValues();
+                break;
+            case 'combinations':
+                await loadPendingCombinations();
+                break;
+            default:
+                container.innerHTML = '<div class="text-center text-gray-500 py-8">Unknown request type</div>';
+        }
+    } catch (error) {
+        console.error(`Error loading ${requestType}:`, error);
+        container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading requests</div>';
+    }
+}
+async function loadPendingClassificationProjects() {
+    const container = document.getElementById('classification-projects-container');
+    
+    try {
+        let pendingProjects = [];
+        
+        if (currentUser.role === 'reviewer') {
+            // Load projects assigned to this reviewer
+            const { data, error } = await supabase
+                .from('classification_projects')
                 .select(`
                     *,
                     creator:users!classification_projects_created_by_fkey(username, email),
-                    reviewer:users!classification_projects_assigned_reviewer_id_fkey(username, email)
+                    project_attributes(id, attribute_name, is_mandatory)
+                `)
+                .eq('assigned_reviewer_id', currentUser.id)
+                .eq('status', 'submitted')
+                .order('submitted_at', { ascending: true });
+                
+            if (error) throw error;
+            pendingProjects = (data || []).map(project => ({
+                ...project,
+                attributes_count: project.project_attributes?.length || 0
+            }));
+        } else if (currentUser.role === 'admin') {
+            // Load projects approved by reviewer awaiting admin decision
+            const { data, error } = await supabase
+                .from('classification_projects')
+                .select(`
+                    *,
+                    creator:users!classification_projects_created_by_fkey(username, email),
+                    reviewer:users!classification_projects_assigned_reviewer_id_fkey(username, email),
+                    project_attributes(id, attribute_name, is_mandatory)
                 `)
                 .eq('status', 'reviewer_approved')
-                .order('reviewed_at', { ascending: true }),
-
-            // Item code requests pending admin review
-            supabase.from("item_code_workflow")
-                .select(`
-                    *,
-                    created_by_user:users!item_code_workflow_created_by_fkey(username, email),
-                    reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
-                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description)
-                `)
-                .eq('status', 'pending')
-                .order('created_at', { ascending: false }),
-
-            // Item code requests approved by reviewer
-            supabase.from("item_code_workflow")
-                .select(`
-                    *,
-                    created_by_user:users!item_code_workflow_created_by_fkey(username, email),
-                    reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
-                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description)
-                `)
-                .eq('status', 'reviewer_approved')
-                .order('reviewed_at', { ascending: true }),
-
-            // Standard value requests pending admin review
-            supabase.from('standard_value_requests')
-                .select(`
-                    *,
-                    created_by_user:users!standard_value_requests_created_by_fkey(username, email),
-                    reviewed_by_user:users!standard_value_requests_reviewed_by_fkey(username, email),
-                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description),
-                    project_attributes(attribute_name, standard_values)
-                `)
-                .eq('status', 'pending')
-                .order('created_at', { ascending: false }),
-
-            // Standard value requests approved by reviewer
-            supabase.from('standard_value_requests')
-                .select(`
-                    *,
-                    created_by_user:users!standard_value_requests_created_by_fkey(username, email),
-                    reviewed_by_user:users!standard_value_requests_reviewed_by_fkey(username, email),
-                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code, division_description, section_description, detailed_section_description, item_description),
-                    project_attributes(attribute_name, standard_values)
-                `)
-                .eq('status', 'reviewer_approved')
-                .order('reviewed_at', { ascending: true }),
-
-            // Combination requests pending admin review
-            supabase.from('combination_requests')
-                .select(`
-                    *,
-                    created_by_user:users!combination_requests_created_by_fkey(username, email),
-                    reviewed_by_user:users!combination_requests_reviewed_by_fkey(username, email),
-                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code)
-                `)
-                .eq('status', 'pending')
-                .order('created_at', { ascending: false }),
-
-            // Combination requests approved by reviewer
-            supabase.from('combination_requests')
-                .select(`
-                    *,
-                    created_by_user:users!combination_requests_created_by_fkey(username, email),
-                    reviewed_by_user:users!combination_requests_reviewed_by_fkey(username, email),
-                    project:classification_projects(project_name, division_code, section_code, detailed_section_code, item_code)
-                `)
-                .eq('status', 'reviewer_approved')
-                .order('reviewed_at', { ascending: true })
-        ]);
-
-        // Section 1: High Priority - Reviewer Approved Items (Need Final Admin Decision)
-        const highPriorityItems = [
-            ...(reviewerApprovedProjects.data || []).map(p => ({
-                ...p,
-                type: 'project',
-                priority: 'high',
-                title: p.project_name,
-                subtitle: `${p.division_code}-${p.section_code}-${p.detailed_section_code}-${p.item_code}`,
-                creator_name: p.creator?.username,
-                reviewer_name: p.reviewer?.username,
-                date: p.reviewed_at
-            })),
-            ...(reviewerApprovedItemCodes.data || []).map(r => ({
-                ...r,
-                type: 'code',
-                priority: 'high',
-                title: r.item_code || 'Item Code Request',
-                subtitle: r.project?.project_name || 'Unknown Project',
-                creator_name: r.created_by_user?.username,
-                reviewer_name: r.reviewed_by_user?.username,
-                date: r.reviewed_at
-            })),
-            ...(reviewerApprovedStandardValues.data || []).map(r => ({
-                ...r,
-                type: 'value',
-                priority: 'high',
-                title: `Add Value: ${r.new_value}`,
-                subtitle: `Attribute: ${r.attribute_name}`,
-                creator_name: r.created_by_user?.username,
-                reviewer_name: r.reviewed_by_user?.username,
-                date: r.reviewed_at
-            })),
-            ...(reviewerApprovedCombinations.data || []).map(r => ({
-                ...r,
-                type: 'block',
-                priority: 'high',
-                title: `Block Combination`,
-                subtitle: r.project?.project_name || 'Unknown Project',
-                creator_name: r.created_by_user?.username,
-                reviewer_name: r.reviewed_by_user?.username,
-                date: r.reviewed_at
-            }))
-        ];
-
-        // Section 2: Regular Priority - Pending Items (Need Initial Review)
-        const regularPriorityItems = [
-            ...(pendingItemCodes.data || []).map(r => ({
-                ...r,
-                type: 'code',
-                priority: 'regular',
-                title: r.item_code || 'Item Code Request',
-                subtitle: r.project?.project_name || 'Unknown Project',
-                creator_name: r.created_by_user?.username,
-                reviewer_name: 'Unassigned',
-                date: r.created_at
-            })),
-            ...(pendingStandardValues.data || []).map(r => ({
-                ...r,
-                type: 'value',
-                priority: 'regular',
-                title: `Add Value: ${r.new_value}`,
-                subtitle: `Attribute: ${r.attribute_name}`,
-                creator_name: r.created_by_user?.username,
-                reviewer_name: 'Unassigned',
-                date: r.created_at
-            })),
-            ...(pendingCombinations.data || []).map(r => ({
-                ...r,
-                type: 'block',
-                priority: 'regular',
-                title: `Block Combination`,
-                subtitle: r.project?.project_name || 'Unknown Project',
-                creator_name: r.created_by_user?.username,
-                reviewer_name: 'Unassigned',
-                date: r.created_at
-            }))
-        ];
-
-        // Display High Priority Section
-        if (highPriorityItems.length > 0) {
-            hasContent = true;
-            const highPrioritySection = document.createElement('div');
-            highPrioritySection.className = 'mb-8';
-            highPrioritySection.innerHTML = `
-                <div class="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4 mb-6">
-                    <h3 class="text-lg font-semibold text-orange-800 mb-2 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                        </svg>
-                        HIGH PRIORITY - Reviewer Approved (${highPriorityItems.length})
-                    </h3>
-                    <p class="text-sm text-orange-700">These items have been approved by reviewers and need your final decision</p>
-                </div>
-                <div id="high-priority-container" class="grid gap-4"></div>
-            `;
-            container.appendChild(highPrioritySection);
-
-            const highPriorityContainer = document.getElementById('high-priority-container');
-            highPriorityItems
-                .sort((a, b) => new Date(a.date) - new Date(b.date))
-                .forEach(item => {
-                    highPriorityContainer.appendChild(createDetailedAdminReviewCard(item));
-                });
+                .order('reviewed_at', { ascending: true });
+                
+            if (error) throw error;
+            pendingProjects = (data || []).map(project => ({
+                ...project,
+                attributes_count: project.project_attributes?.length || 0
+            }));
         }
-
-        // Display Regular Priority Section
-        if (regularPriorityItems.length > 0) {
-            hasContent = true;
-            const regularPrioritySection = document.createElement('div');
-            regularPrioritySection.className = 'mb-8';
-            regularPrioritySection.innerHTML = `
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="text-lg font-semibold text-blue-800 mb-2 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                         PENDING INITIAL REVIEW (${regularPriorityItems.length})
-                    </h3>
-                    <p class="text-sm text-blue-700">These items are waiting for initial review and can be assigned to reviewers</p>
-                </div>
-                <div id="regular-priority-container" class="grid gap-4"></div>
-            `;
-            container.appendChild(regularPrioritySection);
-
-            const regularPriorityContainer = document.getElementById('regular-priority-container');
-            regularPriorityItems
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .forEach(item => {
-                    regularPriorityContainer.appendChild(createDetailedAdminReviewCard(item));
-                });
+        
+        if (pendingProjects.length === 0) {
+            container.innerHTML = '<div class="text-center text-gray-500 py-8">No pending classification projects</div>';
+            return;
         }
-
-        if (!hasContent) {
-            container.innerHTML = `
-                <div class="text-center text-gray-500 py-12">
-                    <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <p class="text-lg">All caught up!</p>
-                    <p class="text-sm">No items pending admin review</p>
+        
+        // Render classification projects
+        container.innerHTML = pendingProjects.map(project => `
+            <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <h4 class="text-lg font-semibold text-gray-800">${project.project_name}</h4>
+                            <span class="badge-project request-type-badge">Classification Project</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-mono">#${project.id}</span>
+                        </div>
+                        
+                        <!-- CSI Path Display -->
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg mb-3">
+                            <div class="text-xs font-medium text-blue-800 mb-2">CSI Classification Hierarchy</div>
+                            <div class="flex flex-wrap items-center gap-2 text-sm">
+                                <div class="flex items-center bg-blue-100 rounded px-2 py-1">
+                                    <span class="font-bold text-blue-900">${project.division_code}</span>
+                                    ${project.division_description ? `<span class="ml-1 text-blue-700">- ${project.division_description}</span>` : ''}
+                                </div>
+                                <span class="text-blue-600">â†’</span>
+                                <div class="flex items-center bg-blue-100 rounded px-2 py-1">
+                                    <span class="font-bold text-blue-900">${project.section_code}</span>
+                                    ${project.section_description ? `<span class="ml-1 text-blue-700">- ${project.section_description}</span>` : ''}
+                                </div>
+                                <span class="text-blue-600">â†’</span>
+                                <div class="flex items-center bg-blue-100 rounded px-2 py-1">
+                                    <span class="font-bold text-blue-900">${project.detailed_section_code}</span>
+                                    ${project.detailed_section_description ? `<span class="ml-1 text-blue-700">- ${project.detailed_section_description}</span>` : ''}
+                                </div>
+                                <span class="text-blue-600">â†’</span>
+                                <div class="flex items-center bg-blue-200 rounded px-2 py-1">
+                                    <span class="font-bold text-blue-900">${project.item_code}</span>
+                                    ${project.item_description ? `<span class="ml-1 text-blue-700">- ${project.item_description}</span>` : ''}
+                                </div>
+                            </div>
+                            
+                            ${project.additional_level_name && project.additional_level_value ? `
+                                <div class="mt-2 pt-2 border-t border-blue-200">
+                                    <div class="text-xs font-medium text-blue-800 mb-1">Additional Level</div>
+                                    <div class="flex items-center bg-green-100 rounded px-2 py-1 inline-flex">
+                                        <span class="font-bold text-green-900">${project.additional_level_name}:</span>
+                                        <span class="ml-1 text-green-700">${project.additional_level_value}</span>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="viewProjectDetails(${project.id})" class="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600">
+                            View Details
+                        </button>
+                        ${currentUser.role === 'reviewer' ? `
+                            <button onclick="quickReviewProject(${project.id}, 'approve')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                Approve
+                            </button>
+                            <button onclick="quickReviewProject(${project.id}, 'reject')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                Reject
+                            </button>
+                        ` : `
+                            <button onclick="quickAdminReviewProject(${project.id}, 'approve')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                Approve
+                            </button>
+                            <button onclick="quickAdminReviewProject(${project.id}, 'reject')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                Reject
+                            </button>
+                        `}
+                    </div>
                 </div>
-            `;
-        }
-
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Created by:</span>
+                        <span class="text-sm text-gray-800">${project.creator?.username || 'Unknown'}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Created:</span>
+                        <span class="text-sm text-gray-800">${new Date(project.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Project Attributes:</span>
+                        <span class="text-sm text-gray-800 bg-purple-100 text-purple-800 px-2 py-1 rounded">${project.attributes_count || 'Loading...'} attributes</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Status:</span>
+                        <span class="text-sm px-2 py-1 rounded capitalize ${
+                            project.status === 'submitted' ? 'bg-yellow-100 text-yellow-800' : 
+                            project.status === 'reviewer_approved' ? 'bg-blue-100 text-blue-800' : 
+                            'bg-gray-100 text-gray-800'
+                        }">${project.status.replace('_', ' ')}</span>
+                    </div>
+                    ${currentUser.role === 'admin' && project.reviewer ? `
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Reviewed by:</span>
+                            <span class="text-sm text-gray-800">${project.reviewer.username}</span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Reviewed:</span>
+                            <span class="text-sm text-gray-800">${new Date(project.reviewed_at).toLocaleDateString()}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                ${project.reviewer_comments ? `
+                    <div class="mt-4 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+                        <span class="text-sm font-medium text-blue-800">Reviewer Comments:</span>
+                        <p class="text-sm text-blue-700 mt-1">${project.reviewer_comments}</p>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+        
     } catch (error) {
-        console.error('Error loading admin pending requests:', error);
-        container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading pending requests</div>';
+        console.error('Error loading classification projects:', error);
+        container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading classification projects</div>';
     }
 }
+
+async function loadPendingItemCodes() {
+    const container = document.getElementById('item-codes-container');
+    
+    try {
+        let pendingItemCodes = [];
+        
+        if (currentUser.role === 'reviewer') {
+            // Load item codes assigned to this reviewer
+            const { data, error } = await supabase
+                .from('item_code_workflow')
+                .select(`
+                    *,
+                    created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                    project:classification_projects(
+                        id, project_name, division_code, section_code, detailed_section_code, 
+                        item_code, additional_level_name, additional_level_value,
+                        division_description, section_description, detailed_section_description, item_description
+                    )
+                `)
+                .eq('reviewed_by', currentUser.id)
+                .eq('status', 'pending')
+                .order('created_at', { ascending: true });
+                
+            if (error) throw error;
+            pendingItemCodes = data || [];
+        } else if (currentUser.role === 'admin') {
+            // Load item codes approved by reviewer awaiting admin decision
+            const { data, error } = await supabase
+                .from('item_code_workflow')
+                .select(`
+                    *,
+                    created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                    reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
+                    project:classification_projects(
+                        id, project_name, division_code, section_code, detailed_section_code, 
+                        item_code, additional_level_name, additional_level_value,
+                        division_description, section_description, detailed_section_description, item_description
+                    )
+                `)
+                .eq('status', 'reviewer_approved')
+                .order('reviewed_at', { ascending: true });
+                
+            if (error) throw error;
+            pendingItemCodes = data || [];
+        }
+        
+        if (pendingItemCodes.length === 0) {
+            container.innerHTML = '<div class="text-center text-gray-500 py-8">No pending item code requests</div>';
+            return;
+        }
+        
+        // Render item codes
+        container.innerHTML = pendingItemCodes.map(item => `
+            <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <h4 class="text-lg font-semibold text-gray-800">${item.item_code}</h4>
+                            <span class="badge-item-code request-type-badge">Item Code Request</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-mono">#${item.id}</span>
+                        </div>
+                        
+                        <!-- CSI Path Display -->
+                        ${item.project ? `
+                            <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg mb-3">
+                                <div class="text-xs font-medium text-green-800 mb-2">Associated Project CSI Classification</div>
+                                <div class="flex flex-wrap items-center gap-2 text-sm">
+                                    <div class="flex items-center bg-green-100 rounded px-2 py-1">
+                                        <span class="font-bold text-green-900">${item.project.division_code || 'N/A'}</span>
+                                        ${item.project.division_description ? `<span class="ml-1 text-green-700">- ${item.project.division_description}</span>` : ''}
+                                    </div>
+                                    <span class="text-green-600">â†’</span>
+                                    <div class="flex items-center bg-green-100 rounded px-2 py-1">
+                                        <span class="font-bold text-green-900">${item.project.section_code || 'N/A'}</span>
+                                        ${item.project.section_description ? `<span class="ml-1 text-green-700">- ${item.project.section_description}</span>` : ''}
+                                    </div>
+                                    <span class="text-green-600">â†’</span>
+                                    <div class="flex items-center bg-green-100 rounded px-2 py-1">
+                                        <span class="font-bold text-green-900">${item.project.detailed_section_code || 'N/A'}</span>
+                                        ${item.project.detailed_section_description ? `<span class="ml-1 text-green-700">- ${item.project.detailed_section_description}</span>` : ''}
+                                    </div>
+                                    <span class="text-green-600">â†’</span>
+                                    <div class="flex items-center bg-green-200 rounded px-2 py-1">
+                                        <span class="font-bold text-green-900">${item.project.item_code || 'N/A'}</span>
+                                        ${item.project.item_description ? `<span class="ml-1 text-green-700">- ${item.project.item_description}</span>` : ''}
+                                    </div>
+                                </div>
+                                
+                                ${item.project.additional_level_name && item.project.additional_level_value ? `
+                                    <div class="mt-2 pt-2 border-t border-green-200">
+                                        <div class="text-xs font-medium text-green-800 mb-1">Additional Level</div>
+                                        <div class="flex items-center bg-yellow-100 rounded px-2 py-1 inline-flex">
+                                            <span class="font-bold text-yellow-900">${item.project.additional_level_name}:</span>
+                                            <span class="ml-1 text-yellow-700">${item.project.additional_level_value}</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                <div class="mt-2 pt-2 border-t border-green-200">
+                                    <div class="text-xs font-medium text-green-800">Project: ${item.project.project_name}</div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="viewItemCodeDetails(${item.id})" class="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600">
+                            View Details
+                        </button>
+                        ${currentUser.role === 'reviewer' ? `
+                            <button onclick="quickReviewItemCode(${item.id}, 'approve')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                Approve
+                            </button>
+                            <button onclick="quickReviewItemCode(${item.id}, 'reject')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                Reject
+                            </button>
+                        ` : `
+                            <button onclick="quickAdminReviewItemCode(${item.id}, 'approve')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                Approve
+                            </button>
+                            <button onclick="quickAdminReviewItemCode(${item.id}, 'reject')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                Reject
+                            </button>
+                        `}
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Description 1:</span>
+                        <span class="text-sm text-gray-800">${item.description1 || 'N/A'}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Description 2:</span>
+                        <span class="text-sm text-gray-800">${item.description2 || 'N/A'}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Created by:</span>
+                        <span class="text-sm text-gray-800">${item.created_by_user?.username || 'Unknown'}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">UOM:</span>
+                        <span class="text-sm text-gray-800">${item.uom || 'N/A'}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Created:</span>
+                        <span class="text-sm text-gray-800">${new Date(item.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Status:</span>
+                        <span class="text-sm px-2 py-1 rounded capitalize ${
+                            item.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                            item.status === 'reviewer_approved' ? 'bg-blue-100 text-blue-800' : 
+                            'bg-gray-100 text-gray-800'
+                        }">${item.status.replace('_', ' ')}</span>
+                    </div>
+                    ${currentUser.role === 'admin' && item.reviewed_by_user ? `
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Reviewed by:</span>
+                            <span class="text-sm text-gray-800">${item.reviewed_by_user.username}</span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Reviewed:</span>
+                            <span class="text-sm text-gray-800">${new Date(item.reviewed_at).toLocaleDateString()}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                ${item.reviewer_comments ? `
+                    <div class="mt-4 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+                        <span class="text-sm font-medium text-blue-800">Reviewer Comments:</span>
+                        <p class="text-sm text-blue-700 mt-1">${item.reviewer_comments}</p>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading item codes:', error);
+        container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading item codes</div>';
+    }
+}
+
+async function loadPendingStandardValues() {
+    const container = document.getElementById('standard-values-container');
+    
+    try {
+        let pendingStandardValues = [];
+        
+        if (currentUser.role === 'reviewer') {
+            // Load standard values assigned to this reviewer
+            const { data, error } = await supabase
+                .from('standard_value_requests')
+                .select(`
+                    *,
+                    created_by_user:users!standard_value_requests_created_by_fkey(username, email),
+                    project:classification_projects(project_name),
+                    project_attributes(attribute_name, standard_values)
+                `)
+                .eq('reviewed_by', currentUser.id)
+                .eq('status', 'pending')
+                .order('created_at', { ascending: true });
+                
+            if (error) throw error;
+            pendingStandardValues = data || [];
+        } else if (currentUser.role === 'admin') {
+            // Load standard values approved by reviewer awaiting admin decision
+            const { data, error } = await supabase
+                .from('standard_value_requests')
+                .select(`
+                    *,
+                    created_by_user:users!standard_value_requests_created_by_fkey(username, email),
+                    reviewed_by_user:users!standard_value_requests_reviewed_by_fkey(username, email),
+                    project:classification_projects(project_name),
+                    project_attributes(attribute_name, standard_values)
+                `)
+                .eq('status', 'reviewer_approved')
+                .order('reviewed_at', { ascending: true });
+                
+            if (error) throw error;
+            pendingStandardValues = data || [];
+        }
+        
+        if (pendingStandardValues.length === 0) {
+            container.innerHTML = '<div class="text-center text-gray-500 py-8">No pending standard value requests</div>';
+            return;
+        }
+        
+        // Render standard values
+        container.innerHTML = pendingStandardValues.map(item => `
+            <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <h4 class="text-lg font-semibold text-gray-800">${item.attribute_name} - ${item.new_value}</h4>
+                            <span class="badge-standard-value request-type-badge">Standard Value Request</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-mono">#${item.id}</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="viewStandardValueDetails(${item.id})" class="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600">
+                            View Details
+                        </button>
+                        ${currentUser.role === 'reviewer' ? `
+                            <button onclick="quickReviewStandardValue(${item.id}, 'approve')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                Approve
+                            </button>
+                            <button onclick="quickReviewStandardValue(${item.id}, 'reject')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                Reject
+                            </button>
+                        ` : `
+                            <button onclick="quickAdminReviewStandardValue(${item.id}, 'approve')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                Approve
+                            </button>
+                            <button onclick="quickAdminReviewStandardValue(${item.id}, 'reject')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                Reject
+                            </button>
+                        `}
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Attribute:</span>
+                        <span class="text-sm text-gray-800">${item.attribute_name}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">New Value:</span>
+                        <span class="text-sm text-gray-800 font-semibold bg-green-100 text-green-800 px-2 py-1 rounded">${item.new_value}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Project:</span>
+                        <span class="text-sm text-gray-800">${item.project?.project_name || 'N/A'}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Created by:</span>
+                        <span class="text-sm text-gray-800">${item.created_by_user?.username || 'Unknown'}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Reason:</span>
+                        <span class="text-sm text-gray-800">${item.reason || 'N/A'}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Created:</span>
+                        <span class="text-sm text-gray-800">${new Date(item.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Status:</span>
+                        <span class="text-sm px-2 py-1 rounded capitalize ${
+                            item.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                            item.status === 'reviewer_approved' ? 'bg-blue-100 text-blue-800' : 
+                            'bg-gray-100 text-gray-800'
+                        }">${item.status.replace('_', ' ')}</span>
+                    </div>
+                    ${currentUser.role === 'admin' && item.reviewed_by_user ? `
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Reviewed by:</span>
+                            <span class="text-sm text-gray-800">${item.reviewed_by_user.username}</span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Reviewed:</span>
+                            <span class="text-sm text-gray-800">${new Date(item.reviewed_at).toLocaleDateString()}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                ${item.reviewer_comments ? `
+                    <div class="mt-4 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+                        <span class="text-sm font-medium text-blue-800">Reviewer Comments:</span>
+                        <p class="text-sm text-blue-700 mt-1">${item.reviewer_comments}</p>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading standard values:', error);
+        container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading standard values</div>';
+    }
+}
+
+async function loadPendingCombinations() {
+    const container = document.getElementById('combinations-container');
+    
+    try {
+        let pendingCombinations = [];
+        
+        if (currentUser.role === 'reviewer') {
+            // Load combinations assigned to this reviewer
+            const { data, error } = await supabase
+                .from('combination_requests')
+                .select(`
+                    *,
+                    created_by_user:users!combination_requests_created_by_fkey(username, email),
+                    project:classification_projects(project_name)
+                `)
+                .eq('reviewed_by', currentUser.id)
+                .eq('status', 'pending')
+                .order('created_at', { ascending: true });
+                
+            if (error) throw error;
+            pendingCombinations = data || [];
+        } else if (currentUser.role === 'admin') {
+            // Load combinations approved by reviewer awaiting admin decision
+            const { data, error } = await supabase
+                .from('combination_requests')
+                .select(`
+                    *,
+                    created_by_user:users!combination_requests_created_by_fkey(username, email),
+                    reviewed_by_user:users!combination_requests_reviewed_by_fkey(username, email),
+                    project:classification_projects(project_name)
+                `)
+                .eq('status', 'reviewer_approved')
+                .order('reviewed_at', { ascending: true });
+                
+            if (error) throw error;
+            pendingCombinations = data || [];
+        }
+        
+        if (pendingCombinations.length === 0) {
+            container.innerHTML = '<div class="text-center text-gray-500 py-8">No pending combination requests</div>';
+            return;
+        }
+        
+        // Render combinations
+        container.innerHTML = pendingCombinations.map(item => `
+            <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <h4 class="text-lg font-semibold text-gray-800">${item.request_type === 'block' ? 'Block' : 'Generate'} Combination</h4>
+                            <span class="badge-combination request-type-badge">Combination Request</span>
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-mono">#${item.id}</span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="viewCombinationDetails(${item.id})" class="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600">
+                            View Details
+                        </button>
+                        ${currentUser.role === 'reviewer' ? `
+                            <button onclick="quickReviewCombination(${item.id}, 'approve')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                Approve
+                            </button>
+                            <button onclick="quickReviewCombination(${item.id}, 'reject')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                Reject
+                            </button>
+                        ` : `
+                            <button onclick="quickAdminReviewCombination(${item.id}, 'approve')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                Approve
+                            </button>
+                            <button onclick="quickAdminReviewCombination(${item.id}, 'reject')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                Reject
+                            </button>
+                        `}
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Request Type:</span>
+                        <span class="text-sm px-2 py-1 rounded capitalize ${
+                            item.request_type === 'block' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                        }">${item.request_type}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Project:</span>
+                        <span class="text-sm text-gray-800">${item.project?.project_name || 'N/A'}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Created by:</span>
+                        <span class="text-sm text-gray-800">${item.created_by_user?.username || 'Unknown'}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Created:</span>
+                        <span class="text-sm text-gray-800">${new Date(item.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">UOM:</span>
+                        <span class="text-sm text-gray-800">${item.uom || 'N/A'}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Country:</span>
+                        <span class="text-sm text-gray-800">${item.country_of_origin || 'N/A'}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-gray-600">Status:</span>
+                        <span class="text-sm px-2 py-1 rounded capitalize ${
+                            item.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                            item.status === 'reviewer_approved' ? 'bg-blue-100 text-blue-800' : 
+                            'bg-gray-100 text-gray-800'
+                        }">${item.status.replace('_', ' ')}</span>
+                    </div>
+                    ${currentUser.role === 'admin' && item.reviewed_by_user ? `
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Reviewed by:</span>
+                            <span class="text-sm text-gray-800">${item.reviewed_by_user.username}</span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-600">Reviewed:</span>
+                            <span class="text-sm text-gray-800">${new Date(item.reviewed_at).toLocaleDateString()}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                ${item.reason ? `
+                    <div class="mt-4 p-3 bg-yellow-50 rounded border-l-4 border-yellow-400">
+                        <span class="text-sm font-medium text-yellow-800">Reason:</span>
+                        <p class="text-sm text-yellow-700 mt-1">${item.reason}</p>
+                    </div>
+                ` : ''}
+                ${item.reviewer_comments ? `
+                    <div class="mt-4 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+                        <span class="text-sm font-medium text-blue-800">Reviewer Comments:</span>
+                        <p class="text-sm text-blue-700 mt-1">${item.reviewer_comments}</p>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading combinations:', error);
+        container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading combinations</div>';
+    }
+}
+
+// ===== COMPREHENSIVE DETAIL VIEWING FUNCTIONS =====
+
+async function viewProjectDetails(projectId) {
+    try {
+        console.log('Loading project details for:', projectId);
+        
+        // Load complete project data with attributes
+        const { data: projectData, error: projectError } = await supabase
+            .from('classification_projects')
+            .select(`
+                *,
+                creator:users!classification_projects_created_by_fkey(username, email),
+                reviewer:users!classification_projects_assigned_reviewer_id_fkey(username, email),
+                admin:users!classification_projects_admin_id_fkey(username, email),
+                project_attributes(
+                    id, attribute_name, standard_values, is_mandatory, is_manual_entry
+                )
+            `)
+            .eq('id', projectId)
+            .single();
+        
+        if (projectError) throw projectError;
+        if (!projectData) throw new Error('Project not found');
+        
+        // Show the detail modal
+        showProjectDetailModal(projectData);
+        
+    } catch (error) {
+        console.error('Error loading project details:', error);
+        alert('Error loading project details: ' + error.message);
+    }
+}
+
+function showProjectDetailModal(project) {
+    // Create modal HTML
+    const modalHtml = `
+        <div id="project-detail-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center p-6 border-b">
+                    <h2 class="text-2xl font-semibold text-gray-900">Classification Project Details</h2>
+                    <button onclick="closeProjectDetailModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Modal Content -->
+                <div class="p-6">
+                    <!-- Basic Info Section -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm mr-2">BASIC INFO</span>
+                            Project Information
+                        </h3>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <span class="text-sm font-medium text-gray-600">Project Name:</span>
+                                    <p class="text-sm text-gray-800 font-semibold">${project.project_name}</p>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-gray-600">Status:</span>
+                                    <span class="text-sm px-2 py-1 rounded capitalize ${
+                                        project.status === 'submitted' ? 'bg-yellow-100 text-yellow-800' : 
+                                        project.status === 'reviewer_approved' ? 'bg-blue-100 text-blue-800' : 
+                                        project.status === 'admin_approved' ? 'bg-green-100 text-green-800' :
+                                        'bg-gray-100 text-gray-800'
+                                    }">${project.status.replace('_', ' ')}</span>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-gray-600">Created:</span>
+                                    <p class="text-sm text-gray-800">${new Date(project.created_at).toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-gray-600">Submitted:</span>
+                                    <p class="text-sm text-gray-800">${project.submitted_at ? new Date(project.submitted_at).toLocaleString() : 'Not submitted'}</p>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-gray-600">Updated:</span>
+                                    <p class="text-sm text-gray-800">${new Date(project.updated_at).toLocaleString()}</p>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-gray-600">Project ID:</span>
+                                    <p class="text-sm text-gray-800 font-mono">#${project.id}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- CSI Hierarchy Section -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm mr-2">CSI HIERARCHY</span>
+                            Classification Structure
+                        </h3>
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg">
+                            <div class="space-y-3">
+                                <div class="flex items-center bg-blue-100 rounded-lg p-3">
+                                    <div class="flex-1">
+                                        <div class="font-bold text-blue-900 text-lg">${project.division_code}</div>
+                                        <div class="text-blue-700 text-sm">${project.division_description || 'No description'}</div>
+                                        <div class="text-xs text-blue-600">Division</div>
+                                    </div>
+                                </div>
+                                <div class="text-center text-blue-600">â†“</div>
+                                <div class="flex items-center bg-blue-100 rounded-lg p-3">
+                                    <div class="flex-1">
+                                        <div class="font-bold text-blue-900 text-lg">${project.section_code}</div>
+                                        <div class="text-blue-700 text-sm">${project.section_description || 'No description'}</div>
+                                        <div class="text-xs text-blue-600">Section</div>
+                                    </div>
+                                </div>
+                                <div class="text-center text-blue-600">â†“</div>
+                                <div class="flex items-center bg-blue-100 rounded-lg p-3">
+                                    <div class="flex-1">
+                                        <div class="font-bold text-blue-900 text-lg">${project.detailed_section_code}</div>
+                                        <div class="text-blue-700 text-sm">${project.detailed_section_description || 'No description'}</div>
+                                        <div class="text-xs text-blue-600">Detailed Section</div>
+                                    </div>
+                                </div>
+                                <div class="text-center text-blue-600">â†“</div>
+                                <div class="flex items-center bg-blue-200 rounded-lg p-3">
+                                    <div class="flex-1">
+                                        <div class="font-bold text-blue-900 text-lg">${project.item_code}</div>
+                                        <div class="text-blue-700 text-sm">${project.item_description || 'No description'}</div>
+                                        <div class="text-xs text-blue-600">Item</div>
+                                    </div>
+                                </div>
+                                
+                                ${project.additional_level_name && project.additional_level_value ? `
+                                    <div class="text-center text-green-600">â†“</div>
+                                    <div class="flex items-center bg-green-100 rounded-lg p-3">
+                                        <div class="flex-1">
+                                            <div class="font-bold text-green-900 text-lg">${project.additional_level_value}</div>
+                                            <div class="text-green-700 text-sm">${project.additional_level_name}</div>
+                                            <div class="text-xs text-green-600">Additional Level</div>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- People Section -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm mr-2">PEOPLE</span>
+                            Project Team
+                        </h3>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="text-center p-3 bg-white rounded border">
+                                    <div class="text-sm font-medium text-gray-600">Created by</div>
+                                    <div class="text-lg font-semibold text-gray-800">${project.creator?.username || 'Unknown'}</div>
+                                    <div class="text-xs text-gray-500">${project.creator?.email || ''}</div>
+                                </div>
+                                <div class="text-center p-3 bg-white rounded border">
+                                    <div class="text-sm font-medium text-gray-600">Assigned Reviewer</div>
+                                    <div class="text-lg font-semibold text-gray-800">${project.reviewer?.username || 'Not assigned'}</div>
+                                    <div class="text-xs text-gray-500">${project.reviewer?.email || ''}</div>
+                                </div>
+                                <div class="text-center p-3 bg-white rounded border">
+                                    <div class="text-sm font-medium text-gray-600">Admin</div>
+                                    <div class="text-lg font-semibold text-gray-800">${project.admin?.username || 'Not assigned'}</div>
+                                    <div class="text-xs text-gray-500">${project.admin?.email || ''}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Project Attributes Section -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm mr-2">ATTRIBUTES</span>
+                            Project Attributes & Values
+                        </h3>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            ${project.project_attributes && project.project_attributes.length > 0 ? `
+                                <div class="space-y-4 max-h-96 overflow-y-auto">
+                                    ${project.project_attributes.map(attr => `
+                                        <div class="bg-white border rounded-lg p-4">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <div>
+                                                    <h4 class="font-semibold text-gray-800">${attr.attribute_name}</h4>
+                                                    <div class="flex gap-2 mt-1">
+                                                        ${attr.is_mandatory ? 
+                                                            '<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Mandatory</span>' : 
+                                                            '<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">Optional</span>'
+                                                        }
+                                                        ${attr.is_manual_entry ? 
+                                                            '<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Manual Entry</span>' : 
+                                                            '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Predefined Values</span>'
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            ${attr.standard_values && attr.standard_values.length > 0 ? `
+                                                <div>
+                                                    <div class="text-sm font-medium text-gray-600 mb-2">Standard Values:</div>
+                                                    <div class="flex flex-wrap gap-2">
+                                                        ${(() => {
+                                                            // Handle different data formats for standard values
+                                                            let values = attr.standard_values;
+                                                            
+                                                            // Parse if it's a JSON string
+                                                            if (typeof values === 'string') {
+                                                                try {
+                                                                    values = JSON.parse(values);
+                                                                } catch(e) {
+                                                                    console.warn('Failed to parse standard_values:', values);
+                                                                    return '<span class="text-red-500 text-sm">Invalid format</span>';
+                                                                }
+                                                            }
+                                                            
+                                                            // Ensure it's an array
+                                                            if (!Array.isArray(values)) {
+                                                                console.warn('Standard values not an array:', values);
+                                                                return '<span class="text-yellow-600 text-sm">Format error</span>';
+                                                            }
+                                                            
+                                                            return values.map(value => {
+                                                                // Handle both object and string formats
+                                                                const valueName = typeof value === 'object' && value !== null ? 
+                                                                    (value.name || String(value)) : String(value);
+                                                                const valueUnit = typeof value === 'object' && value !== null && value.unit ? 
+                                                                    value.unit : '';
+                                                                const displayText = valueUnit ? `${valueName} (${valueUnit})` : valueName;
+                                                                
+                                                                return `<span class="bg-blue-50 text-blue-800 px-2 py-1 rounded text-sm border">${displayText}</span>`;
+                                                            }).join('');
+                                                        })()}
+                                                    </div>
+                                                </div>
+                                            ` : `
+                                                <div class="text-sm text-gray-500 italic">No predefined values (manual entry allowed)</div>
+                                            `}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : `
+                                <div class="text-center text-gray-500 py-8">No attributes configured for this project</div>
+                            `}
+                        </div>
+                    </div>
+                    
+                    <!-- Review Data Section -->
+                    ${(project.reviewer_comments || project.admin_comments || project.reviewed_at || project.admin_reviewed_at) ? `
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm mr-2">REVIEW DATA</span>
+                                Review History
+                            </h3>
+                            <div class="space-y-4">
+                                ${project.reviewed_at ? `
+                                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <div class="text-sm font-medium text-blue-800">Reviewer Review</div>
+                                                <div class="text-xs text-blue-600">${new Date(project.reviewed_at).toLocaleString()}</div>
+                                            </div>
+                                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Reviewed</span>
+                                        </div>
+                                        ${project.reviewer_comments ? `
+                                            <div class="mt-2">
+                                                <div class="text-sm text-blue-700">${project.reviewer_comments}</div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                ` : ''}
+                                
+                                ${project.admin_reviewed_at ? `
+                                    <div class="bg-green-50 border-l-4 border-green-400 p-4">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <div class="text-sm font-medium text-green-800">Admin Review</div>
+                                                <div class="text-xs text-green-600">${new Date(project.admin_reviewed_at).toLocaleString()}</div>
+                                            </div>
+                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Admin Reviewed</span>
+                                        </div>
+                                        ${project.admin_comments ? `
+                                            <div class="mt-2">
+                                                <div class="text-sm text-green-700">${project.admin_comments}</div>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Review Actions Section -->
+                    ${(project.status === 'submitted' && currentUser.role === 'reviewer') || (project.status === 'reviewer_approved' && currentUser.role === 'admin') ? `
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm mr-2">REVIEW ACTIONS</span>
+                                Your Review Decision
+                            </h3>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="mb-4">
+                                    <label for="project-review-comments" class="block text-sm font-medium text-gray-700 mb-2">Comments:</label>
+                                    <textarea id="project-review-comments" rows="4" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Enter your review comments..."></textarea>
+                                </div>
+                                <div class="flex space-x-3">
+                                    <button onclick="submitProjectReview(${project.id}, 'approve')" 
+                                        class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600 font-medium">
+                                        Approve Project
+                                    </button>
+                                    <button onclick="submitProjectReview(${project.id}, 'reject')" 
+                                        class="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 font-medium">
+                                        Reject Project
+                                    </button>
+                                    <button onclick="closeProjectDetailModal()" 
+                                        class="bg-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-400">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closeProjectDetailModal() {
+    const modal = document.getElementById('project-detail-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// ===== ITEM CODE DETAILS MODAL =====
+async function viewItemCodeDetails(requestId) {
+    try {
+        // Fetch item code request details with project info
+        const { data: request, error } = await supabase
+            .from('item_code_workflow')
+            .select(`
+                *,
+                created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
+                admin_reviewed_by_user:users!item_code_workflow_admin_reviewed_by_fkey(username, email),
+                project:classification_projects(
+                    *,
+                    creator:users!classification_projects_created_by_fkey(username, email)
+                )
+            `)
+            .eq('id', requestId)
+            .single();
+
+        if (error) throw error;
+        if (!request) throw new Error('Item code request not found');
+
+        // Get project attributes if project exists
+        let projectAttributes = [];
+        if (request.project?.id) {
+            const { data: attrs } = await supabase
+                .from('project_attributes')
+                .select('*')
+                .eq('project_id', request.project.id)
+                .order('attribute_name');
+            projectAttributes = attrs || [];
+        }
+
+        showItemCodeDetailModal(request, projectAttributes);
+        
+    } catch (error) {
+        console.error('Error loading item code details:', error);
+        alert('Error loading request details: ' + error.message);
+    }
+}
+
+function showItemCodeDetailModal(request, projectAttributes) {
+    // Remove existing modal if present
+    const existingModal = document.getElementById('item-code-detail-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const statusDisplayText = {
+        'pending': 'Pending Review',
+        'reviewer_approved': 'Pending Admin Approval', 
+        'reviewer_rejected': 'Reviewer Rejected',
+        'admin_approved': 'Admin Approved',
+        'admin_rejected': 'Admin Rejected'
+    };
+
+    const statusColors = {
+        'pending': 'text-yellow-600',
+        'reviewer_approved': 'text-blue-600',
+        'reviewer_rejected': 'text-orange-600', 
+        'admin_approved': 'text-green-600',
+        'admin_rejected': 'text-red-600'
+    };
+
+    // Generate CSI hierarchy display
+    const project = request.project;
+    let csiHierarchy = '';
+    if (project) {
+        csiHierarchy = `
+            <div class="bg-gradient-to-r from-green-100 to-blue-100 p-4 rounded-lg mb-6">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14-7H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                    CSI Code Hierarchy
+                </h4>
+                <div class="flex flex-wrap items-center space-x-2 text-sm">
+                    <span class="px-3 py-1 bg-blue-200 text-blue-900 rounded font-medium">${project.division_code}</span>
+                    <span class="text-gray-500">&rarr;</span>
+                    <span class="px-3 py-1 bg-indigo-200 text-indigo-900 rounded font-medium">${project.section_code}</span>
+                    <span class="text-gray-500">&rarr;</span>
+                    <span class="px-3 py-1 bg-purple-200 text-purple-900 rounded font-medium">${project.detailed_section_code}</span>
+                    <span class="text-gray-500">&rarr;</span>
+                    <span class="px-3 py-1 bg-green-200 text-green-900 rounded font-medium">${project.item_code}</span>
+                    ${project.additional_level_name ? `
+                        <span class="text-gray-500">&rarr;</span>
+                        <span class="px-3 py-1 bg-yellow-200 text-yellow-900 rounded font-medium">${project.additional_level_value}</span>
+                    ` : ''}
+                </div>
+                <div class="mt-2 text-sm text-gray-600">
+                    <strong>Project:</strong> ${project.project_name}
+                </div>
+            </div>
+        `;
+    }
+
+    // Generate attribute selections display
+    let attributeSelectionsHtml = '';
+    if (request.attribute_selections) {
+        let selections;
+        
+        // Parse JSON string if needed
+        if (typeof request.attribute_selections === 'string') {
+            try {
+                selections = JSON.parse(request.attribute_selections);
+            } catch(e) {
+                console.warn('Failed to parse attribute_selections:', request.attribute_selections);
+                selections = {};
+            }
+        } else if (typeof request.attribute_selections === 'object' && request.attribute_selections !== null) {
+            selections = request.attribute_selections;
+        } else {
+            selections = {};
+        }
+        
+        const entries = Object.entries(selections);
+        if (entries.length > 0) {
+            attributeSelectionsHtml = `
+                <div class="mb-6">
+                    <h4 class="font-semibold text-gray-800 mb-3">Selected Attributes</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        ${entries.map(([attr, value]) => `
+                            <div class="bg-gray-50 p-3 rounded">
+                                <div class="font-medium text-gray-700">${attr}</div>
+                                <div class="text-blue-600">${value}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    const modalHtml = `
+        <div id="item-code-detail-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">Item Code Request Details</h2>
+                    <button onclick="closeItemCodeDetailModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="p-6 space-y-6">
+                    <!-- Basic Information -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Basic Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Request ID:</label>
+                                <p class="font-mono text-sm">#${request.id}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Status:</label>
+                                <p class="${statusColors[request.status] || 'text-gray-600'} font-medium">
+                                    ${statusDisplayText[request.status] || request.status}
+                                </p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Item Code:</label>
+                                <p class="font-mono font-bold text-blue-600">${request.item_code || 'Not generated'}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Created:</label>
+                                <p>${new Date(request.created_at).toLocaleString()}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Created by:</label>
+                                <p>${request.created_by_user?.username || 'Unknown'} (${request.created_by_user?.email || 'N/A'})</p>
+                            </div>
+                            ${request.reviewed_by_user ? `
+                                <div>
+                                    <label class="text-sm font-medium text-gray-600">Reviewed by:</label>
+                                    <p>${request.reviewed_by_user.username} (${request.reviewed_by_user.email})</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- CSI Hierarchy (if project exists) -->
+                    ${csiHierarchy}
+
+                    <!-- Item Details -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Item Details</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Description 1:</label>
+                                <p>${request.description1 || 'Not specified'}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Description 2:</label>
+                                <p>${request.description2 || 'Not specified'}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Unit of Measure:</label>
+                                <p>${request.uom || 'Not specified'}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Country of Origin:</label>
+                                <p>${request.country_of_origin || 'Not specified'}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Model Number:</label>
+                                <p>${request.model_number || 'Not specified'}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Manufacturer:</label>
+                                <p>${request.manufacturer || 'Not specified'}</p>
+                            </div>
+                            ${request.unit_price ? `
+                                <div>
+                                    <label class="text-sm font-medium text-gray-600">Unit Price:</label>
+                                    <p>${request.unit_price} ${request.currency_code || ''}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Selected Attributes -->
+                    ${attributeSelectionsHtml}
+
+                    <!-- Review Comments -->
+                    ${request.review_comments || request.admin_comments ? `
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Review Comments</h3>
+                            <div class="space-y-3">
+                                ${request.review_comments ? `
+                                    <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <div class="font-medium text-yellow-800">Reviewer Comments:</div>
+                                        <p class="mt-1 text-yellow-700">${request.review_comments}</p>
+                                        ${request.reviewed_at ? `<div class="text-xs text-yellow-600 mt-2">Reviewed: ${new Date(request.reviewed_at).toLocaleString()}</div>` : ''}
+                                    </div>
+                                ` : ''}
+                                ${request.admin_comments ? `
+                                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <div class="font-medium text-blue-800">Admin Comments:</div>
+                                        <p class="mt-1 text-blue-700">${request.admin_comments}</p>
+                                        ${request.admin_reviewed_at ? `<div class="text-xs text-blue-600 mt-2">Admin Reviewed: ${new Date(request.admin_reviewed_at).toLocaleString()}</div>` : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- Review Actions -->
+                    ${(currentUser.role === 'reviewer' && request.status === 'pending' && (request.reviewed_by === currentUser.id || !request.reviewed_by)) ||
+                      (currentUser.role === 'admin' && request.status === 'reviewer_approved') ? `
+                        <div class="border-t pt-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Review Actions</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Comments:</label>
+                                    <textarea id="item-code-review-comments" 
+                                              class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                              rows="4" 
+                                              placeholder="Enter your review comments..."></textarea>
+                                </div>
+                                <div class="flex space-x-3">
+                                    <button onclick="submitItemCodeReview(${request.id}, 'approve')" 
+                                            class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-medium">
+                                        Approve
+                                    </button>
+                                    <button onclick="submitItemCodeReview(${request.id}, 'reject')" 
+                                            class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-medium">
+                                        Reject
+                                    </button>
+                                    <button onclick="closeItemCodeDetailModal()" 
+                                            class="bg-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-400">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closeItemCodeDetailModal() {
+    const modal = document.getElementById('item-code-detail-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+async function submitItemCodeReview(requestId, decision) {
+    try {
+        const comments = document.getElementById('item-code-review-comments').value.trim();
+        
+        if (!comments) {
+            alert('Please provide review comments');
+            return;
+        }
+        
+        const confirmed = confirm(`Are you sure you want to ${decision} this item code request?`);
+        if (!confirmed) return;
+        
+        // Call the appropriate review function
+        if (currentUser.role === 'reviewer') {
+            await reviewItemCodeRequest(requestId, decision, comments);
+        } else if (currentUser.role === 'admin') {
+            await adminReviewItemCodeRequest(requestId, decision, comments);
+        }
+        
+        // Close modal and refresh data
+        closeItemCodeDetailModal();
+        await switchPendingSubTab('item-codes');
+        
+    } catch (error) {
+        console.error('Error submitting item code review:', error);
+        alert('Error submitting review: ' + error.message);
+    }
+}
+
+// ===== STANDARD VALUE DETAILS MODAL =====
+async function viewStandardValueDetails(requestId) {
+    try {
+        // Fetch standard value request details with project and attribute info
+        const { data: request, error } = await supabase
+            .from('standard_value_requests')
+            .select(`
+                *,
+                created_by_user:users!standard_value_requests_created_by_fkey(username, email),
+                reviewed_by_user:users!standard_value_requests_reviewed_by_fkey(username, email),
+                admin_reviewed_by_user:users!standard_value_requests_admin_reviewed_by_fkey(username, email),
+                project:classification_projects(*),
+                attribute:project_attributes(*)
+            `)
+            .eq('id', requestId)
+            .single();
+
+        if (error) throw error;
+        if (!request) throw new Error('Standard value request not found');
+
+        showStandardValueDetailModal(request);
+        
+    } catch (error) {
+        console.error('Error loading standard value details:', error);
+        alert('Error loading request details: ' + error.message);
+    }
+}
+
+function showStandardValueDetailModal(request) {
+    // Remove existing modal if present
+    const existingModal = document.getElementById('standard-value-detail-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const statusDisplayText = {
+        'pending': 'Pending Review',
+        'reviewer_approved': 'Pending Admin Approval', 
+        'reviewer_rejected': 'Reviewer Rejected',
+        'admin_approved': 'Admin Approved',
+        'admin_rejected': 'Admin Rejected'
+    };
+
+    const statusColors = {
+        'pending': 'text-yellow-600',
+        'reviewer_approved': 'text-blue-600',
+        'reviewer_rejected': 'text-orange-600', 
+        'admin_approved': 'text-green-600',
+        'admin_rejected': 'text-red-600'
+    };
+
+    // Generate existing standard values display
+    let existingValuesHtml = '';
+    if (request.attribute && request.attribute.standard_values) {
+        let standardValues = request.attribute.standard_values;
+        
+        // Parse JSON string if needed
+        if (typeof standardValues === 'string') {
+            try {
+                standardValues = JSON.parse(standardValues);
+            } catch(e) {
+                console.warn('Failed to parse standard_values:', standardValues);
+                standardValues = [];
+            }
+        }
+        
+        // Ensure it's an array
+        if (!Array.isArray(standardValues)) {
+            console.warn('Standard values is not an array:', standardValues);
+            standardValues = [];
+        }
+        
+        if (standardValues.length > 0) {
+            existingValuesHtml = `
+                <div class="mb-6">
+                    <h4 class="font-semibold text-gray-800 mb-3">Current Standard Values</h4>
+                    <div class="flex flex-wrap gap-2">
+                        ${standardValues.map(value => {
+                            // Handle both object and string formats
+                            const valueName = typeof value === 'object' && value !== null ? 
+                                (value.name || String(value)) : String(value);
+                            const valueUnit = typeof value === 'object' && value !== null && value.unit ? 
+                                value.unit : '';
+                            const displayText = valueUnit ? `${valueName} (${valueUnit})` : valueName;
+                            
+                            return `
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                    ${displayText}
+                                </span>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    const modalHtml = `
+        <div id="standard-value-detail-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">Standard Value Request Details</h2>
+                    <button onclick="closeStandardValueDetailModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="p-6 space-y-6">
+                    <!-- Basic Information -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Basic Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Request ID:</label>
+                                <p class="font-mono text-sm">#${request.id}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Status:</label>
+                                <p class="${statusColors[request.status] || 'text-gray-600'} font-medium">
+                                    ${statusDisplayText[request.status] || request.status}
+                                </p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Project:</label>
+                                <p>${request.project?.project_name || 'Unknown Project'}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Created:</label>
+                                <p>${new Date(request.created_at).toLocaleString()}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Created by:</label>
+                                <p>${request.created_by_user?.username || 'Unknown'} (${request.created_by_user?.email || 'N/A'})</p>
+                            </div>
+                            ${request.reviewed_by_user ? `
+                                <div>
+                                    <label class="text-sm font-medium text-gray-600">Reviewed by:</label>
+                                    <p>${request.reviewed_by_user.username} (${request.reviewed_by_user.email})</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Attribute Information -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Attribute Information</h3>
+                        <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-sm font-medium text-blue-700">Attribute Name:</label>
+                                    <p class="font-semibold text-blue-900">${request.attribute_name}</p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-blue-700">Mandatory:</label>
+                                    <p class="text-blue-900">${request.attribute?.is_mandatory ? 'Yes' : 'No'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Existing Standard Values -->
+                    ${existingValuesHtml}
+
+                    <!-- New Value Request -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">New Value Request</h3>
+                        <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="text-sm font-medium text-green-700">Requested New Value:</label>
+                                    <p class="font-bold text-green-900 text-lg">${request.new_value}</p>
+                                </div>
+                            </div>
+                            ${request.reason ? `
+                                <div>
+                                    <label class="text-sm font-medium text-green-700">Reason for Request:</label>
+                                    <p class="text-green-900 mt-1">${request.reason}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Review Comments -->
+                    ${request.reviewer_comments || request.admin_comments ? `
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Review Comments</h3>
+                            <div class="space-y-3">
+                                ${request.reviewer_comments ? `
+                                    <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <div class="font-medium text-yellow-800">Reviewer Comments:</div>
+                                        <p class="mt-1 text-yellow-700">${request.reviewer_comments}</p>
+                                        ${request.reviewed_at ? `<div class="text-xs text-yellow-600 mt-2">Reviewed: ${new Date(request.reviewed_at).toLocaleString()}</div>` : ''}
+                                    </div>
+                                ` : ''}
+                                ${request.admin_comments ? `
+                                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <div class="font-medium text-blue-800">Admin Comments:</div>
+                                        <p class="mt-1 text-blue-700">${request.admin_comments}</p>
+                                        ${request.admin_reviewed_at ? `<div class="text-xs text-blue-600 mt-2">Admin Reviewed: ${new Date(request.admin_reviewed_at).toLocaleString()}</div>` : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- Review Actions -->
+                    ${(currentUser.role === 'reviewer' && request.status === 'pending' && (request.reviewed_by === currentUser.id || !request.reviewed_by)) ||
+                      (currentUser.role === 'admin' && request.status === 'reviewer_approved') ? `
+                        <div class="border-t pt-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Review Actions</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Comments:</label>
+                                    <textarea id="standard-value-review-comments" 
+                                              class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                              rows="4" 
+                                              placeholder="Enter your review comments..."></textarea>
+                                </div>
+                                <div class="flex space-x-3">
+                                    <button onclick="submitStandardValueReview(${request.id}, 'approve')" 
+                                            class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-medium">
+                                        Approve
+                                    </button>
+                                    <button onclick="submitStandardValueReview(${request.id}, 'reject')" 
+                                            class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-medium">
+                                        Reject
+                                    </button>
+                                    <button onclick="closeStandardValueDetailModal()" 
+                                            class="bg-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-400">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closeStandardValueDetailModal() {
+    const modal = document.getElementById('standard-value-detail-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+async function submitStandardValueReview(requestId, decision) {
+    try {
+        const comments = document.getElementById('standard-value-review-comments').value.trim();
+        
+        if (!comments) {
+            alert('Please provide review comments');
+            return;
+        }
+        
+        const confirmed = confirm(`Are you sure you want to ${decision} this standard value request?`);
+        if (!confirmed) return;
+        
+        // Call the appropriate review function
+        if (currentUser.role === 'reviewer') {
+            await reviewStandardValueRequest(requestId, decision, comments);
+        } else if (currentUser.role === 'admin') {
+            await adminReviewStandardValueRequest(requestId, decision, comments);
+        }
+        
+        // Close modal and refresh data
+        closeStandardValueDetailModal();
+        await switchPendingSubTab('standard-values');
+        
+    } catch (error) {
+        console.error('Error submitting standard value review:', error);
+        alert('Error submitting review: ' + error.message);
+    }
+}
+
+// ===== COMBINATION DETAILS MODAL =====
+async function viewCombinationDetails(requestId) {
+    try {
+        // Fetch combination request details with project info
+        const { data: request, error } = await supabase
+            .from('combination_requests')
+            .select(`
+                *,
+                created_by_user:users!combination_requests_created_by_fkey(username, email),
+                reviewed_by_user:users!combination_requests_reviewed_by_fkey(username, email),
+                admin_reviewed_by_user:users!combination_requests_admin_reviewed_by_fkey(username, email),
+                project:classification_projects(
+                    *,
+                    creator:users!classification_projects_created_by_fkey(username, email)
+                )
+            `)
+            .eq('id', requestId)
+            .single();
+
+        if (error) throw error;
+        if (!request) throw new Error('Combination request not found');
+
+        // Get project attributes if project exists
+        let projectAttributes = [];
+        if (request.project?.id) {
+            const { data: attrs } = await supabase
+                .from('project_attributes')
+                .select('*')
+                .eq('project_id', request.project.id)
+                .order('attribute_name');
+            projectAttributes = attrs || [];
+        }
+
+        showCombinationDetailModal(request, projectAttributes);
+        
+    } catch (error) {
+        console.error('Error loading combination details:', error);
+        alert('Error loading request details: ' + error.message);
+    }
+}
+
+function showCombinationDetailModal(request, projectAttributes) {
+    // Remove existing modal if present
+    const existingModal = document.getElementById('combination-detail-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const statusDisplayText = {
+        'pending': 'Pending Review',
+        'reviewer_approved': 'Pending Admin Approval', 
+        'reviewer_rejected': 'Reviewer Rejected',
+        'admin_approved': 'Admin Approved',
+        'admin_rejected': 'Admin Rejected'
+    };
+
+    const statusColors = {
+        'pending': 'text-yellow-600',
+        'reviewer_approved': 'text-blue-600',
+        'reviewer_rejected': 'text-orange-600', 
+        'admin_approved': 'text-green-600',
+        'admin_rejected': 'text-red-600'
+    };
+
+    const requestTypeDisplay = {
+        'generate': { label: 'Generate Item Code', color: 'text-green-600', bgColor: 'bg-green-100' },
+        'block': { label: 'Block Combination', color: 'text-red-600', bgColor: 'bg-red-100' }
+    };
+
+    const typeInfo = requestTypeDisplay[request.request_type] || requestTypeDisplay['generate'];
+
+    // Generate CSI hierarchy display
+    const project = request.project;
+    let csiHierarchy = '';
+    if (project) {
+        csiHierarchy = `
+            <div class="bg-gradient-to-r from-green-100 to-blue-100 p-4 rounded-lg mb-6">
+                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14-7H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                    Project CSI Hierarchy
+                </h4>
+                <div class="flex flex-wrap items-center space-x-2 text-sm">
+                    <span class="px-3 py-1 bg-blue-200 text-blue-900 rounded font-medium">${project.division_code}</span>
+                    <span class="text-gray-500">&rarr;</span>
+                    <span class="px-3 py-1 bg-indigo-200 text-indigo-900 rounded font-medium">${project.section_code}</span>
+                    <span class="text-gray-500">&rarr;</span>
+                    <span class="px-3 py-1 bg-purple-200 text-purple-900 rounded font-medium">${project.detailed_section_code}</span>
+                    <span class="text-gray-500">&rarr;</span>
+                    <span class="px-3 py-1 bg-green-200 text-green-900 rounded font-medium">${project.item_code}</span>
+                    ${project.additional_level_name ? `
+                        <span class="text-gray-500">&rarr;</span>
+                        <span class="px-3 py-1 bg-yellow-200 text-yellow-900 rounded font-medium">${project.additional_level_value}</span>
+                    ` : ''}
+                </div>
+                <div class="mt-2 text-sm text-gray-600">
+                    <strong>Project:</strong> ${project.project_name}
+                </div>
+            </div>
+        `;
+    }
+
+    // Generate attribute selections display
+    let attributeSelectionsHtml = '';
+    if (request.attribute_selections) {
+        let selections;
+        
+        // Parse JSON string if needed
+        if (typeof request.attribute_selections === 'string') {
+            try {
+                selections = JSON.parse(request.attribute_selections);
+            } catch(e) {
+                console.warn('Failed to parse attribute_selections:', request.attribute_selections);
+                selections = {};
+            }
+        } else if (typeof request.attribute_selections === 'object' && request.attribute_selections !== null) {
+            selections = request.attribute_selections;
+        } else {
+            selections = {};
+        }
+        
+        const entries = Object.entries(selections);
+        if (entries.length > 0) {
+            attributeSelectionsHtml = `
+                <div class="mb-6">
+                    <h4 class="font-semibold text-gray-800 mb-3">Selected Attribute Combination</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        ${entries.map(([attr, value]) => `
+                            <div class="bg-gray-50 p-3 rounded border-l-4 border-blue-500">
+                                <div class="font-medium text-gray-700">${attr}</div>
+                                <div class="text-blue-600 font-semibold">${value}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    const modalHtml = `
+        <div id="combination-detail-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-gray-800">Combination Request Details</h2>
+                    <button onclick="closeCombinationDetailModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="p-6 space-y-6">
+                    <!-- Basic Information -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Basic Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Request ID:</label>
+                                <p class="font-mono text-sm">#${request.id}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Request Type:</label>
+                                <p class="${typeInfo.color} font-medium">${typeInfo.label}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Status:</label>
+                                <p class="${statusColors[request.status] || 'text-gray-600'} font-medium">
+                                    ${statusDisplayText[request.status] || request.status}
+                                </p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Created:</label>
+                                <p>${new Date(request.created_at).toLocaleString()}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-600">Created by:</label>
+                                <p>${request.created_by_user?.username || 'Unknown'} (${request.created_by_user?.email || 'N/A'})</p>
+                            </div>
+                            ${request.reviewed_by_user ? `
+                                <div>
+                                    <label class="text-sm font-medium text-gray-600">Reviewed by:</label>
+                                    <p>${request.reviewed_by_user.username} (${request.reviewed_by_user.email})</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- CSI Hierarchy (if project exists) -->
+                    ${csiHierarchy}
+
+                    <!-- Request-specific Details -->
+                    ${request.request_type === 'generate' ? `
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Item Generation Details</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                                ${request.uom ? `
+                                    <div>
+                                        <label class="text-sm font-medium text-green-700">Unit of Measure:</label>
+                                        <p class="text-green-900">${request.uom}</p>
+                                    </div>
+                                ` : ''}
+                                ${request.country_of_origin ? `
+                                    <div>
+                                        <label class="text-sm font-medium text-green-700">Country of Origin:</label>
+                                        <p class="text-green-900">${request.country_of_origin}</p>
+                                    </div>
+                                ` : ''}
+                                ${request.model_number ? `
+                                    <div>
+                                        <label class="text-sm font-medium text-green-700">Model Number:</label>
+                                        <p class="text-green-900">${request.model_number}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : `
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Block Request Details</h3>
+                            ${request.reason ? `
+                                <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                                    <div>
+                                        <label class="text-sm font-medium text-red-700">Reason for Blocking:</label>
+                                        <p class="text-red-900 mt-1">${request.reason}</p>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `}
+
+                    <!-- Selected Attributes -->
+                    ${attributeSelectionsHtml}
+
+                    <!-- Review Comments -->
+                    ${request.reviewer_comments || request.admin_comments ? `
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Review Comments</h3>
+                            <div class="space-y-3">
+                                ${request.reviewer_comments ? `
+                                    <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <div class="font-medium text-yellow-800">Reviewer Comments:</div>
+                                        <p class="mt-1 text-yellow-700">${request.reviewer_comments}</p>
+                                        ${request.reviewed_at ? `<div class="text-xs text-yellow-600 mt-2">Reviewed: ${new Date(request.reviewed_at).toLocaleString()}</div>` : ''}
+                                    </div>
+                                ` : ''}
+                                ${request.admin_comments ? `
+                                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <div class="font-medium text-blue-800">Admin Comments:</div>
+                                        <p class="mt-1 text-blue-700">${request.admin_comments}</p>
+                                        ${request.admin_reviewed_at ? `<div class="text-xs text-blue-600 mt-2">Admin Reviewed: ${new Date(request.admin_reviewed_at).toLocaleString()}</div>` : ''}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- Review Actions -->
+                    ${(currentUser.role === 'reviewer' && request.status === 'pending' && (request.reviewed_by === currentUser.id || !request.reviewed_by)) ||
+                      (currentUser.role === 'admin' && request.status === 'reviewer_approved') ? `
+                        <div class="border-t pt-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Review Actions</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Comments:</label>
+                                    <textarea id="combination-review-comments" 
+                                              class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                              rows="4" 
+                                              placeholder="Enter your review comments..."></textarea>
+                                </div>
+                                <div class="flex space-x-3">
+                                    <button onclick="submitCombinationReview(${request.id}, 'approve')" 
+                                            class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-medium">
+                                        Approve
+                                    </button>
+                                    <button onclick="submitCombinationReview(${request.id}, 'reject')" 
+                                            class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-medium">
+                                        Reject
+                                    </button>
+                                    <button onclick="closeCombinationDetailModal()" 
+                                            class="bg-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-400">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closeCombinationDetailModal() {
+    const modal = document.getElementById('combination-detail-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+async function submitCombinationReview(requestId, decision) {
+    try {
+        const comments = document.getElementById('combination-review-comments').value.trim();
+        
+        if (!comments) {
+            alert('Please provide review comments');
+            return;
+        }
+        
+        const confirmed = confirm(`Are you sure you want to ${decision} this combination request?`);
+        if (!confirmed) return;
+        
+        // Call the appropriate review function
+        if (currentUser.role === 'reviewer') {
+            await reviewCombinationRequest(requestId, decision, comments);
+        } else if (currentUser.role === 'admin') {
+            await adminReviewCombinationRequest(requestId, decision, comments);
+        }
+        
+        // Close modal and refresh data
+        closeCombinationDetailModal();
+        await switchPendingSubTab('combinations');
+        
+    } catch (error) {
+        console.error('Error submitting combination review:', error);
+        alert('Error submitting review: ' + error.message);
+    }
+}
+
+async function submitProjectReview(projectId, decision) {
+    try {
+        const comments = document.getElementById('project-review-comments').value.trim();
+        
+        if (!comments) {
+            alert('Please provide review comments');
+            return;
+        }
+        
+        const confirmed = confirm(`Are you sure you want to ${decision} this project?`);
+        if (!confirmed) return;
+        
+        // Call the appropriate review function
+        if (currentUser.role === 'reviewer') {
+            await reviewProject(projectId, decision, comments);
+        } else if (currentUser.role === 'admin') {
+            await adminReviewProject(projectId, decision, comments);
+        }
+        
+        // Close modal and refresh data
+        closeProjectDetailModal();
+        await switchPendingSubTab('classification-projects');
+        
+    } catch (error) {
+        console.error('Error submitting project review:', error);
+        alert('Error submitting review: ' + error.message);
+    }
+}
+
 function createDetailedAdminReviewCard(item) {
     const card = document.createElement('div');
     card.className = `request-card bg-white border rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow ${
@@ -2938,25 +5039,25 @@ function createDetailedAdminReviewCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: '', 
+            icon: '📁', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: '', 
+            icon: '📦', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: '', 
+            icon: '📊', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: '', 
+            icon: '🚫', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -3403,10 +5504,10 @@ function createSimpleReviewerCard(item) {
     card.className = 'request-card bg-white border rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow border-l-4 border-l-blue-500';
     
     const typeInfo = {
-        'project': { icon: '', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
-        'code': { icon: '', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
-        'value': { icon: '', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
-        'block': { icon: '', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
+        'project': { icon: '📁', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
+        'code': { icon: '📦', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
+        'value': { icon: '📊', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
+        'block': { icon: '🚫', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
     };
 
     const info = typeInfo[item.type] || typeInfo['code'];
@@ -3528,25 +5629,25 @@ function createDetailedReviewerCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: '', 
+            icon: '📁', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: '', 
+            icon: '📦', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: '', 
+            icon: '📊', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: '', 
+            icon: '🚫', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -3808,7 +5909,7 @@ async function reviewReviewerRequest(type, requestId, decision) {
             
             alert(result.message || 'Review submitted successfully');
             await loadPendingRequests();
-            await loadDashboardStats();
+            await loadWorkflowDashboard();
         } else {
             alert(result?.message || 'Error processing review');
         }
@@ -4312,12 +6413,12 @@ function displayAllRequests(requests) {
 
 function getTypeIcon(type) {
     const icons = {
-        project: '',
-        code: '',
-        block: '',
-        value: ''
+        project: '📁',
+        code: '📦',
+        block: '🚫',
+        value: '📊'
     };
-    return icons[type] || '';
+    return icons[type] || '📄';
 }
 
 function createAllRequestCard(request) {
@@ -5045,43 +7146,315 @@ async function submitAdminReview(type, id, decision, comments) {
         };
     }
 }
-// ===== DASHBOARD STATS =====
-async function loadDashboardStats() {
+// ===== WORKFLOW DASHBOARD =====
+async function loadWorkflowDashboard() {
     try {
-        console.log('Loading dashboard stats for user:', currentUser);
+        console.log('Loading workflow dashboard for user:', currentUser);
         
-        if (currentUser.role === 'reviewer') {
-            const { data: stats, error } = await supabase
-                .rpc('get_reviewer_stats', { reviewer_id_param: currentUser.id });
-            
-            if (error) throw error;
-            
-            console.log('Reviewer stats:', stats);
-            
-            if (stats) {
-                document.getElementById('pending-count').textContent = stats.pending || 0;
-                document.getElementById('approved-count').textContent = stats.approved || 0;
-                document.getElementById('rejected-count').textContent = stats.rejected || 0;
-                document.getElementById('reviewer-approved-count').textContent = stats.total_assigned || 0;
-            }
-        } else if (currentUser.role === 'admin') {
-            const { data: stats, error } = await supabase
-                .rpc('get_admin_stats', { admin_id_param: currentUser.id });
-            
-            if (error) throw error;
-            
-            console.log('Admin stats:', stats);
-            
-            if (stats) {
-                document.getElementById('pending-count').textContent = stats.pending_admin_approval || 0;
-                document.getElementById('approved-count').textContent = stats.admin_approved || 0;
-                document.getElementById('rejected-count').textContent = stats.admin_rejected || 0;
-                document.getElementById('reviewer-approved-count').textContent = stats.total_in_system || 0;
-            }
-        }
+        // Load all workflow statistics
+        const [projectStats, itemCodeStats, standardValueStats, combinationStats] = await Promise.all([
+            supabase.rpc('get_project_workflow_stats', { user_id_param: currentUser.id, user_role_param: currentUser.role }),
+            supabase.rpc('get_item_code_workflow_stats', { user_id_param: currentUser.id, user_role_param: currentUser.role }),
+            supabase.rpc('get_standard_value_workflow_stats', { user_id_param: currentUser.id, user_role_param: currentUser.role }),
+            supabase.rpc('get_combination_workflow_stats', { user_id_param: currentUser.id, user_role_param: currentUser.role })
+        ]);
+        
+        if (projectStats.error) console.error('Project stats error:', projectStats.error);
+        if (itemCodeStats.error) console.error('Item code stats error:', itemCodeStats.error);
+        if (standardValueStats.error) console.error('Standard value stats error:', standardValueStats.error);
+        if (combinationStats.error) console.error('Combination stats error:', combinationStats.error);
+        
+        // Store stats globally for use by individual charts
+        window.workflowStats = {
+            projects: projectStats.data || {},
+            itemCodes: itemCodeStats.data || {},
+            standardValues: standardValueStats.data || {},
+            combinations: combinationStats.data || {},
+            combined: calculateCombinedStats(projectStats.data, itemCodeStats.data, standardValueStats.data, combinationStats.data)
+        };
+        
+        // Load the default view (all types combined)
+        renderWorkflowChart('all', window.workflowStats.combined);
+        
+        // Add event listeners for workflow tabs
+        document.querySelectorAll('.workflow-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchWorkflowTab(btn.dataset.workflow));
+        });
+        
     } catch (error) {
-        console.error('Error loading dashboard stats:', error);
+        console.error('Error loading workflow dashboard:', error);
+        // Show error message in dashboard
+        document.getElementById('all-workflow-chart').innerHTML = 
+            '<div class="text-center text-red-500 py-8">Error loading dashboard data. Please refresh the page.</div>';
     }
+}
+
+function calculateCombinedStats(projects, itemCodes, standardValues, combinations) {
+    const combined = {
+        submitted: 0,
+        pending_reviewer: 0,
+        reviewer_approved: 0,
+        reviewer_rejected: 0,
+        pending_admin: 0,
+        admin_approved: 0,
+        admin_rejected: 0,
+        erp_integrated: 0,
+        erp_pending: 0
+    };
+    
+    // Add stats from all sources
+    [projects, itemCodes, standardValues, combinations].forEach(stats => {
+        if (stats) {
+            combined.submitted += stats.submitted || 0;
+            combined.pending_reviewer += stats.pending_reviewer || 0;
+            combined.reviewer_approved += stats.reviewer_approved || 0;
+            combined.reviewer_rejected += stats.reviewer_rejected || 0;
+            combined.pending_admin += stats.pending_admin || 0;
+            combined.admin_approved += stats.admin_approved || 0;
+            combined.admin_rejected += stats.admin_rejected || 0;
+            combined.erp_integrated += stats.erp_integrated || 0;
+            combined.erp_pending += stats.erp_pending || 0;
+        }
+    });
+    
+    return combined;
+}
+
+function switchWorkflowTab(workflowType) {
+    // Update tab buttons
+    document.querySelectorAll('.workflow-tab-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-blue-500', 'text-blue-600', 'bg-blue-50');
+        btn.classList.add('border-transparent', 'text-gray-500');
+    });
+    
+    const activeBtn = document.querySelector(`[data-workflow="${workflowType}"]`);
+    activeBtn.classList.add('active', 'border-blue-500', 'text-blue-600', 'bg-blue-50');
+    activeBtn.classList.remove('border-transparent', 'text-gray-500');
+    
+    // Hide all workflow content sections
+    document.querySelectorAll('.workflow-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    
+    // Show selected workflow content
+    document.getElementById(`workflow-${workflowType}`).classList.remove('hidden');
+    
+    // Render appropriate chart
+    const statsMap = {
+        'all': window.workflowStats.combined,
+        'projects': window.workflowStats.projects,
+        'item-codes': window.workflowStats.itemCodes,
+        'standard-values': window.workflowStats.standardValues,
+        'combinations': window.workflowStats.combinations
+    };
+    
+    renderWorkflowChart(workflowType, statsMap[workflowType]);
+}
+
+function renderWorkflowChart(workflowType, stats) {
+    const containerId = workflowType === 'all' ? 'all-workflow-chart' : `${workflowType.replace('-', '-')}-workflow-chart`;
+    const container = document.getElementById(containerId);
+    
+    if (!container) {
+        console.error('Container not found:', containerId);
+        return;
+    }
+    
+    const workflowTitle = {
+        'all': 'All Request Types Combined',
+        'projects': 'Classification Projects Workflow',
+        'item-codes': 'Item Code Requests Workflow', 
+        'standard-values': 'Standard Value Requests Workflow',
+        'combinations': 'Combination Requests Workflow'
+    }[workflowType];
+    
+    // For item codes, show ERP integration branch
+    const showERPBranch = workflowType === 'item-codes' || workflowType === 'all';
+    
+    container.innerHTML = `
+        <div class="workflow-chart">
+            <div class="workflow-section-title">${workflowTitle}</div>
+            
+            <!-- Main Workflow Row -->
+            <div class="workflow-row">
+                <!-- Submitted -->
+                <div class="workflow-step">
+                    <div class="workflow-milestone milestone-submitted" onclick="showWorkflowDetail('${workflowType}', 'submitted', ${stats.submitted || 0})">
+                        <div class="milestone-count">${stats.submitted || 0}</div>
+                        <div class="milestone-label">Submitted</div>
+                    </div>
+                    <div class="text-xs text-gray-600 mt-2 font-medium">Initial Submission</div>
+                    <div class="workflow-arrow"></div>
+                </div>
+                
+                <!-- Reviewer Decision Point -->
+                <div class="workflow-step">
+                    <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
+                        <!-- Pending Reviewer -->
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="workflow-milestone milestone-submitted" onclick="showWorkflowDetail('${workflowType}', 'pending_reviewer', ${stats.pending_reviewer || 0})">
+                                <div class="milestone-count">${stats.pending_reviewer || 0}</div>
+                                <div class="milestone-label">Pending</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Reviewer Approved -->
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="workflow-milestone milestone-reviewer-approved" onclick="showWorkflowDetail('${workflowType}', 'reviewer_approved', ${stats.reviewer_approved || 0})">
+                                <div class="milestone-count">${stats.reviewer_approved || 0}</div>
+                                <div class="milestone-label">Approved</div>
+                            </div>
+                            <div class="workflow-arrow"></div>
+                        </div>
+                        
+                        <!-- Reviewer Rejected -->
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="workflow-milestone milestone-reviewer-rejected" onclick="showWorkflowDetail('${workflowType}', 'reviewer_rejected', ${stats.reviewer_rejected || 0})">
+                                <div class="milestone-count">${stats.reviewer_rejected || 0}</div>
+                                <div class="milestone-label">Rejected</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-600 mt-2 font-medium">Reviewer Decision</div>
+                </div>
+                
+                <!-- Admin Decision Point -->
+                <div class="workflow-step">
+                    <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
+                        <!-- Pending Admin -->
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="workflow-milestone milestone-submitted" onclick="showWorkflowDetail('${workflowType}', 'pending_admin', ${stats.pending_admin || 0})">
+                                <div class="milestone-count">${stats.pending_admin || 0}</div>
+                                <div class="milestone-label">Pending</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Admin Approved -->
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="workflow-milestone milestone-admin-approved" onclick="showWorkflowDetail('${workflowType}', 'admin_approved', ${stats.admin_approved || 0})">
+                                <div class="milestone-count">${stats.admin_approved || 0}</div>
+                                <div class="milestone-label">Approved</div>
+                            </div>
+                            ${showERPBranch ? '<div class="workflow-arrow"></div>' : ''}
+                        </div>
+                        
+                        <!-- Admin Rejected -->
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="workflow-milestone milestone-admin-rejected" onclick="showWorkflowDetail('${workflowType}', 'admin_rejected', ${stats.admin_rejected || 0})">
+                                <div class="milestone-count">${stats.admin_rejected || 0}</div>
+                                <div class="milestone-label">Rejected</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-600 mt-2 font-medium">Admin Decision</div>
+                </div>
+                
+                ${showERPBranch ? `
+                <!-- ERP Integration (Item Codes Only) -->
+                <div class="workflow-step">
+                    <div style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
+                        <!-- ERP Integrated -->
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="workflow-milestone milestone-erp-integrated" onclick="showWorkflowDetail('${workflowType}', 'erp_integrated', ${stats.erp_integrated || 0})">
+                                <div class="milestone-count">${stats.erp_integrated || 0}</div>
+                                <div class="milestone-label">Integrated</div>
+                            </div>
+                        </div>
+                        
+                        <!-- ERP Pending -->
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="workflow-milestone milestone-erp-pending" onclick="showWorkflowDetail('${workflowType}', 'erp_pending', ${stats.erp_pending || 0})">
+                                <div class="milestone-count">${stats.erp_pending || 0}</div>
+                                <div class="milestone-label">Pending</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-600 mt-2 font-medium">ERP Integration</div>
+                </div>
+                ` : ''}
+            </div>
+            
+            <!-- Workflow Legend -->
+            <div class="mt-8 p-4 bg-white rounded-lg border">
+                <div class="text-sm font-semibold text-gray-700 mb-3">Workflow Guide</div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500"></div>
+                        <span>Submitted - Awaiting reviewer</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 rounded-full bg-gradient-to-r from-blue-400 to-blue-500"></div>
+                        <span>Reviewer Approved</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 rounded-full bg-gradient-to-r from-green-400 to-green-500"></div>
+                        <span>Admin Approved</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 rounded-full bg-gradient-to-r from-red-400 to-red-500"></div>
+                        <span>Rejected</span>
+                    </div>
+                    ${showERPBranch ? `
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 rounded-full bg-gradient-to-r from-purple-400 to-purple-500"></div>
+                        <span>ERP Integrated</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-4 h-4 rounded-full bg-gradient-to-r from-yellow-300 to-yellow-400"></div>
+                        <span>ERP Pending</span>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function showWorkflowDetail(workflowType, status, count) {
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'workflow-overlay';
+    overlay.onclick = closeWorkflowDetail;
+    
+    // Create popup
+    const popup = document.createElement('div');
+    popup.className = 'workflow-detail-popup';
+    
+    const statusLabels = {
+        'submitted': 'Total Submitted Requests',
+        'pending_reviewer': 'Pending Reviewer Decision',
+        'reviewer_approved': 'Reviewer Approved Requests', 
+        'reviewer_rejected': 'Reviewer Rejected Requests',
+        'pending_admin': 'Pending Admin Decision',
+        'admin_approved': 'Admin Approved Requests',
+        'admin_rejected': 'Admin Rejected Requests',
+        'erp_integrated': 'ERP Integrated Items',
+        'erp_pending': 'ERP Integration Pending'
+    };
+    
+    popup.innerHTML = `
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">${statusLabels[status] || status}</h3>
+            <button onclick="closeWorkflowDetail()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        <div class="mb-4">
+            <div class="text-3xl font-bold text-blue-600">${count}</div>
+            <div class="text-sm text-gray-600">Total requests in this status</div>
+        </div>
+        <div class="text-sm text-gray-700">
+            <p>Click on the tabs above to view detailed request listings for this workflow stage.</p>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    document.body.appendChild(popup);
+}
+
+function closeWorkflowDetail() {
+    const overlay = document.querySelector('.workflow-overlay');
+    const popup = document.querySelector('.workflow-detail-popup');
+    if (overlay) overlay.remove();
+    if (popup) popup.remove();
 }
 
 // ===== LOGIN FUNCTIONS =====
@@ -5118,7 +7491,7 @@ async function handleLogin(event) {
                 document.getElementById('admin-tab').classList.remove('hidden');
             }
             
-            await loadDashboardStats();
+            await loadWorkflowDashboard();
             await loadPendingRequests();
         } else {
             document.getElementById('login-error').textContent = data.message;
@@ -5173,6 +7546,601 @@ function switchTab(tabName) {
 async function loadAdminPanel() {
     const container = document.getElementById('admin-panel-container');
     container.innerHTML = '<div class="text-center text-gray-500 py-8">Admin panel functionality - to be implemented</div>';
+}
+
+// ===== QUICK REVIEW FUNCTIONS FOR CARD BUTTONS =====
+
+// Classification Projects
+async function quickReviewProject(projectId, decision) {
+    try {
+        const comments = prompt(`Please provide ${decision} comments for this project:`);
+        
+        if (comments === null) {
+            // User cancelled
+            return;
+        }
+        
+        if (!comments.trim()) {
+            alert('Comments are required for review decisions');
+            return;
+        }
+        
+        const confirmed = confirm(`Are you sure you want to ${decision} this project?\n\nComments: ${comments}`);
+        if (!confirmed) return;
+        
+        // Call the core review function
+        await reviewProject(projectId, decision, comments.trim());
+        
+        // Refresh the current view
+        await loadPendingRequests();
+        
+    } catch (error) {
+        console.error('Error in quick review:', error);
+        alert('Error processing review: ' + error.message);
+    }
+}
+
+async function quickAdminReviewProject(projectId, decision) {
+    try {
+        const comments = prompt(`Please provide ${decision} comments for this project (Admin Review):`);
+        
+        if (comments === null) {
+            // User cancelled
+            return;
+        }
+        
+        if (!comments.trim()) {
+            alert('Comments are required for review decisions');
+            return;
+        }
+        
+        const confirmed = confirm(`Are you sure you want to ${decision} this project as admin?\n\nComments: ${comments}`);
+        if (!confirmed) return;
+        
+        // Call the core admin review function
+        await adminReviewProject(projectId, decision, comments.trim());
+        
+        // Refresh the current view
+        await loadPendingRequests();
+        
+    } catch (error) {
+        console.error('Error in quick admin review:', error);
+        alert('Error processing admin review: ' + error.message);
+    }
+}
+
+// Item Code Requests
+async function quickReviewItemCode(requestId, decision) {
+    try {
+        const comments = prompt(`Please provide ${decision} comments for this item code request:`);
+        
+        if (comments === null) return;
+        
+        if (!comments.trim()) {
+            alert('Comments are required for review decisions');
+            return;
+        }
+        
+        const confirmed = confirm(`Are you sure you want to ${decision} this item code request?\n\nComments: ${comments}`);
+        if (!confirmed) return;
+        
+        await reviewItemCodeRequest(requestId, decision, comments.trim());
+        await loadPendingRequests();
+        
+    } catch (error) {
+        console.error('Error in quick item code review:', error);
+        alert('Error processing review: ' + error.message);
+    }
+}
+
+async function quickAdminReviewItemCode(requestId, decision) {
+    try {
+        const comments = prompt(`Please provide ${decision} comments for this item code request (Admin Review):`);
+        
+        if (comments === null) return;
+        
+        if (!comments.trim()) {
+            alert('Comments are required for review decisions');
+            return;
+        }
+        
+        const confirmed = confirm(`Are you sure you want to ${decision} this item code request as admin?\n\nComments: ${comments}`);
+        if (!confirmed) return;
+        
+        await adminReviewItemCodeRequest(requestId, decision, comments.trim());
+        await loadPendingRequests();
+        
+    } catch (error) {
+        console.error('Error in quick admin item code review:', error);
+        alert('Error processing admin review: ' + error.message);
+    }
+}
+
+// Standard Value Requests
+async function quickReviewStandardValue(requestId, decision) {
+    try {
+        const comments = prompt(`Please provide ${decision} comments for this standard value request:`);
+        
+        if (comments === null) return;
+        
+        if (!comments.trim()) {
+            alert('Comments are required for review decisions');
+            return;
+        }
+        
+        const confirmed = confirm(`Are you sure you want to ${decision} this standard value request?\n\nComments: ${comments}`);
+        if (!confirmed) return;
+        
+        await reviewStandardValueRequest(requestId, decision, comments.trim());
+        await loadPendingRequests();
+        
+    } catch (error) {
+        console.error('Error in quick standard value review:', error);
+        alert('Error processing review: ' + error.message);
+    }
+}
+
+async function quickAdminReviewStandardValue(requestId, decision) {
+    try {
+        const comments = prompt(`Please provide ${decision} comments for this standard value request (Admin Review):`);
+        
+        if (comments === null) return;
+        
+        if (!comments.trim()) {
+            alert('Comments are required for review decisions');
+            return;
+        }
+        
+        const confirmed = confirm(`Are you sure you want to ${decision} this standard value request as admin?\n\nComments: ${comments}`);
+        if (!confirmed) return;
+        
+        await adminReviewStandardValueRequest(requestId, decision, comments.trim());
+        await loadPendingRequests();
+        
+    } catch (error) {
+        console.error('Error in quick admin standard value review:', error);
+        alert('Error processing admin review: ' + error.message);
+    }
+}
+
+// Combination Requests
+async function quickReviewCombination(requestId, decision) {
+    try {
+        const comments = prompt(`Please provide ${decision} comments for this combination request:`);
+        
+        if (comments === null) return;
+        
+        if (!comments.trim()) {
+            alert('Comments are required for review decisions');
+            return;
+        }
+        
+        const confirmed = confirm(`Are you sure you want to ${decision} this combination request?\n\nComments: ${comments}`);
+        if (!confirmed) return;
+        
+        await reviewCombinationRequest(requestId, decision, comments.trim());
+        await loadPendingRequests();
+        
+    } catch (error) {
+        console.error('Error in quick combination review:', error);
+        alert('Error processing review: ' + error.message);
+    }
+}
+
+async function quickAdminReviewCombination(requestId, decision) {
+    try {
+        const comments = prompt(`Please provide ${decision} comments for this combination request (Admin Review):`);
+        
+        if (comments === null) return;
+        
+        if (!comments.trim()) {
+            alert('Comments are required for review decisions');
+            return;
+        }
+        
+        const confirmed = confirm(`Are you sure you want to ${decision} this combination request as admin?\n\nComments: ${comments}`);
+        if (!confirmed) return;
+        
+        await adminReviewCombinationRequest(requestId, decision, comments.trim());
+        await loadPendingRequests();
+        
+    } catch (error) {
+        console.error('Error in quick admin combination review:', error);
+        alert('Error processing admin review: ' + error.message);
+    }
+}
+
+// ===== CORE REVIEW FUNCTIONS FOR PROJECTS =====
+
+async function reviewProject(projectId, decision, comments) {
+    try {
+        console.log('reviewProject called with:', { projectId, decision, comments });
+        
+        // Use the existing RPC function for reviewer decisions
+        const { data, error } = await supabase.rpc('review_project_decision', {
+            project_id_param: projectId,
+            reviewer_id_param: currentUser.id,
+            decision_param: decision === 'approve' ? 'approved' : 'rejected',
+            comments_param: comments
+        });
+        
+        if (error) {
+            console.error('RPC error:', error);
+            throw error;
+        }
+        
+        if (data && !data.success) {
+            throw new Error(data.message || 'Review failed');
+        }
+        
+        // Send email notification
+        try {
+            const { data: projectData, error: fetchError } = await supabase
+                .from('classification_projects')
+                .select(`
+                    *,
+                    created_by_user:users!classification_projects_created_by_fkey(username, email)
+                `)
+                .eq('id', projectId)
+                .single();
+                
+            if (!fetchError && projectData) {
+                const requestData = {
+                    ...projectData,
+                    request_type: 'Classification Project',
+                    title: projectData.project_name,
+                    project: { project_name: projectData.project_name }
+                };
+                
+                await sendDecisionNotification(requestData, decision, comments, currentUser);
+            }
+        } catch (emailError) {
+            console.error('Failed to send email notification:', emailError);
+        }
+        
+        alert(`Project ${decision}d successfully`);
+        console.log('Review decision response:', data);
+        
+    } catch (error) {
+        console.error('Error reviewing project:', error);
+        throw error;
+    }
+}
+
+async function adminReviewProject(projectId, decision, comments) {
+    try {
+        console.log('adminReviewProject called with:', { projectId, decision, comments });
+        
+        // Use the existing RPC function for admin decisions
+        const { data, error } = await supabase.rpc('admin_review_decision', {
+            project_id_param: projectId,
+            admin_id_param: currentUser.id,
+            decision_param: decision,
+            comments_param: comments
+        });
+        
+        if (error) {
+            console.error('RPC error:', error);
+            throw error;
+        }
+        
+        if (data && !data.success) {
+            throw new Error(data.message || 'Admin review failed');
+        }
+        
+        // Send email notification
+        try {
+            const { data: projectData, error: fetchError } = await supabase
+                .from('classification_projects')
+                .select(`
+                    *,
+                    created_by_user:users!classification_projects_created_by_fkey(username, email)
+                `)
+                .eq('id', projectId)
+                .single();
+                
+            if (!fetchError && projectData) {
+                const requestData = {
+                    ...projectData,
+                    request_type: 'Classification Project',
+                    title: projectData.project_name,
+                    project: { project_name: projectData.project_name }
+                };
+                
+                await sendDecisionNotification(requestData, decision, comments, currentUser);
+            }
+        } catch (emailError) {
+            console.error('Failed to send email notification:', emailError);
+        }
+        
+        alert(`Project ${decision}d by admin successfully`);
+        console.log('Admin review decision response:', data);
+        
+    } catch (error) {
+        console.error('Error admin reviewing project:', error);
+        throw error;
+    }
+}
+
+// ===== REVIEW FUNCTIONS FOR SPECIFIC REQUEST TYPES =====
+
+// Item Code Request Review Functions
+async function reviewItemCodeRequest(requestId, decision, comments) {
+    try {
+        const status = decision === 'approve' ? 'reviewer_approved' : 'reviewer_rejected';
+        
+        const { data, error } = await supabase
+            .from('item_code_workflow')
+            .update({
+                status: status,
+                reviewed_by: currentUser.id,
+                reviewed_at: new Date().toISOString(),
+                review_comments: comments
+            })
+            .eq('id', requestId)
+            .select(`
+                *,
+                created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                project:classification_projects(project_name)
+            `)
+            .single();
+
+        if (error) throw error;
+
+        // Send email notification
+        const requestData = {
+            ...data,
+            request_type: 'Item Code Request',
+            title: data.item_code
+        };
+        
+        await sendDecisionNotification(requestData, decision, comments, currentUser);
+        
+        alert(`Item code request ${decision}d successfully`);
+        
+    } catch (error) {
+        console.error('Error reviewing item code request:', error);
+        throw error;
+    }
+}
+
+async function adminReviewItemCodeRequest(requestId, decision, comments) {
+    try {
+        const status = decision === 'approve' ? 'admin_approved' : 'admin_rejected';
+        
+        const { data, error } = await supabase
+            .from('item_code_workflow')
+            .update({
+                status: status,
+                admin_reviewed_by: currentUser.id,
+                admin_reviewed_at: new Date().toISOString(),
+                admin_comments: comments
+            })
+            .eq('id', requestId)
+            .select(`
+                *,
+                created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                project:classification_projects(project_name)
+            `)
+            .single();
+
+        if (error) throw error;
+
+        // Send email notification
+        const requestData = {
+            ...data,
+            request_type: 'Item Code Request',
+            title: data.item_code
+        };
+        
+        await sendDecisionNotification(requestData, decision, comments, currentUser);
+        
+        alert(`Item code request ${decision}d by admin successfully`);
+        
+    } catch (error) {
+        console.error('Error admin reviewing item code request:', error);
+        throw error;
+    }
+}
+
+// Standard Value Request Review Functions
+async function reviewStandardValueRequest(requestId, decision, comments) {
+    try {
+        const status = decision === 'approve' ? 'reviewer_approved' : 'reviewer_rejected';
+        
+        const { data, error } = await supabase
+            .from('standard_value_requests')
+            .update({
+                status: status,
+                reviewed_by: currentUser.id,
+                reviewed_at: new Date().toISOString(),
+                reviewer_comments: comments
+            })
+            .eq('id', requestId)
+            .select(`
+                *,
+                created_by_user:users!standard_value_requests_created_by_fkey(username, email),
+                project:classification_projects(project_name)
+            `)
+            .single();
+
+        if (error) throw error;
+
+        // Send email notification
+        const requestData = {
+            ...data,
+            request_type: 'Standard Value Request',
+            title: `${data.attribute_name}: ${data.new_value}`
+        };
+        
+        await sendDecisionNotification(requestData, decision, comments, currentUser);
+        
+        alert(`Standard value request ${decision}d successfully`);
+        
+    } catch (error) {
+        console.error('Error reviewing standard value request:', error);
+        throw error;
+    }
+}
+
+async function adminReviewStandardValueRequest(requestId, decision, comments) {
+    try {
+        const status = decision === 'approve' ? 'admin_approved' : 'admin_rejected';
+        
+        // Update the request status
+        const { data, error } = await supabase
+            .from('standard_value_requests')
+            .update({
+                status: status,
+                admin_reviewed_by: currentUser.id,
+                admin_reviewed_at: new Date().toISOString(),
+                admin_comments: comments
+            })
+            .eq('id', requestId)
+            .select(`
+                *,
+                created_by_user:users!standard_value_requests_created_by_fkey(username, email),
+                project:classification_projects(project_name),
+                attribute:project_attributes(*)
+            `)
+            .single();
+
+        if (error) throw error;
+
+        // If approved, add the new value to the project attribute
+        if (decision === 'approve' && data.attribute) {
+            const currentValues = Array.isArray(data.attribute.standard_values) 
+                ? data.attribute.standard_values 
+                : [];
+            
+            // Add the new value if it doesn't already exist
+            const newValue = data.new_value;
+            const valueExists = currentValues.some(val => 
+                (typeof val === 'string' && val === newValue) ||
+                (typeof val === 'object' && val.name === newValue)
+            );
+            
+            if (!valueExists) {
+                const updatedValues = [...currentValues, { name: newValue }];
+                
+                const { error: updateError } = await supabase
+                    .from('project_attributes')
+                    .update({ standard_values: updatedValues })
+                    .eq('id', data.attribute_id);
+
+                if (updateError) {
+                    console.error('Error updating attribute standard values:', updateError);
+                }
+            }
+        }
+
+        // Send email notification
+        const requestData = {
+            ...data,
+            request_type: 'Standard Value Request',
+            title: `${data.attribute_name}: ${data.new_value}`
+        };
+        
+        await sendDecisionNotification(requestData, decision, comments, currentUser);
+        
+        alert(`Standard value request ${decision}d by admin successfully`);
+        
+    } catch (error) {
+        console.error('Error admin reviewing standard value request:', error);
+        throw error;
+    }
+}
+
+// Combination Request Review Functions
+async function reviewCombinationRequest(requestId, decision, comments) {
+    try {
+        const status = decision === 'approve' ? 'reviewer_approved' : 'reviewer_rejected';
+        
+        const { data, error } = await supabase
+            .from('combination_requests')
+            .update({
+                status: status,
+                reviewed_by: currentUser.id,
+                reviewed_at: new Date().toISOString(),
+                reviewer_comments: comments
+            })
+            .eq('id', requestId)
+            .select(`
+                *,
+                created_by_user:users!combination_requests_created_by_fkey(username, email),
+                project:classification_projects(project_name)
+            `)
+            .single();
+
+        if (error) throw error;
+
+        // Send email notification
+        const requestTypeLabel = data.request_type === 'block' ? 'Block Combination' : 'Generate Combination';
+        const requestData = {
+            ...data,
+            request_type: requestTypeLabel,
+            title: requestTypeLabel
+        };
+        
+        await sendDecisionNotification(requestData, decision, comments, currentUser);
+        
+        alert(`Combination request ${decision}d successfully`);
+        
+    } catch (error) {
+        console.error('Error reviewing combination request:', error);
+        throw error;
+    }
+}
+
+async function adminReviewCombinationRequest(requestId, decision, comments) {
+    try {
+        const status = decision === 'approve' ? 'admin_approved' : 'admin_rejected';
+        
+        const { data, error } = await supabase
+            .from('combination_requests')
+            .update({
+                status: status,
+                admin_reviewed_by: currentUser.id,
+                admin_reviewed_at: new Date().toISOString(),
+                admin_comments: comments
+            })
+            .eq('id', requestId)
+            .select(`
+                *,
+                created_by_user:users!combination_requests_created_by_fkey(username, email),
+                project:classification_projects(project_name)
+            `)
+            .single();
+
+        if (error) throw error;
+
+        // If this is a generate request that's been approved, trigger item code generation
+        if (decision === 'approve' && data.request_type === 'generate') {
+            // Here you could call an item code generation function if needed
+            console.log('Generate combination request approved - item code generation may be triggered');
+        }
+
+        // If this is a block request that's been approved, add to blocked combinations
+        if (decision === 'approve' && data.request_type === 'block') {
+            console.log('Block combination request approved - combination will be blocked');
+        }
+
+        // Send email notification
+        const requestTypeLabel = data.request_type === 'block' ? 'Block Combination' : 'Generate Combination';
+        const requestData = {
+            ...data,
+            request_type: requestTypeLabel,
+            title: requestTypeLabel
+        };
+        
+        await sendDecisionNotification(requestData, decision, comments, currentUser);
+        
+        alert(`Combination request ${decision}d by admin successfully`);
+        
+    } catch (error) {
+        console.error('Error admin reviewing combination request:', error);
+        throw error;
+    }
 }
 
 // ===== INITIALIZATION =====
