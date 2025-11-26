@@ -7875,7 +7875,7 @@ async function reviewItemCodeRequest(requestId, decision, comments) {
                 status: status,
                 reviewed_by: currentUser.id,
                 reviewed_at: new Date().toISOString(),
-                review_comments: comments
+                reviewer_comments: comments
             })
             .eq('id', requestId)
             .select(`
@@ -7908,14 +7908,23 @@ async function adminReviewItemCodeRequest(requestId, decision, comments) {
     try {
         const status = decision === 'approve' ? 'admin_approved' : 'admin_rejected';
         
+        // Build the update object
+        const updateFields = {
+            status: status,
+            admin_reviewed_by: currentUser.id,
+            admin_reviewed_at: new Date().toISOString(),
+            admin_comments: comments
+        };
+        
+        // If approving, also set the approved_by and approved_at fields
+        if (decision === 'approve') {
+            updateFields.approved_by = currentUser.id;
+            updateFields.approved_at = new Date().toISOString();
+        }
+        
         const { data, error } = await supabase
             .from('item_code_workflow')
-            .update({
-                status: status,
-                admin_reviewed_by: currentUser.id,
-                admin_reviewed_at: new Date().toISOString(),
-                admin_comments: comments
-            })
+            .update(updateFields)
             .eq('id', requestId)
             .select(`
                 *,
