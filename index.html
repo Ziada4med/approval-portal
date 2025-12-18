@@ -698,9 +698,18 @@
 
 <script>
 // ===== GLOBAL VARIABLES =====
-let supabase;
+// Use a property check to prevent "already declared" identifier errors
+if (window.supabase && !window.supabaseInstance) {
+    const SUPABASE_URL = 'https://mvftaaxgdygeyzcvzqfr.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12ZnRhYXhnZHlnZXl6Y3Z6cWZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjI3OTQsImV4cCI6MjA3NDE5ODc5NH0.nj5c_AAEg4U2qlcE1vQDMWt0nfXpmUYR1lrTR6KCIDY';
+    window.supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+// Map the local identifier to the instance using 'var' to allow re-runs
+var supabase = window.supabaseInstance;
+
 let currentUser = null;
-let currentReviewItem = null; // Store current item being reviewed
+let currentReviewItem = null;
 
 // ===== EMAIL NOTIFICATION SYSTEM ===== (Replaced with new system)
 // All email functions are now handled by the new sendDecisionNotification and sendERPIntegrationNotification functions
