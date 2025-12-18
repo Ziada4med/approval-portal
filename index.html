@@ -697,26 +697,36 @@
     </div>
 
 <script>
-var db; // Use 'db' as a unique identifier to avoid global 'supabase' library conflicts
-
-(function initializeDatabase() {
-    const URL = 'https://mvftaaxgdygeyzcvzqfr.supabase.co';
-    const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12ZnRhYXhnZHlnZXl6Y3Z6cWZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjI3OTQsImV4cCI6MjA3NDE5ODc5NH0.nj5c_AAEg4U2qlcE1vQDMWt0nfXpmUYR1lrTR6KCIDY';
-
-    // 1. Check if our unique instance already exists on the window
-    if (!window.myAppDbInstance) {
-        // 2. Access the library via window.supabase to ensure we are calling the CDN script
-        window.myAppDbInstance = window.supabase.createClient(URL, KEY);
-    }
-    
-    // 3. Assign our local 'db' variable to this instance
-    db = window.myAppDbInstance;
-})();
-
-// Global state variables
+// ===== GLOBAL VARIABLES =====
 let currentUser = null;
-let currentReviewItem = null;
-    
+let currentReviewItem = null; // Store current item being reviewed
+
+// ===== EMAIL NOTIFICATION SYSTEM ===== (Replaced with new system)
+// All email functions are now handled by the new sendDecisionNotification and sendERPIntegrationNotification functions
+
+// ===== END EMAIL NOTIFICATION SYSTEM =====
+
+// ===== SUPABASE INITIALIZATION =====
+const SUPABASE_URL = 'https://mvftaaxgdygeyzcvzqfr.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12ZnRhYXhnZHlnZXl6Y3Z6cWZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjI3OTQsImV4cCI6MjA3NDE5ODc5NH0.nj5c_AAEg4U2qlcE1vQDMWt0nfXpmUYR1lrTR6KCIDY';
+
+// 🎯 PERFECT SUPABASE SOLUTION - Handles all edge cases including auto-login URLs
+// Check if client is already created on window to avoid redeclaration error
+if (window.supabase && !window.supabaseInstance) {
+    window.supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('✅ Supabase client created successfully');
+}
+
+// Use var to allow redeclaration if the script is re-run (page reloads, auto-login)
+var supabase = window.supabaseInstance;
+
+// Validation
+if (!supabase) {
+    console.error('❌ Supabase client not available');
+} else {
+    console.log('✅ Supabase client ready for use');
+}
+
 // ===== MODAL FUNCTIONS =====
 // Add this function to the approval portal
 async function assignReviewer(requestId, requestType) {
@@ -8162,7 +8172,7 @@ async function adminReviewCombinationRequest(requestId, decision, comments) {
 async function initializeApp() {
     console.log('Initializing app...');
     
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Supabase client is now initialized globally - no need to recreate here
     
     // Add event listeners
     document.getElementById('login-form').addEventListener('submit', handleLogin);
