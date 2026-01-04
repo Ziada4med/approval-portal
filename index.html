@@ -119,13 +119,34 @@
             max-width: 1400px;
             margin: auto;
         }
-        .status-pending { @apply bg-yellow-100 text-yellow-800; }
-        .status-approved { @apply bg-green-100 text-green-800; }
-        .status-rejected { @apply bg-red-100 text-red-800; }
-        .status-reviewer_approved { @apply bg-blue-100 text-blue-800; }
-        .status-admin_approved { @apply bg-green-100 text-green-800; }
-        .status-reviewer_rejected { @apply bg-red-100 text-red-800; }
-        .status-admin_rejected { @apply bg-red-100 text-red-800; }
+        .status-pending { 
+            background-color: #fef3c7; 
+            color: #92400e; 
+        }
+        .status-approved { 
+            background-color: #dcfce7; 
+            color: #166534; 
+        }
+        .status-rejected { 
+            background-color: #fee2e2; 
+            color: #991b1b; 
+        }
+        .status-reviewer_approved { 
+            background-color: #dbeafe; 
+            color: #1e40af; 
+        }
+        .status-admin_approved { 
+            background-color: #dcfce7; 
+            color: #166534; 
+        }
+        .status-reviewer_rejected { 
+            background-color: #fee2e2; 
+            color: #991b1b; 
+        }
+        .status-admin_rejected { 
+            background-color: #fee2e2; 
+            color: #991b1b; 
+        }
         .request-card {
             transition: all 0.2s ease;
         }
@@ -157,6 +178,56 @@
             color: rgba(255, 255, 255, 0.7);
             font-size: 14px;
             margin: 0 8px;
+        }
+        
+        /* NEW: Deprecation styling for approval portal */
+        .deprecated-attribute {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FBBF24 100%);
+            border: 1px solid #F59E0B;
+            border-radius: 6px;
+            position: relative;
+        }
+        
+        .deprecated-attribute::before {
+            content: "⚠️ DEPRECATED VALUE";
+            position: absolute;
+            top: -8px;
+            left: 8px;
+            background: #F59E0B;
+            color: white;
+            padding: 2px 6px;
+            font-size: 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        .deprecated-warning {
+            background: #FEF3C7;
+            border: 1px solid #F59E0B;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 8px 0;
+        }
+        
+        .deprecated-warning::before {
+            content: "⚠️";
+            font-size: 16px;
+            margin-right: 8px;
+        }
+        
+        .attribute-selection-item {
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 8px 0;
+            transition: all 0.2s ease;
+        }
+        
+        .attribute-selection-item.has-deprecated {
+            background: #FEF3C7;
+            border-color: #F59E0B;
         }
         
         /* Workflow Dashboard Styles */
@@ -377,10 +448,10 @@
         .request-type-badge {
             display: inline-flex;
             align-items: center;
-            px-2 py-1;
-            text-xs;
-            font-medium;
-            rounded-full;
+            padding: 0.5rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 9999px;
         }
         
         .badge-project {
@@ -710,11 +781,11 @@ let currentReviewItem = null; // Store current item being reviewed
 const SUPABASE_URL = 'https://mvftaaxgdygeyzcvzqfr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12ZnRhYXhnZHlnZXl6Y3Z6cWZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjI3OTQsImV4cCI6MjA3NDE5ODc5NH0.nj5c_AAEg4U2qlcE1vQDMWt0nfXpmUYR1lrTR6KCIDY';
 
-// 🎯 PERFECT SUPABASE SOLUTION - Handles all edge cases including auto-login URLs
+// ðŸŽ¯ PERFECT SUPABASE SOLUTION - Handles all edge cases including auto-login URLs
 // Check if client is already created on window to avoid redeclaration error
 if (window.supabase && !window.supabaseInstance) {
     window.supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('✅ Supabase client created successfully');
+    console.log('âœ… Supabase client created successfully');
 }
 
 // Use var to allow redeclaration if the script is re-run (page reloads, auto-login)
@@ -722,9 +793,9 @@ var supabase = window.supabaseInstance;
 
 // Validation
 if (!supabase) {
-    console.error('❌ Supabase client not available');
+    console.error('âŒ Supabase client not available');
 } else {
-    console.log('✅ Supabase client ready for use');
+    console.log('âœ… Supabase client ready for use');
 }
 
 // ===== MODAL FUNCTIONS =====
@@ -1528,12 +1599,10 @@ async function submitCurrentReview(decision) {
         
         console.log('Submitting review:', decision, 'for', reviewItem, 'with comments:', comments);
 
-        
-
         let result;
         
         if (reviewItem.type === 'project') {
-            // Handle project review
+            // Handle project review (no deprecation check needed for projects)
             if (currentUser.role === 'admin') {
                 result = await reviewAdminProject(reviewItem.id, decision);
             } else if (currentUser.role === 'reviewer') {
@@ -1542,11 +1611,74 @@ async function submitCurrentReview(decision) {
                 throw new Error('Unauthorized user role for project review');
             }
         } else {
-            // Handle item requests (code, value, block)
+            // Handle item requests (code, value, block) with enhanced deprecation checks
             if (currentUser.role === 'admin') {
-                result = await reviewAdminRequest(reviewItem.type, reviewItem.id, decision);
+                // Use enhanced approval process for admin approvals
+                await enhancedApprovalProcess(reviewItem.type, reviewItem.id, decision, comments);
             } else if (currentUser.role === 'reviewer') {
-                result = await submitReviewerReview(reviewItem.type, reviewItem.id, decision, comments);
+                // For reviewer approvals, also check deprecation but with different flow
+                if (decision === 'approve' && reviewItem.type === 'code') {
+                    // Load request data to check for deprecated values
+                    const { data: codeRequest, error: codeError } = await supabase
+                        .from('item_code_workflow')
+                        .select(`
+                            *,
+                            classification_projects (id, project_name)
+                        `)
+                        .eq('id', reviewItem.id)
+                        .single();
+
+                    if (!codeError && codeRequest) {
+                        // Get attribute data
+                        const { data: attrs, error: attrError } = await supabase
+                            .from('project_attributes')
+                            .select(`
+                                *,
+                                standard_values (id, name, value, attribute_id)
+                            `)
+                            .eq('project_id', codeRequest.project_id);
+
+                        if (!attrError && attrs) {
+                            const deprecationCheck = await checkDeprecatedValuesInRequest(codeRequest, attrs);
+                            
+                            if (deprecationCheck.hasDeprecated) {
+                                const deprecatedList = deprecationCheck.deprecatedValues
+                                    .map(dv => `• ${dv.attributeName}: ${dv.valueName}`)
+                                    .join('\n');
+                                
+                                const confirmMessage = `⚠️ REVIEWER NOTICE: DEPRECATED VALUES DETECTED
+                                
+This request contains ${deprecationCheck.deprecatedValues.length} deprecated standard value${deprecationCheck.deprecatedValues.length > 1 ? 's' : ''}:
+
+${deprecatedList}
+
+As a reviewer, you can still approve this request. The deprecated values will be forwarded to admin review with this deprecation notice.
+
+Deprecated values are maintained for system compatibility but hidden from new item creation.
+
+Continue with approval?`;
+
+                                if (!confirm(confirmMessage)) {
+                                    return; // User cancelled approval
+                                }
+                                
+                                // Add deprecation notice to comments
+                                const deprecationNotice = `\n\n[DEPRECATION NOTICE: This request contains deprecated values - ${deprecationCheck.deprecatedValues.map(dv => dv.attributeName + ':' + dv.valueName).join(', ')}]`;
+                                const enhancedComments = comments + deprecationNotice;
+                                
+                                result = await submitReviewerReview(reviewItem.type, reviewItem.id, decision, enhancedComments);
+                            } else {
+                                result = await submitReviewerReview(reviewItem.type, reviewItem.id, decision, comments);
+                            }
+                        } else {
+                            result = await submitReviewerReview(reviewItem.type, reviewItem.id, decision, comments);
+                        }
+                    } else {
+                        result = await submitReviewerReview(reviewItem.type, reviewItem.id, decision, comments);
+                    }
+                } else {
+                    result = await submitReviewerReview(reviewItem.type, reviewItem.id, decision, comments);
+                }
             } else {
                 throw new Error('Unauthorized user role for item review');
             }
@@ -2057,19 +2189,117 @@ async function viewRequestDetails(type, requestId) {
                 
             `;
             
-            // Show selected attributes for item code requests
+            // Show selected attributes for item code requests with enhanced deprecation support
             if (attributeData && requestData.attribute_selections) {
                 const selections = requestData.attribute_selections || {};
-                attributeData.forEach(attr => {
+                let hasDeprecatedValues = false;
+                let deprecatedValuesInfo = [];
+                
+                detailHTML += `
+                    <!-- Attribute Selections Section -->
+                    <div class="bg-purple-50 p-4 rounded-lg mt-4">
+                        <h3 class="text-lg font-semibold text-purple-900 mb-3">Selected Attribute Values</h3>
+                        <div class="space-y-3">
+                `;
+                
+                for (const attr of attributeData) {
                     const selectedValueId = selections[attr.id];
                     const selectedValue = attr.standard_values.find(val => val.id === selectedValueId);
                     
+                    // Check if the selected value is deprecated
+                    let isDeprecated = false;
+                    let deprecationInfo = null;
+                    
+                    if (selectedValue) {
+                        // Check deprecation status via enhanced duplicate check
+                        try {
+                            const { data: duplicateCheck } = await supabase
+                                .rpc('enhanced_duplicate_check', {
+                                    project_id_param: requestData.project_id,
+                                    attribute_selections_param: { [attr.id]: { value: selectedValue.name } },
+                                    uom_param: requestData.uom || '',
+                                    country_of_origin_param: requestData.country_of_origin || '',
+                                    model_number_param: requestData.model_number || '',
+                                    manufacturer_param: requestData.manufacturer || ''
+                                });
+                                
+                            if (duplicateCheck && duplicateCheck.deprecated_values_in_request && duplicateCheck.deprecated_values_in_request.length > 0) {
+                                const deprecatedValue = duplicateCheck.deprecated_values_in_request.find(dv => 
+                                    dv.attribute_id === attr.id && dv.value_name === selectedValue.name
+                                );
+                                if (deprecatedValue) {
+                                    isDeprecated = true;
+                                    deprecationInfo = deprecatedValue;
+                                    hasDeprecatedValues = true;
+                                    deprecatedValuesInfo.push({
+                                        attributeName: attr.attribute_name,
+                                        valueName: selectedValue.name,
+                                        deprecatedAt: deprecationInfo.deprecated_at,
+                                        deprecatedReason: deprecationInfo.deprecated_reason
+                                    });
+                                }
+                            }
+                        } catch (error) {
+                            console.warn('Could not check deprecation status:', error);
+                        }
+                    }
+                    
+                    const itemClass = isDeprecated ? 'attribute-selection-item has-deprecated deprecated-attribute' : 'attribute-selection-item';
+                    
                     detailHTML += `
-                        
+                        <div class="${itemClass}">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="font-medium text-gray-900">${attr.attribute_name}</div>
+                                    <div class="text-sm text-gray-600 mt-1">
+                                        ${attr.is_mandatory ? '<span class="text-red-600 font-semibold">[Required]</span>' : '<span class="text-gray-500">[Optional]</span>'}
+                                    </div>
+                                </div>
+                                <div class="ml-4 text-right">
+                                    <div class="font-semibold text-blue-600">${selectedValue ? selectedValue.name : 'Not selected'}</div>
+                                    ${isDeprecated ? '<div class="text-xs text-orange-600 font-medium">⚠️ Deprecated Value</div>' : ''}
+                                </div>
+                            </div>
+                            ${isDeprecated ? `
+                                <div class="mt-2 p-2 bg-orange-100 border border-orange-300 rounded text-xs text-orange-800">
+                                    <div class="font-semibold">⚠️ Deprecation Notice:</div>
+                                    <div>This value was deprecated ${deprecationInfo?.deprecated_at ? 'on ' + new Date(deprecationInfo.deprecated_at).toLocaleDateString() : 'previously'}</div>
+                                    ${deprecationInfo?.deprecated_reason ? `<div class="mt-1"><strong>Reason:</strong> ${deprecationInfo.deprecated_reason}</div>` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
                     `;
-                });
+                }
+                
+                detailHTML += `
+                        </div>
+                    </div>
+                `;
+                
+                // Add general deprecation warning if any deprecated values found
+                if (hasDeprecatedValues) {
+                    detailHTML += `
+                        <!-- Deprecation Warning Section -->
+                        <div class="deprecated-warning">
+                            <div class="font-semibold text-orange-800 mb-2">Deprecation Warning</div>
+                            <div class="text-sm text-orange-700">
+                                This request contains ${deprecatedValuesInfo.length} deprecated standard value${deprecatedValuesInfo.length > 1 ? 's' : ''}. 
+                                ${deprecatedValuesInfo.length === 1 ? 'This value is' : 'These values are'} preserved for compatibility but hidden from new item creation.
+                            </div>
+                            <div class="mt-2 text-xs text-orange-600">
+                                <strong>Note:</strong> Approving this request will maintain the deprecated value${deprecatedValuesInfo.length > 1 ? 's' : ''} in the system. 
+                                Consider discussing alternative values with the requester if needed.
+                            </div>
+                        </div>
+                    `;
+                }
+                
             } else {
-                detailHTML += `<p class="text-gray-500 italic">No attribute selections found</p>`;
+                detailHTML += `
+                    <div class="bg-gray-50 p-4 rounded-lg mt-4">
+                        <p class="text-gray-500 italic">No attribute selections found</p>
+                    </div>
+                `;
             }
             
             detailHTML += `
@@ -2079,6 +2309,40 @@ async function viewRequestDetails(type, requestId) {
 
         } else if (type === 'value') {
             const currentAttribute = attributeData[0];
+            
+            // Check if requested value conflicts with existing deprecated values
+            let deprecationConflict = null;
+            if (currentAttribute && currentAttribute.standard_values) {
+                const existingValue = currentAttribute.standard_values.find(val => 
+                    val.name.toLowerCase() === requestData.new_value.toLowerCase()
+                );
+                
+                if (existingValue) {
+                    // Check if this existing value is deprecated
+                    try {
+                        const { data: usageData, error } = await supabase
+                            .rpc('get_standard_value_usage', {
+                                project_id_param: requestData.project_id,
+                                attribute_id_param: currentAttribute.id
+                            });
+                        
+                        if (!error && usageData) {
+                            const valueUsage = usageData.find(u => u.value_name === existingValue.name);
+                            if (valueUsage && valueUsage.status === 'deprecated') {
+                                deprecationConflict = {
+                                    existingValue: existingValue.name,
+                                    deprecatedAt: valueUsage.deprecated_at,
+                                    deprecatedReason: valueUsage.deprecation_reason,
+                                    usageCount: valueUsage.usage_count
+                                };
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('Could not check deprecation status for value request:', error);
+                    }
+                }
+            }
+            
             detailHTML += `
                 <!-- Standard Value Request Details -->
                 <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
@@ -2087,6 +2351,28 @@ async function viewRequestDetails(type, requestId) {
                         <div><span class="font-medium">Attribute:</span> ${requestData.attribute_name} ${currentAttribute?.is_mandatory ? '(Required)' : '(Optional)'}</div>
                         <div><span class="font-medium">Requested New Value:</span> <span class="text-green-600 font-bold text-lg">${requestData.new_value}</span></div>
                         <div><span class="font-medium">Justification:</span> ${requestData.reason || 'No reason provided'}</div>
+                        
+                        ${deprecationConflict ? `
+                            <!-- Deprecation Conflict Warning -->
+                            <div class="deprecated-warning mt-3">
+                                <div class="font-semibold text-orange-800 mb-2">⚠️ Deprecation Conflict Detected</div>
+                                <div class="text-sm text-orange-700">
+                                    A value named "${deprecationConflict.existingValue}" already exists but is currently deprecated.
+                                    ${deprecationConflict.deprecatedAt ? `Deprecated on: ${new Date(deprecationConflict.deprecatedAt).toLocaleDateString()}` : ''}
+                                </div>
+                                ${deprecationConflict.deprecatedReason ? `
+                                    <div class="text-xs text-orange-600 mt-1">
+                                        <strong>Deprecation reason:</strong> ${deprecationConflict.deprecatedReason}
+                                    </div>
+                                ` : ''}
+                                <div class="text-xs text-orange-600 mt-2">
+                                    <strong>Current usage:</strong> ${deprecationConflict.usageCount} approved items
+                                </div>
+                                <div class="mt-2 p-2 bg-orange-100 border border-orange-300 rounded text-xs">
+                                    <strong>Recommendation:</strong> Consider reactivating the existing deprecated value instead of creating a duplicate.
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
 
@@ -3188,17 +3474,17 @@ async function loadPendingClassificationProjects() {
                                     <span class="font-bold text-blue-900">${project.division_code}</span>
                                     ${project.division_description ? `<span class="ml-1 text-blue-700">- ${project.division_description}</span>` : ''}
                                 </div>
-                                <span class="text-blue-600">â†’</span>
+                                <span class="text-blue-600">Ã¢â€ â€™</span>
                                 <div class="flex items-center bg-blue-100 rounded px-2 py-1">
                                     <span class="font-bold text-blue-900">${project.section_code}</span>
                                     ${project.section_description ? `<span class="ml-1 text-blue-700">- ${project.section_description}</span>` : ''}
                                 </div>
-                                <span class="text-blue-600">â†’</span>
+                                <span class="text-blue-600">Ã¢â€ â€™</span>
                                 <div class="flex items-center bg-blue-100 rounded px-2 py-1">
                                     <span class="font-bold text-blue-900">${project.detailed_section_code}</span>
                                     ${project.detailed_section_description ? `<span class="ml-1 text-blue-700">- ${project.detailed_section_description}</span>` : ''}
                                 </div>
-                                <span class="text-blue-600">â†’</span>
+                                <span class="text-blue-600">Ã¢â€ â€™</span>
                                 <div class="flex items-center bg-blue-200 rounded px-2 py-1">
                                     <span class="font-bold text-blue-900">${project.item_code}</span>
                                     ${project.item_description ? `<span class="ml-1 text-blue-700">- ${project.item_description}</span>` : ''}
@@ -3356,17 +3642,17 @@ async function loadPendingItemCodes() {
                                         <span class="font-bold text-green-900">${item.project.division_code || 'N/A'}</span>
                                         ${item.project.division_description ? `<span class="ml-1 text-green-700">- ${item.project.division_description}</span>` : ''}
                                     </div>
-                                    <span class="text-green-600">â†’</span>
+                                    <span class="text-green-600">Ã¢â€ â€™</span>
                                     <div class="flex items-center bg-green-100 rounded px-2 py-1">
                                         <span class="font-bold text-green-900">${item.project.section_code || 'N/A'}</span>
                                         ${item.project.section_description ? `<span class="ml-1 text-green-700">- ${item.project.section_description}</span>` : ''}
                                     </div>
-                                    <span class="text-green-600">â†’</span>
+                                    <span class="text-green-600">Ã¢â€ â€™</span>
                                     <div class="flex items-center bg-green-100 rounded px-2 py-1">
                                         <span class="font-bold text-green-900">${item.project.detailed_section_code || 'N/A'}</span>
                                         ${item.project.detailed_section_description ? `<span class="ml-1 text-green-700">- ${item.project.detailed_section_description}</span>` : ''}
                                     </div>
-                                    <span class="text-green-600">â†’</span>
+                                    <span class="text-green-600">Ã¢â€ â€™</span>
                                     <div class="flex items-center bg-green-200 rounded px-2 py-1">
                                         <span class="font-bold text-green-900">${item.project.item_code || 'N/A'}</span>
                                         ${item.project.item_description ? `<span class="ml-1 text-green-700">- ${item.project.item_description}</span>` : ''}
@@ -3849,7 +4135,7 @@ function showProjectDetailModal(project) {
                                         <div class="text-xs text-blue-600">Division</div>
                                     </div>
                                 </div>
-                                <div class="text-center text-blue-600">â†“</div>
+                                <div class="text-center text-blue-600">Ã¢â€ â€œ</div>
                                 <div class="flex items-center bg-blue-100 rounded-lg p-3">
                                     <div class="flex-1">
                                         <div class="font-bold text-blue-900 text-lg">${project.section_code}</div>
@@ -3857,7 +4143,7 @@ function showProjectDetailModal(project) {
                                         <div class="text-xs text-blue-600">Section</div>
                                     </div>
                                 </div>
-                                <div class="text-center text-blue-600">â†“</div>
+                                <div class="text-center text-blue-600">Ã¢â€ â€œ</div>
                                 <div class="flex items-center bg-blue-100 rounded-lg p-3">
                                     <div class="flex-1">
                                         <div class="font-bold text-blue-900 text-lg">${project.detailed_section_code}</div>
@@ -3865,7 +4151,7 @@ function showProjectDetailModal(project) {
                                         <div class="text-xs text-blue-600">Detailed Section</div>
                                     </div>
                                 </div>
-                                <div class="text-center text-blue-600">â†“</div>
+                                <div class="text-center text-blue-600">Ã¢â€ â€œ</div>
                                 <div class="flex items-center bg-blue-200 rounded-lg p-3">
                                     <div class="flex-1">
                                         <div class="font-bold text-blue-900 text-lg">${project.item_code}</div>
@@ -3875,7 +4161,7 @@ function showProjectDetailModal(project) {
                                 </div>
                                 
                                 ${project.additional_level_name && project.additional_level_value ? `
-                                    <div class="text-center text-green-600">â†“</div>
+                                    <div class="text-center text-green-600">Ã¢â€ â€œ</div>
                                     <div class="flex items-center bg-green-100 rounded-lg p-3">
                                         <div class="flex-1">
                                             <div class="font-bold text-green-900 text-lg">${project.additional_level_value}</div>
@@ -5055,25 +5341,25 @@ function createDetailedAdminReviewCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: '📁', 
+            icon: 'ðŸ“', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: '📦', 
+            icon: 'ðŸ“¦', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: '📊', 
+            icon: 'ðŸ“Š', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: '🚫', 
+            icon: 'ðŸš«', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -5520,10 +5806,10 @@ function createSimpleReviewerCard(item) {
     card.className = 'request-card bg-white border rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow border-l-4 border-l-blue-500';
     
     const typeInfo = {
-        'project': { icon: '📁', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
-        'code': { icon: '📦', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
-        'value': { icon: '📊', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
-        'block': { icon: '🚫', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
+        'project': { icon: 'ðŸ“', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
+        'code': { icon: 'ðŸ“¦', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
+        'value': { icon: 'ðŸ“Š', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
+        'block': { icon: 'ðŸš«', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
     };
 
     const info = typeInfo[item.type] || typeInfo['code'];
@@ -5645,25 +5931,25 @@ function createDetailedReviewerCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: '📁', 
+            icon: 'ðŸ“', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: '📦', 
+            icon: 'ðŸ“¦', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: '📊', 
+            icon: 'ðŸ“Š', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: '🚫', 
+            icon: 'ðŸš«', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -6429,12 +6715,12 @@ function displayAllRequests(requests) {
 
 function getTypeIcon(type) {
     const icons = {
-        project: '📁',
-        code: '📦',
-        block: '🚫',
-        value: '📊'
+        project: 'ðŸ“',
+        code: 'ðŸ“¦',
+        block: 'ðŸš«',
+        value: 'ðŸ“Š'
     };
-    return icons[type] || '📄';
+    return icons[type] || 'ðŸ“„';
 }
 
 function createAllRequestCard(request) {
@@ -8185,6 +8471,223 @@ async function initializeApp() {
     
     console.log('App initialized successfully');
 }
+
+// NEW: Enhanced deprecation checking functions for approval portal
+async function checkDeprecatedValuesInRequest(requestData, attributeData) {
+    try {
+        if (!requestData.attribute_selections || !attributeData) {
+            return { hasDeprecated: false, deprecatedValues: [] };
+        }
+
+        const selections = requestData.attribute_selections || {};
+        const deprecatedValues = [];
+
+        // Use enhanced duplicate check to identify deprecated values
+        const { data: duplicateCheck, error } = await supabase
+            .rpc('enhanced_duplicate_check', {
+                project_id_param: requestData.project_id,
+                attribute_selections_param: selections,
+                uom_param: requestData.uom || '',
+                country_of_origin_param: requestData.country_of_origin || '',
+                model_number_param: requestData.model_number || '',
+                manufacturer_param: requestData.manufacturer || ''
+            });
+
+        if (error) {
+            console.warn('Error checking deprecated values:', error);
+            return { hasDeprecated: false, deprecatedValues: [] };
+        }
+
+        if (duplicateCheck && duplicateCheck.deprecated_values_in_request && duplicateCheck.deprecated_values_in_request.length > 0) {
+            duplicateCheck.deprecated_values_in_request.forEach(depValue => {
+                const attribute = attributeData.find(attr => attr.id === depValue.attribute_id);
+                if (attribute) {
+                    deprecatedValues.push({
+                        attributeId: depValue.attribute_id,
+                        attributeName: attribute.attribute_name,
+                        valueName: depValue.value_name,
+                        deprecatedAt: depValue.deprecated_at,
+                        deprecatedReason: depValue.deprecated_reason
+                    });
+                }
+            });
+        }
+
+        return {
+            hasDeprecated: deprecatedValues.length > 0,
+            deprecatedValues: deprecatedValues,
+            duplicateCheckResult: duplicateCheck
+        };
+
+    } catch (error) {
+        console.error('Error in checkDeprecatedValuesInRequest:', error);
+        return { hasDeprecated: false, deprecatedValues: [], error: error.message };
+    }
+}
+
+// Enhanced approval function with deprecation warnings
+async function enhancedApprovalProcess(type, requestId, decision, comments) {
+    try {
+        // First, check for deprecated values if this is an approval
+        if (decision === 'approve') {
+            let requestData = null;
+            let attributeData = null;
+
+            // Load request data based on type
+            if (type === 'code') {
+                const { data: codeRequest, error: codeError } = await supabase
+                    .from('item_code_workflow')
+                    .select(`
+                        *,
+                        classification_projects (
+                            id, project_name
+                        )
+                    `)
+                    .eq('id', requestId)
+                    .single();
+
+                if (codeError) throw codeError;
+                requestData = codeRequest;
+
+                // Get attribute data for the project
+                if (requestData.project_id) {
+                    const { data: attrs, error: attrError } = await supabase
+                        .from('project_attributes')
+                        .select(`
+                            *,
+                            standard_values (id, name, value, attribute_id)
+                        `)
+                        .eq('project_id', requestData.project_id);
+
+                    if (!attrError) {
+                        attributeData = attrs;
+                    }
+                }
+            }
+
+            // Check for deprecated values
+            if (requestData && attributeData) {
+                const deprecationCheck = await checkDeprecatedValuesInRequest(requestData, attributeData);
+                
+                if (deprecationCheck.hasDeprecated) {
+                    const deprecatedList = deprecationCheck.deprecatedValues
+                        .map(dv => `• ${dv.attributeName}: ${dv.valueName}`)
+                        .join('\n');
+                    
+                    const confirmMessage = `⚠️ DEPRECATION WARNING
+                    
+This request contains ${deprecationCheck.deprecatedValues.length} deprecated standard value${deprecationCheck.deprecatedValues.length > 1 ? 's' : ''}:
+
+${deprecatedList}
+
+Deprecated values are preserved for system compatibility but hidden from new item creation.
+
+Effects of approval:
+✓ Request will be approved normally
+✓ Deprecated values preserved in approved item
+✓ System integrity maintained
+✓ Duplicate detection continues working
+
+Continue with approval?`;
+
+                    if (!confirm(confirmMessage)) {
+                        return; // User cancelled approval
+                    }
+                }
+            }
+        }
+
+        // Proceed with normal approval process
+        await processApprovalDecision(type, requestId, decision, comments);
+
+    } catch (error) {
+        console.error('Enhanced approval process error:', error);
+        alert('Error in approval process: ' + error.message);
+    }
+}
+
+// Wrapper to maintain compatibility while adding deprecation checks
+async function processApprovalDecision(type, requestId, decision, comments) {
+    // This calls the original approval logic
+    if (type === 'code') {
+        await reviewItemCodeRequest(requestId, decision, comments);
+    } else if (type === 'value') {
+        await reviewStandardValueRequest(requestId, decision, comments);
+    } else if (type === 'block') {
+        await reviewBlockCombinationRequest(requestId, decision, comments);
+    }
+}
+
+// Show deprecation analysis modal for detailed review
+async function showDeprecationAnalysisModal(requestData, deprecationCheck) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    modal.id = 'deprecation-analysis-modal';
+    
+    const deprecatedList = deprecationCheck.deprecatedValues
+        .map(dv => `
+            <div class="p-3 bg-orange-50 border border-orange-200 rounded mb-2">
+                <div class="font-medium text-orange-800">${dv.attributeName}</div>
+                <div class="text-sm text-orange-700">Value: <strong>${dv.valueName}</strong></div>
+                ${dv.deprecatedAt ? `<div class="text-xs text-orange-600">Deprecated: ${new Date(dv.deprecatedAt).toLocaleDateString()}</div>` : ''}
+                ${dv.deprecatedReason ? `<div class="text-xs text-orange-600">Reason: ${dv.deprecatedReason}</div>` : ''}
+            </div>
+        `).join('');
+    
+    modal.innerHTML = `
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div class="relative bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">⚠️ Deprecation Analysis</h3>
+                    <button onclick="closeDeprecationAnalysisModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <div class="mb-4">
+                        <div class="font-medium text-gray-900 mb-2">Request contains deprecated values:</div>
+                        ${deprecatedList}
+                    </div>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
+                        <h4 class="font-medium text-blue-800 mb-2">Impact Analysis</h4>
+                        <div class="text-sm text-blue-700 space-y-1">
+                            <div>✓ System integrity maintained</div>
+                            <div>✓ Duplicate detection preserved</div>
+                            <div>✓ Existing items unaffected</div>
+                            <div>✓ Search functionality maintained</div>
+                            <div>⚠️ Values hidden from new item creation</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button onclick="closeDeprecationAnalysisModal()" 
+                                class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+function closeDeprecationAnalysisModal() {
+    const modal = document.getElementById('deprecation-analysis-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Make functions globally available
+window.checkDeprecatedValuesInRequest = checkDeprecatedValuesInRequest;
+window.enhancedApprovalProcess = enhancedApprovalProcess;
+window.showDeprecationAnalysisModal = showDeprecationAnalysisModal;
+window.closeDeprecationAnalysisModal = closeDeprecationAnalysisModal;
 
 // Start the app when page loads
 document.addEventListener('DOMContentLoaded', initializeApp);
