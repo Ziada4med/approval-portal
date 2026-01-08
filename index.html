@@ -124,8 +124,8 @@
             color: #92400e; 
         }
         .status-approved { 
-            background-color: #dcfce7; 
-            color: #166534; 
+            background-color: #d1fae5; 
+            color: #065f46; 
         }
         .status-rejected { 
             background-color: #fee2e2; 
@@ -136,8 +136,8 @@
             color: #1e40af; 
         }
         .status-admin_approved { 
-            background-color: #dcfce7; 
-            color: #166534; 
+            background-color: #d1fae5; 
+            color: #065f46; 
         }
         .status-reviewer_rejected { 
             background-color: #fee2e2; 
@@ -189,7 +189,7 @@
         }
         
         .deprecated-attribute::before {
-            content: "⚠️ DEPRECATED VALUE";
+            content: "âš ï¸ DEPRECATED VALUE";
             position: absolute;
             top: -8px;
             left: 8px;
@@ -211,7 +211,7 @@
         }
         
         .deprecated-warning::before {
-            content: "⚠️";
+            content: "âš ï¸";
             font-size: 16px;
             margin-right: 8px;
         }
@@ -448,7 +448,7 @@
         .request-type-badge {
             display: inline-flex;
             align-items: center;
-            padding: 0.5rem 0.5rem;
+            padding: 0.5rem 1rem;
             font-size: 0.75rem;
             font-weight: 500;
             border-radius: 9999px;
@@ -644,8 +644,50 @@
             <!-- Sub-tab Content Areas -->
             <div id="classification-projects-subtab" class="pending-subtab-content">
                 <div class="mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Pending Classification Projects</h3>
-                    <p class="text-sm text-gray-600">Projects awaiting your review decision</p>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Pending Classification Projects</h3>
+                            <p class="text-sm text-gray-600">Projects awaiting your review decision</p>
+                        </div>
+                        
+                        <!-- Bulk Action Controls -->
+                        <div class="flex items-center space-x-2">
+                            <button id="bulk-toggle-projects" 
+                                    onclick="toggleBulkMode('projects')" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-medium">
+                                <span class="bulk-mode-text">Enable Bulk Actions</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Bulk Actions Bar (Hidden by default) -->
+                    <div id="bulk-actions-projects" class="hidden mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm font-medium text-blue-800">
+                                    <span id="selected-count-projects">0</span> items selected
+                                </span>
+                                <button onclick="selectAllItems('projects', true)" 
+                                        class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                    Select All
+                                </button>
+                                <button onclick="selectAllItems('projects', false)" 
+                                        class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                    Clear Selection
+                                </button>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="bulkApprove('projects')" 
+                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium">
+                                    Approve Selected
+                                </button>
+                                <button onclick="bulkReject('projects')" 
+                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium">
+                                    Reject Selected
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="classification-projects-container" class="space-y-4">
                     <!-- Classification projects will be loaded here -->
@@ -654,8 +696,50 @@
 
             <div id="item-codes-subtab" class="pending-subtab-content hidden">
                 <div class="mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Pending Item Code Requests</h3>
-                    <p class="text-sm text-gray-600">Item code requests awaiting your review decision</p>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Pending Item Code Requests</h3>
+                            <p class="text-sm text-gray-600">Item code requests awaiting your review decision</p>
+                        </div>
+                        
+                        <!-- Bulk Action Controls -->
+                        <div class="flex items-center space-x-2">
+                            <button id="bulk-toggle-item-codes" 
+                                    onclick="toggleBulkMode('item-codes')" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-medium">
+                                <span class="bulk-mode-text">Enable Bulk Actions</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Bulk Actions Bar (Hidden by default) -->
+                    <div id="bulk-actions-item-codes" class="hidden mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm font-medium text-blue-800">
+                                    <span id="selected-count-item-codes">0</span> items selected
+                                </span>
+                                <button onclick="selectAllItems('item-codes', true)" 
+                                        class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                    Select All
+                                </button>
+                                <button onclick="selectAllItems('item-codes', false)" 
+                                        class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                    Clear Selection
+                                </button>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="bulkApprove('item-codes')" 
+                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium">
+                                    Approve Selected
+                                </button>
+                                <button onclick="bulkReject('item-codes')" 
+                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium">
+                                    Reject Selected
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="item-codes-container" class="space-y-4">
                     <!-- Item code requests will be loaded here -->
@@ -664,8 +748,50 @@
 
             <div id="standard-values-subtab" class="pending-subtab-content hidden">
                 <div class="mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Pending Standard Value Requests</h3>
-                    <p class="text-sm text-gray-600">Standard value requests awaiting your review decision</p>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Pending Standard Value Requests</h3>
+                            <p class="text-sm text-gray-600">Standard value requests awaiting your review decision</p>
+                        </div>
+                        
+                        <!-- Bulk Action Controls -->
+                        <div class="flex items-center space-x-2">
+                            <button id="bulk-toggle-standard-values" 
+                                    onclick="toggleBulkMode('standard-values')" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-medium">
+                                <span class="bulk-mode-text">Enable Bulk Actions</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Bulk Actions Bar (Hidden by default) -->
+                    <div id="bulk-actions-standard-values" class="hidden mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm font-medium text-blue-800">
+                                    <span id="selected-count-standard-values">0</span> items selected
+                                </span>
+                                <button onclick="selectAllItems('standard-values', true)" 
+                                        class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                    Select All
+                                </button>
+                                <button onclick="selectAllItems('standard-values', false)" 
+                                        class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                    Clear Selection
+                                </button>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="bulkApprove('standard-values')" 
+                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium">
+                                    Approve Selected
+                                </button>
+                                <button onclick="bulkReject('standard-values')" 
+                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium">
+                                    Reject Selected
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="standard-values-container" class="space-y-4">
                     <!-- Standard value requests will be loaded here -->
@@ -674,8 +800,50 @@
 
             <div id="combinations-subtab" class="pending-subtab-content hidden">
                 <div class="mb-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Pending Combination Requests</h3>
-                    <p class="text-sm text-gray-600">Combination requests awaiting your review decision</p>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Pending Combination Requests</h3>
+                            <p class="text-sm text-gray-600">Combination requests awaiting your review decision</p>
+                        </div>
+                        
+                        <!-- Bulk Action Controls -->
+                        <div class="flex items-center space-x-2">
+                            <button id="bulk-toggle-combinations" 
+                                    onclick="toggleBulkMode('combinations')" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-medium">
+                                <span class="bulk-mode-text">Enable Bulk Actions</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Bulk Actions Bar (Hidden by default) -->
+                    <div id="bulk-actions-combinations" class="hidden mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm font-medium text-blue-800">
+                                    <span id="selected-count-combinations">0</span> items selected
+                                </span>
+                                <button onclick="selectAllItems('combinations', true)" 
+                                        class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                    Select All
+                                </button>
+                                <button onclick="selectAllItems('combinations', false)" 
+                                        class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                    Clear Selection
+                                </button>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="bulkApprove('combinations')" 
+                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium">
+                                    Approve Selected
+                                </button>
+                                <button onclick="bulkReject('combinations')" 
+                                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-medium">
+                                    Reject Selected
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="combinations-container" class="space-y-4">
                     <!-- Combination requests will be loaded here -->
@@ -772,6 +940,15 @@
 let currentUser = null;
 let currentReviewItem = null; // Store current item being reviewed
 
+// Bulk approval state management
+let selectedItems = {
+    projects: [],
+    'item-codes': [],
+    'standard-values': [],
+    combinations: []
+};
+let bulkApprovalMode = false;
+
 // ===== EMAIL NOTIFICATION SYSTEM ===== (Replaced with new system)
 // All email functions are now handled by the new sendDecisionNotification and sendERPIntegrationNotification functions
 
@@ -781,11 +958,11 @@ let currentReviewItem = null; // Store current item being reviewed
 const SUPABASE_URL = 'https://mvftaaxgdygeyzcvzqfr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12ZnRhYXhnZHlnZXl6Y3Z6cWZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjI3OTQsImV4cCI6MjA3NDE5ODc5NH0.nj5c_AAEg4U2qlcE1vQDMWt0nfXpmUYR1lrTR6KCIDY';
 
-// ðŸŽ¯ PERFECT SUPABASE SOLUTION - Handles all edge cases including auto-login URLs
+// Ã°Å¸Å½Â¯ PERFECT SUPABASE SOLUTION - Handles all edge cases including auto-login URLs
 // Check if client is already created on window to avoid redeclaration error
 if (window.supabase && !window.supabaseInstance) {
     window.supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('âœ… Supabase client created successfully');
+    console.log('Ã¢Å“â€¦ Supabase client created successfully');
 }
 
 // Use var to allow redeclaration if the script is re-run (page reloads, auto-login)
@@ -793,9 +970,9 @@ var supabase = window.supabaseInstance;
 
 // Validation
 if (!supabase) {
-    console.error('âŒ Supabase client not available');
+    console.error('Ã¢ÂÅ’ Supabase client not available');
 } else {
-    console.log('âœ… Supabase client ready for use');
+    console.log('Ã¢Å“â€¦ Supabase client ready for use');
 }
 
 // ===== MODAL FUNCTIONS =====
@@ -1643,10 +1820,10 @@ async function submitCurrentReview(decision) {
                             
                             if (deprecationCheck.hasDeprecated) {
                                 const deprecatedList = deprecationCheck.deprecatedValues
-                                    .map(dv => `• ${dv.attributeName}: ${dv.valueName}`)
+                                    .map(dv => `â€¢ ${dv.attributeName}: ${dv.valueName}`)
                                     .join('\n');
                                 
-                                const confirmMessage = `⚠️ REVIEWER NOTICE: DEPRECATED VALUES DETECTED
+                                const confirmMessage = `âš ï¸ REVIEWER NOTICE: DEPRECATED VALUES DETECTED
                                 
 This request contains ${deprecationCheck.deprecatedValues.length} deprecated standard value${deprecationCheck.deprecatedValues.length > 1 ? 's' : ''}:
 
@@ -2257,12 +2434,12 @@ async function viewRequestDetails(type, requestId) {
                                 </div>
                                 <div class="ml-4 text-right">
                                     <div class="font-semibold text-blue-600">${selectedValue ? selectedValue.name : 'Not selected'}</div>
-                                    ${isDeprecated ? '<div class="text-xs text-orange-600 font-medium">⚠️ Deprecated Value</div>' : ''}
+                                    ${isDeprecated ? '<div class="text-xs text-orange-600 font-medium">âš ï¸ Deprecated Value</div>' : ''}
                                 </div>
                             </div>
                             ${isDeprecated ? `
                                 <div class="mt-2 p-2 bg-orange-100 border border-orange-300 rounded text-xs text-orange-800">
-                                    <div class="font-semibold">⚠️ Deprecation Notice:</div>
+                                    <div class="font-semibold">âš ï¸ Deprecation Notice:</div>
                                     <div>This value was deprecated ${deprecationInfo?.deprecated_at ? 'on ' + new Date(deprecationInfo.deprecated_at).toLocaleDateString() : 'previously'}</div>
                                     ${deprecationInfo?.deprecated_reason ? `<div class="mt-1"><strong>Reason:</strong> ${deprecationInfo.deprecated_reason}</div>` : ''}
                                 </div>
@@ -2355,7 +2532,7 @@ async function viewRequestDetails(type, requestId) {
                         ${deprecationConflict ? `
                             <!-- Deprecation Conflict Warning -->
                             <div class="deprecated-warning mt-3">
-                                <div class="font-semibold text-orange-800 mb-2">⚠️ Deprecation Conflict Detected</div>
+                                <div class="font-semibold text-orange-800 mb-2">âš ï¸ Deprecation Conflict Detected</div>
                                 <div class="text-sm text-orange-700">
                                     A value named "${deprecationConflict.existingValue}" already exists but is currently deprecated.
                                     ${deprecationConflict.deprecatedAt ? `Deprecated on: ${new Date(deprecationConflict.deprecatedAt).toLocaleDateString()}` : ''}
@@ -3474,17 +3651,17 @@ async function loadPendingClassificationProjects() {
                                     <span class="font-bold text-blue-900">${project.division_code}</span>
                                     ${project.division_description ? `<span class="ml-1 text-blue-700">- ${project.division_description}</span>` : ''}
                                 </div>
-                                <span class="text-blue-600">Ã¢â€ â€™</span>
+                                <span class="text-blue-600">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢</span>
                                 <div class="flex items-center bg-blue-100 rounded px-2 py-1">
                                     <span class="font-bold text-blue-900">${project.section_code}</span>
                                     ${project.section_description ? `<span class="ml-1 text-blue-700">- ${project.section_description}</span>` : ''}
                                 </div>
-                                <span class="text-blue-600">Ã¢â€ â€™</span>
+                                <span class="text-blue-600">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢</span>
                                 <div class="flex items-center bg-blue-100 rounded px-2 py-1">
                                     <span class="font-bold text-blue-900">${project.detailed_section_code}</span>
                                     ${project.detailed_section_description ? `<span class="ml-1 text-blue-700">- ${project.detailed_section_description}</span>` : ''}
                                 </div>
-                                <span class="text-blue-600">Ã¢â€ â€™</span>
+                                <span class="text-blue-600">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢</span>
                                 <div class="flex items-center bg-blue-200 rounded px-2 py-1">
                                     <span class="font-bold text-blue-900">${project.item_code}</span>
                                     ${project.item_description ? `<span class="ml-1 text-blue-700">- ${project.item_description}</span>` : ''}
@@ -3642,17 +3819,17 @@ async function loadPendingItemCodes() {
                                         <span class="font-bold text-green-900">${item.project.division_code || 'N/A'}</span>
                                         ${item.project.division_description ? `<span class="ml-1 text-green-700">- ${item.project.division_description}</span>` : ''}
                                     </div>
-                                    <span class="text-green-600">Ã¢â€ â€™</span>
+                                    <span class="text-green-600">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢</span>
                                     <div class="flex items-center bg-green-100 rounded px-2 py-1">
                                         <span class="font-bold text-green-900">${item.project.section_code || 'N/A'}</span>
                                         ${item.project.section_description ? `<span class="ml-1 text-green-700">- ${item.project.section_description}</span>` : ''}
                                     </div>
-                                    <span class="text-green-600">Ã¢â€ â€™</span>
+                                    <span class="text-green-600">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢</span>
                                     <div class="flex items-center bg-green-100 rounded px-2 py-1">
                                         <span class="font-bold text-green-900">${item.project.detailed_section_code || 'N/A'}</span>
                                         ${item.project.detailed_section_description ? `<span class="ml-1 text-green-700">- ${item.project.detailed_section_description}</span>` : ''}
                                     </div>
-                                    <span class="text-green-600">Ã¢â€ â€™</span>
+                                    <span class="text-green-600">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢</span>
                                     <div class="flex items-center bg-green-200 rounded px-2 py-1">
                                         <span class="font-bold text-green-900">${item.project.item_code || 'N/A'}</span>
                                         ${item.project.item_description ? `<span class="ml-1 text-green-700">- ${item.project.item_description}</span>` : ''}
@@ -4029,6 +4206,292 @@ async function loadPendingCombinations() {
     }
 }
 
+// ===== BULK APPROVAL FUNCTIONS =====
+
+function toggleBulkMode(requestType) {
+    const isCurrentlyEnabled = selectedItems[requestType].length > 0 || 
+                              document.getElementById(`bulk-actions-${requestType}`).classList.contains('block');
+    
+    if (isCurrentlyEnabled) {
+        // Disable bulk mode
+        selectedItems[requestType] = [];
+        document.getElementById(`bulk-actions-${requestType}`).classList.add('hidden');
+        document.getElementById(`bulk-toggle-${requestType}`).querySelector('.bulk-mode-text').textContent = 'Enable Bulk Actions';
+        
+        // Remove checkboxes and reset styling
+        const container = document.getElementById(`${requestType === 'projects' ? 'classification-projects' : requestType}-container`);
+        const checkboxes = container.querySelectorAll('.bulk-checkbox');
+        checkboxes.forEach(cb => cb.remove());
+        
+        const cards = container.querySelectorAll('.bg-white');
+        cards.forEach(card => {
+            card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+        });
+        
+    } else {
+        // Enable bulk mode
+        document.getElementById(`bulk-actions-${requestType}`).classList.remove('hidden');
+        document.getElementById(`bulk-toggle-${requestType}`).querySelector('.bulk-mode-text').textContent = 'Disable Bulk Actions';
+        
+        // Add checkboxes to all items
+        addCheckboxesToItems(requestType);
+    }
+    
+    updateSelectedCount(requestType);
+}
+
+function addCheckboxesToItems(requestType) {
+    const containerMap = {
+        'projects': 'classification-projects-container',
+        'item-codes': 'item-codes-container', 
+        'standard-values': 'standard-values-container',
+        'combinations': 'combinations-container'
+    };
+    
+    const container = document.getElementById(containerMap[requestType]);
+    const cards = container.querySelectorAll('.bg-white');
+    
+    cards.forEach(card => {
+        // Extract item ID from existing buttons
+        const viewButton = card.querySelector('button[onclick*="Details"]');
+        const itemId = extractItemIdFromButton(viewButton);
+        
+        if (itemId && !card.querySelector('.bulk-checkbox')) {
+            // Create checkbox
+            const checkboxContainer = document.createElement('div');
+            checkboxContainer.className = 'bulk-checkbox absolute top-4 left-4 z-10';
+            checkboxContainer.innerHTML = `
+                <input type="checkbox" 
+                       id="bulk-${requestType}-${itemId}" 
+                       data-item-id="${itemId}"
+                       onchange="handleItemSelection('${requestType}', ${itemId})"
+                       class="w-4 h-4 text-blue-600 bg-white border-2 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+            `;
+            
+            // Make card relative positioned if not already
+            card.style.position = 'relative';
+            card.appendChild(checkboxContainer);
+        }
+    });
+}
+
+function extractItemIdFromButton(button) {
+    if (!button) return null;
+    
+    const onclick = button.getAttribute('onclick');
+    if (!onclick) return null;
+    
+    // Extract ID from patterns like "viewProjectDetails(123)" or "viewItemCodeDetails(456)"
+    const match = onclick.match(/\((\d+)\)/);
+    return match ? parseInt(match[1]) : null;
+}
+
+function handleItemSelection(requestType, itemId) {
+    const checkbox = document.getElementById(`bulk-${requestType}-${itemId}`);
+    const card = checkbox.closest('.bg-white');
+    
+    if (checkbox.checked) {
+        if (!selectedItems[requestType].includes(itemId)) {
+            selectedItems[requestType].push(itemId);
+        }
+        card.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+    } else {
+        selectedItems[requestType] = selectedItems[requestType].filter(id => id !== itemId);
+        card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+    }
+    
+    updateSelectedCount(requestType);
+}
+
+function selectAllItems(requestType, selectAll) {
+    const containerMap = {
+        'projects': 'classification-projects-container',
+        'item-codes': 'item-codes-container', 
+        'standard-values': 'standard-values-container',
+        'combinations': 'combinations-container'
+    };
+    
+    const container = document.getElementById(containerMap[requestType]);
+    const checkboxes = container.querySelectorAll('.bulk-checkbox input[type="checkbox"]');
+    
+    checkboxes.forEach(checkbox => {
+        const itemId = parseInt(checkbox.dataset.itemId);
+        const card = checkbox.closest('.bg-white');
+        
+        checkbox.checked = selectAll;
+        
+        if (selectAll) {
+            if (!selectedItems[requestType].includes(itemId)) {
+                selectedItems[requestType].push(itemId);
+            }
+            card.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+        } else {
+            selectedItems[requestType] = selectedItems[requestType].filter(id => id !== itemId);
+            card.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
+        }
+    });
+    
+    updateSelectedCount(requestType);
+}
+
+function updateSelectedCount(requestType) {
+    const count = selectedItems[requestType].length;
+    const countElement = document.getElementById(`selected-count-${requestType}`);
+    if (countElement) {
+        countElement.textContent = count;
+    }
+}
+
+async function bulkApprove(requestType) {
+    await processBulkAction(requestType, 'approve');
+}
+
+async function bulkReject(requestType) {
+    await processBulkAction(requestType, 'reject');
+}
+
+async function processBulkAction(requestType, action) {
+    const selectedIds = selectedItems[requestType];
+    const actionText = action === 'approve' ? 'approve' : 'reject';
+    const actionNoun = action === 'approve' ? 'approval' : 'rejection';
+    
+    if (selectedIds.length === 0) {
+        alert(`No ${requestType.replace('-', ' ')} selected for ${actionNoun}.`);
+        return;
+    }
+    
+    const confirmMessage = `Are you sure you want to ${actionText} ${selectedIds.length} ${requestType.replace('-', ' ')} request${selectedIds.length > 1 ? 's' : ''}?`;
+    
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+    
+    // Get comments for bulk action
+    const comments = prompt(`Comments for bulk ${actionNoun} (optional):`);
+    
+    try {
+        // Show loading indicator
+        const loadingMessage = `Processing bulk ${actionNoun}...`;
+        console.log(loadingMessage);
+        
+        let result;
+        
+        // Since bulk RPC functions don't exist in the database, use individual processing
+        console.log('Using individual processing for bulk actions...');
+        await processBulkActionFallback(requestType, action, selectedIds, comments);
+        
+    } catch (error) {
+        console.error(`Bulk ${actionNoun} failed:`, error);
+        alert(`Bulk ${actionNoun} failed: ${error.message}`);
+    }
+}
+
+async function processBulkActionFallback(requestType, action, selectedIds, comments) {
+    const results = [];
+    let successful = 0;
+    let failed = 0;
+    
+    // Process each item individually
+    for (const itemId of selectedIds) {
+        try {
+            await processSingleApproval(requestType, itemId, action, comments);
+            results.push({ id: itemId, success: true });
+            successful++;
+        } catch (error) {
+            console.error(`Failed to ${action} ${requestType} ${itemId}:`, error);
+            results.push({ id: itemId, success: false, error: error.message });
+            failed++;
+        }
+    }
+    
+    // Show results
+    const actionNoun = action === 'approve' ? 'approval' : 'rejection';
+    const message = `Bulk ${actionNoun} completed (fallback mode)!\n` +
+                   `Successful: ${successful}\n` +
+                   `Failed: ${failed}`;
+    
+    if (failed > 0) {
+        console.warn('Some items failed:', results.filter(r => !r.success));
+    }
+    
+    alert(message);
+    
+    // Clear selection and refresh data
+    selectedItems[requestType] = [];
+    toggleBulkMode(requestType);
+    await loadPendingRequests();
+}
+
+async function processSingleApproval(requestType, itemId, action, comments) {
+    const decision = action === 'approve' ? 
+        (currentUser.role === 'admin' ? 'admin_approve' : 'reviewer_approve') :
+        (currentUser.role === 'admin' ? 'admin_reject' : 'reviewer_reject');
+    
+    switch (requestType) {
+        case 'projects':
+            if (currentUser.role === 'admin') {
+                return await supabase.rpc('admin_review_decision', {
+                    project_id_param: itemId,
+                    admin_id_param: currentUser.id,
+                    decision_param: action, // 'approve' or 'reject', not 'approved' or 'rejected'
+                    comments_param: comments || ''
+                });
+            } else {
+                return await supabase.rpc('review_project_decision', {
+                    project_id_param: itemId,
+                    reviewer_id_param: currentUser.id,
+                    decision_param: action, // 'approve' or 'reject', not 'approved' or 'rejected'
+                    comments_param: comments || ''
+                });
+            }
+            
+        case 'item-codes':
+            return await supabase.rpc('approve_item_code_workflow', {
+                request_id_param: itemId,
+                reviewer_id_param: currentUser.id,
+                decision_param: decision,
+                comments_param: comments || ''
+            });
+            
+        case 'standard-values':
+            // Update standard value request
+            const { data, error } = await supabase
+                .from('standard_value_requests')
+                .update({
+                    status: action === 'approve' ? 
+                        (currentUser.role === 'admin' ? 'admin_approved' : 'reviewer_approved') :
+                        (currentUser.role === 'admin' ? 'admin_rejected' : 'reviewer_rejected'),
+                    [currentUser.role === 'admin' ? 'admin_reviewed_at' : 'reviewed_at']: new Date().toISOString(),
+                    [currentUser.role === 'admin' ? 'admin_reviewed_by' : 'reviewed_by']: currentUser.id,
+                    [currentUser.role === 'admin' ? 'admin_comments' : 'reviewer_comments']: comments || ''
+                })
+                .eq('id', itemId);
+                
+            if (error) throw error;
+            return { data, error: null };
+            
+        case 'combinations':
+            // Update combination request  
+            const { data: combData, error: combError } = await supabase
+                .from('combination_requests')
+                .update({
+                    status: action === 'approve' ? 
+                        (currentUser.role === 'admin' ? 'admin_approved' : 'reviewer_approved') :
+                        (currentUser.role === 'admin' ? 'admin_rejected' : 'reviewer_rejected'),
+                    [currentUser.role === 'admin' ? 'admin_reviewed_at' : 'reviewed_at']: new Date().toISOString(),
+                    [currentUser.role === 'admin' ? 'admin_reviewed_by' : 'reviewed_by']: currentUser.id,
+                    [currentUser.role === 'admin' ? 'admin_comments' : 'reviewer_comments']: comments || ''
+                })
+                .eq('id', itemId);
+                
+            if (combError) throw combError;
+            return { data: combData, error: null };
+            
+        default:
+            throw new Error(`Unknown request type: ${requestType}`);
+    }
+}
+
 // ===== COMPREHENSIVE DETAIL VIEWING FUNCTIONS =====
 
 async function viewProjectDetails(projectId) {
@@ -4135,7 +4598,7 @@ function showProjectDetailModal(project) {
                                         <div class="text-xs text-blue-600">Division</div>
                                     </div>
                                 </div>
-                                <div class="text-center text-blue-600">Ã¢â€ â€œ</div>
+                                <div class="text-center text-blue-600">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“</div>
                                 <div class="flex items-center bg-blue-100 rounded-lg p-3">
                                     <div class="flex-1">
                                         <div class="font-bold text-blue-900 text-lg">${project.section_code}</div>
@@ -4143,7 +4606,7 @@ function showProjectDetailModal(project) {
                                         <div class="text-xs text-blue-600">Section</div>
                                     </div>
                                 </div>
-                                <div class="text-center text-blue-600">Ã¢â€ â€œ</div>
+                                <div class="text-center text-blue-600">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“</div>
                                 <div class="flex items-center bg-blue-100 rounded-lg p-3">
                                     <div class="flex-1">
                                         <div class="font-bold text-blue-900 text-lg">${project.detailed_section_code}</div>
@@ -4151,7 +4614,7 @@ function showProjectDetailModal(project) {
                                         <div class="text-xs text-blue-600">Detailed Section</div>
                                     </div>
                                 </div>
-                                <div class="text-center text-blue-600">Ã¢â€ â€œ</div>
+                                <div class="text-center text-blue-600">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“</div>
                                 <div class="flex items-center bg-blue-200 rounded-lg p-3">
                                     <div class="flex-1">
                                         <div class="font-bold text-blue-900 text-lg">${project.item_code}</div>
@@ -4161,7 +4624,7 @@ function showProjectDetailModal(project) {
                                 </div>
                                 
                                 ${project.additional_level_name && project.additional_level_value ? `
-                                    <div class="text-center text-green-600">Ã¢â€ â€œ</div>
+                                    <div class="text-center text-green-600">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“</div>
                                     <div class="flex items-center bg-green-100 rounded-lg p-3">
                                         <div class="flex-1">
                                             <div class="font-bold text-green-900 text-lg">${project.additional_level_value}</div>
@@ -5341,25 +5804,25 @@ function createDetailedAdminReviewCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: 'ðŸ“', 
+            icon: 'Ã°Å¸â€œÂ', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: 'ðŸ“¦', 
+            icon: 'Ã°Å¸â€œÂ¦', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: 'ðŸ“Š', 
+            icon: 'Ã°Å¸â€œÅ ', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: 'ðŸš«', 
+            icon: 'Ã°Å¸Å¡Â«', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -5806,10 +6269,10 @@ function createSimpleReviewerCard(item) {
     card.className = 'request-card bg-white border rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow border-l-4 border-l-blue-500';
     
     const typeInfo = {
-        'project': { icon: 'ðŸ“', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
-        'code': { icon: 'ðŸ“¦', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
-        'value': { icon: 'ðŸ“Š', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
-        'block': { icon: 'ðŸš«', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
+        'project': { icon: 'Ã°Å¸â€œÂ', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
+        'code': { icon: 'Ã°Å¸â€œÂ¦', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
+        'value': { icon: 'Ã°Å¸â€œÅ ', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
+        'block': { icon: 'Ã°Å¸Å¡Â«', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
     };
 
     const info = typeInfo[item.type] || typeInfo['code'];
@@ -5931,25 +6394,25 @@ function createDetailedReviewerCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: 'ðŸ“', 
+            icon: 'Ã°Å¸â€œÂ', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: 'ðŸ“¦', 
+            icon: 'Ã°Å¸â€œÂ¦', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: 'ðŸ“Š', 
+            icon: 'Ã°Å¸â€œÅ ', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: 'ðŸš«', 
+            icon: 'Ã°Å¸Å¡Â«', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -6715,12 +7178,12 @@ function displayAllRequests(requests) {
 
 function getTypeIcon(type) {
     const icons = {
-        project: 'ðŸ“',
-        code: 'ðŸ“¦',
-        block: 'ðŸš«',
-        value: 'ðŸ“Š'
+        project: 'Ã°Å¸â€œÂ',
+        code: 'Ã°Å¸â€œÂ¦',
+        block: 'Ã°Å¸Å¡Â«',
+        value: 'Ã°Å¸â€œÅ '
     };
-    return icons[type] || 'ðŸ“„';
+    return icons[type] || 'Ã°Å¸â€œâ€ž';
 }
 
 function createAllRequestCard(request) {
@@ -8571,10 +9034,10 @@ async function enhancedApprovalProcess(type, requestId, decision, comments) {
                 
                 if (deprecationCheck.hasDeprecated) {
                     const deprecatedList = deprecationCheck.deprecatedValues
-                        .map(dv => `• ${dv.attributeName}: ${dv.valueName}`)
+                        .map(dv => `â€¢ ${dv.attributeName}: ${dv.valueName}`)
                         .join('\n');
                     
-                    const confirmMessage = `⚠️ DEPRECATION WARNING
+                    const confirmMessage = `âš ï¸ DEPRECATION WARNING
                     
 This request contains ${deprecationCheck.deprecatedValues.length} deprecated standard value${deprecationCheck.deprecatedValues.length > 1 ? 's' : ''}:
 
@@ -8583,10 +9046,10 @@ ${deprecatedList}
 Deprecated values are preserved for system compatibility but hidden from new item creation.
 
 Effects of approval:
-✓ Request will be approved normally
-✓ Deprecated values preserved in approved item
-✓ System integrity maintained
-✓ Duplicate detection continues working
+âœ“ Request will be approved normally
+âœ“ Deprecated values preserved in approved item
+âœ“ System integrity maintained
+âœ“ Duplicate detection continues working
 
 Continue with approval?`;
 
@@ -8638,7 +9101,7 @@ async function showDeprecationAnalysisModal(requestData, deprecationCheck) {
         <div class="relative min-h-screen flex items-center justify-center p-4">
             <div class="relative bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                 <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-                    <h3 class="text-lg font-medium text-gray-900">⚠️ Deprecation Analysis</h3>
+                    <h3 class="text-lg font-medium text-gray-900">âš ï¸ Deprecation Analysis</h3>
                     <button onclick="closeDeprecationAnalysisModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -8654,11 +9117,11 @@ async function showDeprecationAnalysisModal(requestData, deprecationCheck) {
                     <div class="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
                         <h4 class="font-medium text-blue-800 mb-2">Impact Analysis</h4>
                         <div class="text-sm text-blue-700 space-y-1">
-                            <div>✓ System integrity maintained</div>
-                            <div>✓ Duplicate detection preserved</div>
-                            <div>✓ Existing items unaffected</div>
-                            <div>✓ Search functionality maintained</div>
-                            <div>⚠️ Values hidden from new item creation</div>
+                            <div>âœ“ System integrity maintained</div>
+                            <div>âœ“ Duplicate detection preserved</div>
+                            <div>âœ“ Existing items unaffected</div>
+                            <div>âœ“ Search functionality maintained</div>
+                            <div>âš ï¸ Values hidden from new item creation</div>
                         </div>
                     </div>
                     
