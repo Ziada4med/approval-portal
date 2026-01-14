@@ -492,6 +492,13 @@
                     <input type="password" id="password" name="password" required 
                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="remember-me" checked 
+                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="remember-me" class="ml-2 block text-sm text-gray-700">
+                        Keep me logged in (24 hours)
+                    </label>
+                </div>
                 <div id="login-error" class="text-red-600 text-sm hidden"></div>
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
                     Login
@@ -551,6 +558,12 @@
             <h1 class="text-3xl font-bold text-gray-800">CSI Code Approval Portal</h1>
             <div class="flex items-center space-x-4">
                 <span id="user-info" class="text-sm text-gray-600"></span>
+                <span id="session-indicator" class="hidden text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                    <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    Session Active
+                </span>
                 <button id="logout-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm">
                     Logout
                 </button>
@@ -615,6 +628,9 @@
                 </button>
                 <button id="admin-tab" class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hidden" data-tab="admin-panel">
                     Admin Panel
+                </button>
+                <button id="reassignment-tab" class="tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hidden" data-tab="reassignment-management">
+                    Re-assignment Management
                 </button>
             </nav>
         </div>
@@ -931,6 +947,116 @@
         <div id="admin-panel-tab" class="tab-content p-6 hidden">
             <div id="admin-panel-container" class="space-y-4">
                 <!-- Admin panel content will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Re-assignment Management Tab -->
+        <div id="reassignment-management-tab" class="tab-content p-6 hidden">
+            <div class="mb-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-800">Re-assignment Management</h2>
+                        <p class="text-sm text-gray-600 mt-1">Admin-only: View and reassign pending requests across all types and reviewers</p>
+                    </div>
+                    <button onclick="refreshReassignmentData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Refresh Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Summary Stats -->
+            <div id="reassignment-summary" class="mb-6 grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
+                    <div class="text-2xl font-bold text-blue-600" id="total-pending-reassign">0</div>
+                    <div class="text-sm text-gray-600">Total Pending</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-purple-500">
+                    <div class="text-2xl font-bold text-purple-600" id="total-projects-reassign">0</div>
+                    <div class="text-sm text-gray-600">Projects</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
+                    <div class="text-2xl font-bold text-green-600" id="total-itemcodes-reassign">0</div>
+                    <div class="text-sm text-gray-600">Item Codes</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-yellow-500">
+                    <div class="text-2xl font-bold text-yellow-600" id="total-standardvalues-reassign">0</div>
+                    <div class="text-sm text-gray-600">Standard Values</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
+                    <div class="text-2xl font-bold text-red-600" id="total-combinations-reassign">0</div>
+                    <div class="text-sm text-gray-600">Combinations</div>
+                </div>
+            </div>
+
+            <!-- Filters and Controls -->
+            <div class="bg-white p-4 rounded-lg shadow-sm border mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Request Type</label>
+                        <select id="reassign-type-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <option value="">All Types</option>
+                            <option value="projects">Classification Projects</option>
+                            <option value="item_codes">Item Code Requests</option>
+                            <option value="standard_values">Standard Value Requests</option>
+                            <option value="combinations">Combination Requests</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Current Reviewer</label>
+                        <select id="reassign-reviewer-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <option value="">All Reviewers</option>
+                            <option value="unassigned">Unassigned</option>
+                            <!-- Reviewer options will be loaded dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select id="reassign-status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <option value="">All Statuses</option>
+                            <option value="submitted">Submitted</option>
+                            <option value="pending">Pending</option>
+                            <option value="reviewer_approved">Reviewer Approved</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="applyReassignmentFilters()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+                            Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm font-medium text-yellow-800">
+                            Bulk Actions: <span id="selected-reassign-count">0</span> items selected
+                        </span>
+                        <button onclick="selectAllReassignItems(true)" class="text-yellow-600 hover:text-yellow-700 text-sm font-medium">
+                            Select All Visible
+                        </button>
+                        <button onclick="selectAllReassignItems(false)" class="text-yellow-600 hover:text-yellow-700 text-sm font-medium">
+                            Clear Selection
+                        </button>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="bulkReassignSelected()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium">
+                            Reassign Selected
+                        </button>
+                        <button onclick="bulkUnassignSelected()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded text-sm font-medium">
+                            Unassign Selected
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Re-assignment Content -->
+            <div id="reassignment-content" class="space-y-6">
+                <!-- Content will be loaded here -->
             </div>
         </div>
     </div>
@@ -8247,13 +8373,29 @@ async function handleLogin(event) {
             currentUser = data.user;
             console.log('Login successful:', currentUser);
             
+            // Store user session in localStorage for persistence across page refreshes
+            const rememberMe = document.getElementById('remember-me').checked;
+            if (rememberMe) {
+                localStorage.setItem('approvalPortalUser', JSON.stringify({
+                    user: currentUser,
+                    loginTime: new Date().toISOString(),
+                    sessionId: Date.now() + Math.random(), // Simple session identifier
+                    rememberMe: true
+                }));
+                console.log('Session saved with "Remember me" enabled');
+            } else {
+                console.log('Session not saved - "Remember me" not checked');
+            }
+            
             document.getElementById('login-modal').classList.add('hidden');
             document.getElementById('main-container').classList.remove('hidden');
             document.getElementById('user-info').textContent = `${currentUser.username} (${currentUser.role})`;
+            document.getElementById('session-indicator').classList.remove('hidden');
             
             // Show admin tab if user is admin
             if (currentUser.role === 'admin') {
                 document.getElementById('admin-tab').classList.remove('hidden');
+                document.getElementById('reassignment-tab').classList.remove('hidden');
             }
             
             await loadWorkflowDashboard();
@@ -8269,12 +8411,89 @@ async function handleLogin(event) {
     }
 }
 
+// ===== SESSION MANAGEMENT =====
+async function checkExistingSession() {
+    try {
+        const sessionData = localStorage.getItem('approvalPortalUser');
+        
+        if (!sessionData) {
+            console.log('No existing session found');
+            return false;
+        }
+        
+        const session = JSON.parse(sessionData);
+        
+        // Check if session is not too old (24 hours max)
+        const loginTime = new Date(session.loginTime);
+        const now = new Date();
+        const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+        
+        if (hoursDiff > 24) {
+            console.log('Session expired (older than 24 hours)');
+            localStorage.removeItem('approvalPortalUser');
+            return false;
+        }
+        
+        // Verify session with database to ensure user still exists and is active
+        const { data: userData, error } = await supabase
+            .from('users')
+            .select('id, username, email, role, status')
+            .eq('id', session.user.id)
+            .eq('status', 'active')
+            .single();
+        
+        if (error || !userData) {
+            console.log('Session user no longer exists or inactive:', error);
+            localStorage.removeItem('approvalPortalUser');
+            return false;
+        }
+        
+        // Restore session
+        currentUser = userData;
+        console.log('Session restored for user:', currentUser.username);
+        
+        // Update UI to logged-in state
+        document.getElementById('login-modal').classList.add('hidden');
+        document.getElementById('main-container').classList.remove('hidden');
+        document.getElementById('user-info').textContent = `${currentUser.username} (${currentUser.role})`;
+        document.getElementById('session-indicator').classList.remove('hidden');
+        
+        // Show admin tabs if user is admin
+        if (currentUser.role === 'admin') {
+            document.getElementById('admin-tab').classList.remove('hidden');
+            document.getElementById('reassignment-tab').classList.remove('hidden');
+        }
+        
+        // Load initial data
+        await loadWorkflowDashboard();
+        await loadPendingRequests();
+        
+        return true;
+        
+    } catch (error) {
+        console.error('Error checking existing session:', error);
+        localStorage.removeItem('approvalPortalUser');
+        return false;
+    }
+}
+
 function handleLogout() {
+    // Clear session data
+    localStorage.removeItem('approvalPortalUser');
     currentUser = null;
+    
+    // Reset UI to login state
     document.getElementById('main-container').classList.add('hidden');
     document.getElementById('login-modal').classList.remove('hidden');
-    document.getElementById('login-error').classList.add('hidden');
     document.getElementById('admin-tab').classList.add('hidden');
+    document.getElementById('reassignment-tab').classList.add('hidden');
+    document.getElementById('session-indicator').classList.add('hidden');
+    
+    // Clear form
+    document.getElementById('email').value = '';
+    document.getElementById('password').value = '';
+    
+    console.log('User logged out and session cleared');
 }
 
 // ===== TAB FUNCTIONS =====
@@ -8305,6 +8524,8 @@ function switchTab(tabName) {
         loadAllRequests();
     } else if (tabName === 'admin-panel') {
         loadAdminPanel();
+    } else if (tabName === 'reassignment-management') {
+        loadReassignmentManagement();
     }
 }
 
@@ -8921,6 +9142,9 @@ async function adminReviewCombinationRequest(requestId, decision, comments) {
 async function initializeApp() {
     console.log('Initializing app...');
     
+    // Check for existing session first
+    await checkExistingSession();
+    
     // Supabase client is now initialized globally - no need to recreate here
     
     // Add event listeners
@@ -9153,6 +9377,893 @@ window.showDeprecationAnalysisModal = showDeprecationAnalysisModal;
 window.closeDeprecationAnalysisModal = closeDeprecationAnalysisModal;
 
 // Start the app when page loads
+
+// ===== RE-ASSIGNMENT MANAGEMENT FUNCTIONS =====
+
+// Global variables for reassignment management
+let reassignmentData = {
+    projects: [],
+    itemCodes: [],
+    standardValues: [],
+    combinations: [],
+    reviewers: []
+};
+
+let selectedReassignItems = new Set();
+
+// Main function to load reassignment management data
+async function loadReassignmentManagement() {
+    // Restrict access to admin users only
+    if (!currentUser || currentUser.role !== 'admin') {
+        const container = document.getElementById('reassignment-content');
+        container.innerHTML = `
+            <div class="text-center text-red-500 py-12">
+                <svg class="w-12 h-12 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+                <h3 class="text-lg font-semibold text-red-600 mb-2">Access Denied</h3>
+                <p class="text-gray-600">Re-assignment management is only available to administrators.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    try {
+        console.log('Loading reassignment management data...');
+        
+        // Show loading indicator
+        const container = document.getElementById('reassignment-content');
+        container.innerHTML = '<div class="text-center text-gray-500 py-8">Loading reassignment data...</div>';
+        
+        // Load all data in parallel
+        await Promise.all([
+            loadReviewers(),
+            loadAllPendingRequestsForReassignment()
+        ]);
+        
+        // Update summary statistics
+        updateReassignmentSummary();
+        
+        // Render the reassignment interface
+        renderReassignmentInterface();
+        
+    } catch (error) {
+        console.error('Error loading reassignment management:', error);
+        const container = document.getElementById('reassignment-content');
+        container.innerHTML = '<div class="text-center text-red-500 py-8">Error loading reassignment data: ' + error.message + '</div>';
+    }
+}
+
+// Load all reviewers
+async function loadReviewers() {
+    try {
+        const { data: reviewers, error } = await supabase
+            .from('users')
+            .select('id, username, email')
+            .in('role', ['reviewer', 'admin'])
+            .eq('status', 'active')
+            .order('username');
+        
+        if (error) throw error;
+        
+        reassignmentData.reviewers = reviewers || [];
+        
+        // Update reviewer filter dropdown
+        const reviewerFilter = document.getElementById('reassign-reviewer-filter');
+        const currentValue = reviewerFilter.value;
+        
+        reviewerFilter.innerHTML = `
+            <option value="">All Reviewers</option>
+            <option value="unassigned">Unassigned</option>
+            ${reassignmentData.reviewers.map(r => 
+                `<option value="${r.id}" ${currentValue == r.id ? 'selected' : ''}>${r.username} (${r.email})</option>`
+            ).join('')}
+        `;
+        
+    } catch (error) {
+        console.error('Error loading reviewers:', error);
+        throw error;
+    }
+}
+
+// Load all pending requests for reassignment
+async function loadAllPendingRequestsForReassignment() {
+    try {
+        const [projects, itemCodes, standardValues, combinations] = await Promise.all([
+            loadPendingProjectsForReassignment(),
+            loadPendingItemCodesForReassignment(),
+            loadPendingStandardValuesForReassignment(),
+            loadPendingCombinationsForReassignment()
+        ]);
+        
+        reassignmentData.projects = projects;
+        reassignmentData.itemCodes = itemCodes;
+        reassignmentData.standardValues = standardValues;
+        reassignmentData.combinations = combinations;
+        
+    } catch (error) {
+        console.error('Error loading pending requests:', error);
+        throw error;
+    }
+}
+
+// Load pending classification projects for reassignment
+async function loadPendingProjectsForReassignment() {
+    try {
+        const { data, error } = await supabase
+            .from('classification_projects')
+            .select(`
+                id, project_name, status, created_at, submitted_at,
+                created_by, assigned_reviewer_id,
+                creator:users!classification_projects_created_by_fkey(username, email),
+                reviewer:users!classification_projects_assigned_reviewer_id_fkey(username, email),
+                attribute_count:project_attributes(count)
+            `)
+            .in('status', ['submitted', 'reviewer_approved'])
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        return (data || []).map(project => ({
+            ...project,
+            type: 'project',
+            requestType: 'Classification Project',
+            title: project.project_name,
+            currentReviewer: project.reviewer?.username || 'Unassigned',
+            currentReviewerId: project.assigned_reviewer_id,
+            creator: project.creator?.username || 'Unknown',
+            createdAt: project.created_at,
+            submittedAt: project.submitted_at
+        }));
+        
+    } catch (error) {
+        console.error('Error loading pending projects:', error);
+        return [];
+    }
+}
+
+// Load pending item code requests for reassignment
+async function loadPendingItemCodesForReassignment() {
+    try {
+        const { data, error } = await supabase
+            .from('item_code_workflow')
+            .select(`
+                id, item_code, status, created_at,
+                created_by, reviewed_by,
+                created_by_user:users!item_code_workflow_created_by_fkey(username, email),
+                reviewed_by_user:users!item_code_workflow_reviewed_by_fkey(username, email),
+                project:classification_projects(project_name)
+            `)
+            .in('status', ['pending', 'reviewer_approved'])
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        return (data || []).map(item => ({
+            ...item,
+            type: 'item_code',
+            requestType: 'Item Code Request',
+            title: item.item_code,
+            currentReviewer: item.reviewed_by_user?.username || 'Unassigned',
+            currentReviewerId: item.reviewed_by,
+            creator: item.created_by_user?.username || 'Unknown',
+            createdAt: item.created_at,
+            submittedAt: item.created_at,
+            projectName: item.project?.project_name || 'Unknown Project'
+        }));
+        
+    } catch (error) {
+        console.error('Error loading pending item codes:', error);
+        return [];
+    }
+}
+
+// Load pending standard value requests for reassignment
+async function loadPendingStandardValuesForReassignment() {
+    try {
+        const { data, error } = await supabase
+            .from('standard_value_requests')
+            .select(`
+                id, new_value, status, created_at,
+                created_by, reviewed_by,
+                created_by_user:users!standard_value_requests_created_by_fkey(username, email),
+                reviewed_by_user:users!standard_value_requests_reviewed_by_fkey(username, email),
+                project:classification_projects(project_name),
+                project_attributes(attribute_name)
+            `)
+            .in('status', ['pending', 'reviewer_approved'])
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        return (data || []).map(item => ({
+            ...item,
+            type: 'standard_value',
+            requestType: 'Standard Value Request',
+            title: item.new_value,
+            currentReviewer: item.reviewed_by_user?.username || 'Unassigned',
+            currentReviewerId: item.reviewed_by,
+            creator: item.created_by_user?.username || 'Unknown',
+            createdAt: item.created_at,
+            submittedAt: item.created_at,
+            projectName: item.project?.project_name || 'Unknown Project',
+            attributeName: item.project_attributes?.attribute_name || 'Unknown Attribute'
+        }));
+        
+    } catch (error) {
+        console.error('Error loading pending standard values:', error);
+        return [];
+    }
+}
+
+// Load pending combination requests for reassignment
+async function loadPendingCombinationsForReassignment() {
+    try {
+        const { data, error } = await supabase
+            .from('combination_requests')
+            .select(`
+                id, request_type, status, created_at,
+                created_by, reviewed_by,
+                created_by_user:users!combination_requests_created_by_fkey(username, email),
+                reviewed_by_user:users!combination_requests_reviewed_by_fkey(username, email),
+                project:classification_projects(project_name)
+            `)
+            .in('status', ['pending', 'reviewer_approved'])
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        return (data || []).map(item => ({
+            ...item,
+            type: 'combination',
+            requestType: 'Combination Request',
+            title: `${item.request_type || 'Block'} Request`,
+            currentReviewer: item.reviewed_by_user?.username || 'Unassigned',
+            currentReviewerId: item.reviewed_by,
+            creator: item.created_by_user?.username || 'Unknown',
+            createdAt: item.created_at,
+            submittedAt: item.created_at,
+            projectName: item.project?.project_name || 'Unknown Project'
+        }));
+        
+    } catch (error) {
+        console.error('Error loading pending combinations:', error);
+        return [];
+    }
+}
+
+// Update summary statistics
+function updateReassignmentSummary() {
+    const totalPending = reassignmentData.projects.length + 
+                        reassignmentData.itemCodes.length + 
+                        reassignmentData.standardValues.length + 
+                        reassignmentData.combinations.length;
+    
+    document.getElementById('total-pending-reassign').textContent = totalPending;
+    document.getElementById('total-projects-reassign').textContent = reassignmentData.projects.length;
+    document.getElementById('total-itemcodes-reassign').textContent = reassignmentData.itemCodes.length;
+    document.getElementById('total-standardvalues-reassign').textContent = reassignmentData.standardValues.length;
+    document.getElementById('total-combinations-reassign').textContent = reassignmentData.combinations.length;
+}
+
+// Render the main reassignment interface
+function renderReassignmentInterface() {
+    const container = document.getElementById('reassignment-content');
+    
+    // Combine all requests and apply filters
+    let allRequests = [
+        ...reassignmentData.projects,
+        ...reassignmentData.itemCodes,
+        ...reassignmentData.standardValues,
+        ...reassignmentData.combinations
+    ];
+    
+    // Apply current filters
+    allRequests = applyReassignmentFiltersToData(allRequests);
+    
+    // Sort by creation date (newest first)
+    allRequests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    if (allRequests.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-gray-500 py-12">
+                <svg class="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                <p class="text-lg font-medium">No pending requests found</p>
+                <p class="text-sm">Try adjusting your filters or refreshing the data</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Group by type for better organization
+    const groupedRequests = {
+        projects: allRequests.filter(r => r.type === 'project'),
+        item_codes: allRequests.filter(r => r.type === 'item_code'),
+        standard_values: allRequests.filter(r => r.type === 'standard_value'),
+        combinations: allRequests.filter(r => r.type === 'combination')
+    };
+    
+    let html = '';
+    
+    Object.entries(groupedRequests).forEach(([type, requests]) => {
+        if (requests.length === 0) return;
+        
+        const typeLabels = {
+            projects: 'Classification Projects',
+            item_codes: 'Item Code Requests',
+            standard_values: 'Standard Value Requests',
+            combinations: 'Combination Requests'
+        };
+        
+        const typeColorClasses = {
+            projects: { bg: 'bg-purple-100', text: 'text-purple-800', button: 'text-purple-600 hover:text-purple-700' },
+            item_codes: { bg: 'bg-green-100', text: 'text-green-800', button: 'text-green-600 hover:text-green-700' },
+            standard_values: { bg: 'bg-yellow-100', text: 'text-yellow-800', button: 'text-yellow-600 hover:text-yellow-700' },
+            combinations: { bg: 'bg-red-100', text: 'text-red-800', button: 'text-red-600 hover:text-red-700' }
+        };
+        
+        const colors = typeColorClasses[type];
+        
+        html += `
+            <div class="bg-white rounded-lg shadow-sm border mb-6">
+                <div class="border-b px-6 py-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                            <span class="${colors.bg} ${colors.text} px-2 py-1 rounded text-sm mr-2">${requests.length}</span>
+                            ${typeLabels[type]}
+                        </h3>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="selectTypeRequests('${type}', true)" class="${colors.button} text-sm font-medium">
+                                Select All ${typeLabels[type]}
+                            </button>
+                            <button onclick="selectTypeRequests('${type}', false)" class="text-gray-500 hover:text-gray-600 text-sm font-medium">
+                                Deselect All
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="divide-y">
+                    ${requests.map(request => createReassignmentRequestCard(request)).join('')}
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Create individual request card for reassignment
+function createReassignmentRequestCard(request) {
+    const isSelected = selectedReassignItems.has(`${request.type}_${request.id}`);
+    const statusColorClasses = {
+        'submitted': 'bg-yellow-100 text-yellow-800',
+        'pending': 'bg-blue-100 text-blue-800',
+        'reviewer_approved': 'bg-green-100 text-green-800'
+    };
+    
+    const statusClasses = statusColorClasses[request.status] || 'bg-gray-100 text-gray-800';
+    
+    return `
+        <div class="p-4 hover:bg-gray-50 ${isSelected ? 'bg-blue-50 border-l-4 border-blue-500' : ''}">
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <input type="checkbox" 
+                           id="reassign_${request.type}_${request.id}"
+                           class="reassign-checkbox mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                           ${isSelected ? 'checked' : ''}
+                           onchange="toggleReassignSelection('${request.type}', ${request.id})">
+                </div>
+                
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1 mr-4">
+                            <h4 class="text-sm font-medium text-gray-900 truncate">${request.title}</h4>
+                            <p class="text-sm text-gray-600 mt-1">${request.requestType}</p>
+                            ${request.projectName ? `<p class="text-xs text-gray-500">Project: ${request.projectName}</p>` : ''}
+                            ${request.attributeName ? `<p class="text-xs text-gray-500">Attribute: ${request.attributeName}</p>` : ''}
+                        </div>
+                        
+                        <div class="flex flex-col items-end space-y-2">
+                            <span class="${statusClasses} px-2 py-1 rounded-full text-xs font-medium">
+                                ${request.status.replace('_', ' ').toUpperCase()}
+                            </span>
+                            <div class="flex space-x-1">
+                                <button onclick="quickReassignSingle('${request.type}', ${request.id})" 
+                                        class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs">
+                                    Reassign
+                                </button>
+                                <button onclick="viewRequestDetails('${request.type}', ${request.id})"
+                                        class="bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs">
+                                    Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 flex items-center justify-between text-xs text-gray-500">
+                        <div class="flex items-center space-x-4">
+                            <span>Created by: <strong>${request.creator}</strong></span>
+                            <span>Current Reviewer: <strong class="${request.currentReviewer === 'Unassigned' ? 'text-red-600' : 'text-blue-600'}">${request.currentReviewer}</strong></span>
+                        </div>
+                        <div>
+                            <span>Created: ${new Date(request.createdAt).toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Apply filters to the data
+function applyReassignmentFiltersToData(requests) {
+    const typeFilter = document.getElementById('reassign-type-filter').value;
+    const reviewerFilter = document.getElementById('reassign-reviewer-filter').value;
+    const statusFilter = document.getElementById('reassign-status-filter').value;
+    
+    return requests.filter(request => {
+        // Type filter
+        if (typeFilter) {
+            const typeMap = {
+                'projects': 'project',
+                'item_codes': 'item_code',
+                'standard_values': 'standard_value',
+                'combinations': 'combination'
+            };
+            if (request.type !== typeMap[typeFilter]) return false;
+        }
+        
+        // Reviewer filter
+        if (reviewerFilter) {
+            if (reviewerFilter === 'unassigned') {
+                if (request.currentReviewerId) return false;
+            } else {
+                if (request.currentReviewerId != reviewerFilter) return false;
+            }
+        }
+        
+        // Status filter
+        if (statusFilter && request.status !== statusFilter) return false;
+        
+        return true;
+    });
+}
+
+// Apply filters and re-render
+function applyReassignmentFilters() {
+    renderReassignmentInterface();
+    updateSelectedCount();
+}
+
+// Refresh all data
+async function refreshReassignmentData() {
+    // Admin check
+    if (!currentUser || currentUser.role !== 'admin') {
+        alert('Access denied. Re-assignment is only available to administrators.');
+        return;
+    }
+    
+    selectedReassignItems.clear();
+    await loadReassignmentManagement();
+}
+
+// Toggle selection for individual item
+function toggleReassignSelection(type, id) {
+    const key = `${type}_${id}`;
+    
+    if (selectedReassignItems.has(key)) {
+        selectedReassignItems.delete(key);
+    } else {
+        selectedReassignItems.add(key);
+    }
+    
+    updateSelectedCount();
+    renderReassignmentInterface(); // Re-render to update visual selection
+}
+
+// Select all items of a specific type
+function selectTypeRequests(type, select) {
+    const typeMap = {
+        'projects': 'project',
+        'item_codes': 'item_code',
+        'standard_values': 'standard_value',
+        'combinations': 'combination'
+    };
+    
+    const targetType = typeMap[type];
+    const allRequests = [
+        ...reassignmentData.projects,
+        ...reassignmentData.itemCodes,
+        ...reassignmentData.standardValues,
+        ...reassignmentData.combinations
+    ];
+    
+    const filteredRequests = applyReassignmentFiltersToData(allRequests);
+    
+    filteredRequests.forEach(request => {
+        if (request.type === targetType) {
+            const key = `${request.type}_${request.id}`;
+            if (select) {
+                selectedReassignItems.add(key);
+            } else {
+                selectedReassignItems.delete(key);
+            }
+        }
+    });
+    
+    updateSelectedCount();
+    renderReassignmentInterface();
+}
+
+// Select all visible items
+function selectAllReassignItems(select) {
+    const allRequests = [
+        ...reassignmentData.projects,
+        ...reassignmentData.itemCodes,
+        ...reassignmentData.standardValues,
+        ...reassignmentData.combinations
+    ];
+    
+    const filteredRequests = applyReassignmentFiltersToData(allRequests);
+    
+    filteredRequests.forEach(request => {
+        const key = `${request.type}_${request.id}`;
+        if (select) {
+            selectedReassignItems.add(key);
+        } else {
+            selectedReassignItems.delete(key);
+        }
+    });
+    
+    updateSelectedCount();
+    renderReassignmentInterface();
+}
+
+// Update selected count display
+function updateSelectedCount() {
+    document.getElementById('selected-reassign-count').textContent = selectedReassignItems.size;
+}
+
+// Quick reassign for single item
+async function quickReassignSingle(type, id) {
+    // Admin check
+    if (!currentUser || currentUser.role !== 'admin') {
+        alert('Access denied. Re-assignment is only available to administrators.');
+        return;
+    }
+    
+    try {
+        await showReassignModal([`${type}_${id}`]);
+    } catch (error) {
+        console.error('Error in quick reassign:', error);
+        alert('Error opening reassignment dialog: ' + error.message);
+    }
+}
+
+// Bulk reassign selected items
+async function bulkReassignSelected() {
+    // Admin check
+    if (!currentUser || currentUser.role !== 'admin') {
+        alert('Access denied. Re-assignment is only available to administrators.');
+        return;
+    }
+    
+    if (selectedReassignItems.size === 0) {
+        alert('Please select at least one item to reassign');
+        return;
+    }
+    
+    await showReassignModal(Array.from(selectedReassignItems));
+}
+
+// Bulk unassign selected items
+async function bulkUnassignSelected() {
+    // Admin check
+    if (!currentUser || currentUser.role !== 'admin') {
+        alert('Access denied. Re-assignment is only available to administrators.');
+        return;
+    }
+    
+    if (selectedReassignItems.size === 0) {
+        alert('Please select at least one item to unassign');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to unassign ${selectedReassignItems.size} item(s)? This will remove the current reviewer assignment.`)) {
+        return;
+    }
+    
+    try {
+        const selectedItems = Array.from(selectedReassignItems);
+        const results = await Promise.all(
+            selectedItems.map(item => {
+                // Parse the selection key correctly - handle types with underscores
+                let type, id;
+                if (item.startsWith('item_code_')) {
+                    type = 'item_code';
+                    id = item.substring('item_code_'.length);
+                } else if (item.startsWith('standard_value_')) {
+                    type = 'standard_value';
+                    id = item.substring('standard_value_'.length);
+                } else {
+                    // For project and combination (no underscores in type name)
+                    const [typeOnly, idOnly] = item.split('_');
+                    type = typeOnly;
+                    id = idOnly;
+                }
+                return performReassignment(type, id, null); // null means unassign
+            })
+        );
+        
+        const successful = results.filter(r => r.success).length;
+        const failed = results.length - successful;
+        
+        alert(`Bulk unassignment completed:\n✓ ${successful} successful\n✗ ${failed} failed`);
+        
+        if (successful > 0) {
+            selectedReassignItems.clear();
+            await refreshReassignmentData();
+        }
+        
+    } catch (error) {
+        console.error('Error in bulk unassign:', error);
+        alert('Error during bulk unassignment: ' + error.message);
+    }
+}
+
+// Show reassignment modal
+async function showReassignModal(selectedItems) {
+    if (!selectedItems || selectedItems.length === 0) {
+        alert('No items selected for reassignment');
+        return;
+    }
+    
+    // Store selected items globally for the modal
+    window.currentReassignmentItems = selectedItems;
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center';
+    modal.id = 'reassignment-modal';
+    
+    modal.innerHTML = `
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Reassign ${selectedItems.length} Item(s)</h3>
+                <button onclick="closeReassignModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Items to be reassigned:</h4>
+                <div class="bg-gray-50 rounded-lg p-3 max-h-40 overflow-y-auto">
+                    ${selectedItems.map(item => {
+                        // Parse the selection key correctly
+                        let type, id;
+                        if (item.startsWith('item_code_')) {
+                            type = 'item_code';
+                            id = item.substring('item_code_'.length);
+                        } else if (item.startsWith('standard_value_')) {
+                            type = 'standard_value';
+                            id = item.substring('standard_value_'.length);
+                        } else {
+                            const [typeOnly, idOnly] = item.split('_');
+                            type = typeOnly;
+                            id = idOnly;
+                        }
+                        
+                        const request = findRequestById(type, id);
+                        return `
+                            <div class="text-sm py-1">
+                                <span class="font-medium">${request?.requestType || 'Unknown'}</span>: 
+                                ${request?.title || `ID ${id}`}
+                                <span class="text-gray-500">(Current: ${request?.currentReviewer || 'Unassigned'})</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Assign to Reviewer:</label>
+                <select id="new-reviewer-select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">-- Unassign (Remove reviewer) --</option>
+                    ${reassignmentData.reviewers.map(reviewer => 
+                        `<option value="${reviewer.id}">${reviewer.username} - ${reviewer.email}</option>`
+                    ).join('')}
+                </select>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeReassignModal()" 
+                        class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button onclick="executeSelectedReassignment()" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    Reassign Items
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Execute reassignment for items stored in modal
+async function executeSelectedReassignment() {
+    const selectedItems = window.currentReassignmentItems;
+    if (!selectedItems) {
+        alert('No items selected for reassignment');
+        return;
+    }
+    
+    await executeReassignment(selectedItems);
+}
+
+// Close reassignment modal
+function closeReassignModal() {
+    const modal = document.getElementById('reassignment-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Execute the reassignment
+async function executeReassignment(selectedItems) {
+    // Admin check
+    if (!currentUser || currentUser.role !== 'admin') {
+        alert('Access denied. Re-assignment is only available to administrators.');
+        closeReassignModal();
+        return;
+    }
+    
+    const newReviewerId = document.getElementById('new-reviewer-select').value || null;
+    const reviewerName = newReviewerId ? 
+        reassignmentData.reviewers.find(r => r.id == newReviewerId)?.username || 'Unknown' : 
+        'Unassigned';
+    
+    if (!confirm(`Confirm reassignment of ${selectedItems.length} item(s) to: ${reviewerName}?`)) {
+        return;
+    }
+    
+    try {
+        // Show progress
+        const modal = document.getElementById('reassignment-modal');
+        const content = modal.querySelector('div > div');
+        content.innerHTML = `
+            <div class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-gray-600">Processing reassignments...</p>
+            </div>
+        `;
+        
+        const results = await Promise.all(
+            selectedItems.map(item => {
+                // Parse the selection key correctly - handle types with underscores
+                let type, id;
+                if (item.startsWith('item_code_')) {
+                    type = 'item_code';
+                    id = item.substring('item_code_'.length);
+                } else if (item.startsWith('standard_value_')) {
+                    type = 'standard_value';
+                    id = item.substring('standard_value_'.length);
+                } else {
+                    // For project and combination (no underscores in type name)
+                    const [typeOnly, idOnly] = item.split('_');
+                    type = typeOnly;
+                    id = idOnly;
+                }
+                return performReassignment(type, id, newReviewerId);
+            })
+        );
+        
+        const successful = results.filter(r => r.success).length;
+        const failed = results.length - successful;
+        
+        closeReassignModal();
+        
+        alert(`Reassignment completed:\n✓ ${successful} successful\n✗ ${failed} failed`);
+        
+        if (successful > 0) {
+            selectedReassignItems.clear();
+            await refreshReassignmentData();
+        }
+        
+    } catch (error) {
+        console.error('Error in reassignment execution:', error);
+        closeReassignModal();
+        alert('Error during reassignment: ' + error.message);
+    }
+}
+
+// Perform individual reassignment
+async function performReassignment(type, id, newReviewerId) {
+    try {
+        let table, column;
+        
+        switch(type) {
+            case 'project':
+                table = 'classification_projects';
+                column = 'assigned_reviewer_id';
+                break;
+            case 'item_code':
+                table = 'item_code_workflow';
+                column = 'reviewed_by';
+                break;
+            case 'standard_value':
+                table = 'standard_value_requests';
+                column = 'reviewed_by';
+                break;
+            case 'combination':
+                table = 'combination_requests';
+                column = 'reviewed_by';
+                break;
+            default:
+                throw new Error('Unknown request type: ' + type);
+        }
+        
+        const updateData = {
+            [column]: newReviewerId,
+            updated_at: new Date().toISOString()
+        };
+        
+        const { error } = await supabase
+            .from(table)
+            .update(updateData)
+            .eq('id', id);
+        
+        if (error) throw error;
+        
+        return { success: true, type, id };
+        
+    } catch (error) {
+        console.error(`Error reassigning ${type} ${id}:`, error);
+        return { success: false, type, id, error: error.message };
+    }
+}
+
+// Find request by type and id
+function findRequestById(type, id) {
+    const allRequests = [
+        ...reassignmentData.projects,
+        ...reassignmentData.itemCodes,
+        ...reassignmentData.standardValues,
+        ...reassignmentData.combinations
+    ];
+    
+    return allRequests.find(request => request.type === type && request.id == id);
+}
+
+// View request details (opens the existing review modal)
+function viewRequestDetails(type, id) {
+    // Use existing modal opening functions
+    openReviewModal(type === 'project' ? 'project' : 
+                   type === 'item_code' ? 'code' : 
+                   type === 'standard_value' ? 'value' : 'block', id);
+}
+
+// Make functions globally available
+window.loadReassignmentManagement = loadReassignmentManagement;
+window.refreshReassignmentData = refreshReassignmentData;
+window.applyReassignmentFilters = applyReassignmentFilters;
+window.toggleReassignSelection = toggleReassignSelection;
+window.selectAllReassignItems = selectAllReassignItems;
+window.selectTypeRequests = selectTypeRequests;
+window.quickReassignSingle = quickReassignSingle;
+window.bulkReassignSelected = bulkReassignSelected;
+window.bulkUnassignSelected = bulkUnassignSelected;
+window.closeReassignModal = closeReassignModal;
+window.executeReassignment = executeReassignment;
+window.executeSelectedReassignment = executeSelectedReassignment;
+window.viewRequestDetails = viewRequestDetails;
+
+// Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', initializeApp);
 
 </script>
