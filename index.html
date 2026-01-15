@@ -189,7 +189,7 @@
         }
         
         .deprecated-attribute::before {
-            content: "âš ï¸ DEPRECATED VALUE";
+            content: "Ã¢Å¡Â Ã¯Â¸Â DEPRECATED VALUE";
             position: absolute;
             top: -8px;
             left: 8px;
@@ -211,7 +211,7 @@
         }
         
         .deprecated-warning::before {
-            content: "âš ï¸";
+            content: "Ã¢Å¡Â Ã¯Â¸Â";
             font-size: 16px;
             margin-right: 8px;
         }
@@ -1084,11 +1084,11 @@ let bulkApprovalMode = false;
 const SUPABASE_URL = 'https://mvftaaxgdygeyzcvzqfr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12ZnRhYXhnZHlnZXl6Y3Z6cWZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjI3OTQsImV4cCI6MjA3NDE5ODc5NH0.nj5c_AAEg4U2qlcE1vQDMWt0nfXpmUYR1lrTR6KCIDY';
 
-// Ã°Å¸Å½Â¯ PERFECT SUPABASE SOLUTION - Handles all edge cases including auto-login URLs
+// ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â¯ PERFECT SUPABASE SOLUTION - Handles all edge cases including auto-login URLs
 // Check if client is already created on window to avoid redeclaration error
 if (window.supabase && !window.supabaseInstance) {
     window.supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('Ã¢Å“â€¦ Supabase client created successfully');
+    console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Supabase client created successfully');
 }
 
 // Use var to allow redeclaration if the script is re-run (page reloads, auto-login)
@@ -1096,9 +1096,9 @@ var supabase = window.supabaseInstance;
 
 // Validation
 if (!supabase) {
-    console.error('Ã¢ÂÅ’ Supabase client not available');
+    console.error('ÃƒÂ¢Ã‚ÂÃ…â€™ Supabase client not available');
 } else {
-    console.log('Ã¢Å“â€¦ Supabase client ready for use');
+    console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Supabase client ready for use');
 }
 
 // ===== MODAL FUNCTIONS =====
@@ -1946,10 +1946,10 @@ async function submitCurrentReview(decision) {
                             
                             if (deprecationCheck.hasDeprecated) {
                                 const deprecatedList = deprecationCheck.deprecatedValues
-                                    .map(dv => `â€¢ ${dv.attributeName}: ${dv.valueName}`)
+                                    .map(dv => `Ã¢â‚¬Â¢ ${dv.attributeName}: ${dv.valueName}`)
                                     .join('\n');
                                 
-                                const confirmMessage = `âš ï¸ REVIEWER NOTICE: DEPRECATED VALUES DETECTED
+                                const confirmMessage = `Ã¢Å¡Â Ã¯Â¸Â REVIEWER NOTICE: DEPRECATED VALUES DETECTED
                                 
 This request contains ${deprecationCheck.deprecatedValues.length} deprecated standard value${deprecationCheck.deprecatedValues.length > 1 ? 's' : ''}:
 
@@ -2560,12 +2560,12 @@ async function viewRequestDetails(type, requestId) {
                                 </div>
                                 <div class="ml-4 text-right">
                                     <div class="font-semibold text-blue-600">${selectedValue ? selectedValue.name : 'Not selected'}</div>
-                                    ${isDeprecated ? '<div class="text-xs text-orange-600 font-medium">âš ï¸ Deprecated Value</div>' : ''}
+                                    ${isDeprecated ? '<div class="text-xs text-orange-600 font-medium">Ã¢Å¡Â Ã¯Â¸Â Deprecated Value</div>' : ''}
                                 </div>
                             </div>
                             ${isDeprecated ? `
                                 <div class="mt-2 p-2 bg-orange-100 border border-orange-300 rounded text-xs text-orange-800">
-                                    <div class="font-semibold">âš ï¸ Deprecation Notice:</div>
+                                    <div class="font-semibold">Ã¢Å¡Â Ã¯Â¸Â Deprecation Notice:</div>
                                     <div>This value was deprecated ${deprecationInfo?.deprecated_at ? 'on ' + new Date(deprecationInfo.deprecated_at).toLocaleDateString() : 'previously'}</div>
                                     ${deprecationInfo?.deprecated_reason ? `<div class="mt-1"><strong>Reason:</strong> ${deprecationInfo.deprecated_reason}</div>` : ''}
                                 </div>
@@ -2658,7 +2658,7 @@ async function viewRequestDetails(type, requestId) {
                         ${deprecationConflict ? `
                             <!-- Deprecation Conflict Warning -->
                             <div class="deprecated-warning mt-3">
-                                <div class="font-semibold text-orange-800 mb-2">âš ï¸ Deprecation Conflict Detected</div>
+                                <div class="font-semibold text-orange-800 mb-2">Ã¢Å¡Â Ã¯Â¸Â Deprecation Conflict Detected</div>
                                 <div class="text-sm text-orange-700">
                                     A value named "${deprecationConflict.existingValue}" already exists but is currently deprecated.
                                     ${deprecationConflict.deprecatedAt ? `Deprecated on: ${new Date(deprecationConflict.deprecatedAt).toLocaleDateString()}` : ''}
@@ -5930,25 +5930,25 @@ function createDetailedAdminReviewCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: 'Ã°Å¸â€œÂ', 
+            icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: 'Ã°Å¸â€œÂ¦', 
+            icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¦', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: 'Ã°Å¸â€œÅ ', 
+            icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â ', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: 'Ã°Å¸Å¡Â«', 
+            icon: 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â«', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -6395,10 +6395,10 @@ function createSimpleReviewerCard(item) {
     card.className = 'request-card bg-white border rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow border-l-4 border-l-blue-500';
     
     const typeInfo = {
-        'project': { icon: 'Ã°Å¸â€œÂ', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
-        'code': { icon: 'Ã°Å¸â€œÂ¦', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
-        'value': { icon: 'Ã°Å¸â€œÅ ', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
-        'block': { icon: 'Ã°Å¸Å¡Â«', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
+        'project': { icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
+        'code': { icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¦', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
+        'value': { icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â ', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
+        'block': { icon: 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â«', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
     };
 
     const info = typeInfo[item.type] || typeInfo['code'];
@@ -6520,25 +6520,25 @@ function createDetailedReviewerCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: 'Ã°Å¸â€œÂ', 
+            icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: 'Ã°Å¸â€œÂ¦', 
+            icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¦', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: 'Ã°Å¸â€œÅ ', 
+            icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â ', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: 'Ã°Å¸Å¡Â«', 
+            icon: 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â«', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -7304,12 +7304,12 @@ function displayAllRequests(requests) {
 
 function getTypeIcon(type) {
     const icons = {
-        project: 'Ã°Å¸â€œÂ',
-        code: 'Ã°Å¸â€œÂ¦',
-        block: 'Ã°Å¸Å¡Â«',
-        value: 'Ã°Å¸â€œÅ '
+        project: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â',
+        code: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¦',
+        block: 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â«',
+        value: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â '
     };
-    return icons[type] || 'Ã°Å¸â€œâ€ž';
+    return icons[type] || 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬Å¾';
 }
 
 function createAllRequestCard(request) {
@@ -9258,10 +9258,10 @@ async function enhancedApprovalProcess(type, requestId, decision, comments) {
                 
                 if (deprecationCheck.hasDeprecated) {
                     const deprecatedList = deprecationCheck.deprecatedValues
-                        .map(dv => `â€¢ ${dv.attributeName}: ${dv.valueName}`)
+                        .map(dv => `Ã¢â‚¬Â¢ ${dv.attributeName}: ${dv.valueName}`)
                         .join('\n');
                     
-                    const confirmMessage = `âš ï¸ DEPRECATION WARNING
+                    const confirmMessage = `Ã¢Å¡Â Ã¯Â¸Â DEPRECATION WARNING
                     
 This request contains ${deprecationCheck.deprecatedValues.length} deprecated standard value${deprecationCheck.deprecatedValues.length > 1 ? 's' : ''}:
 
@@ -9270,10 +9270,10 @@ ${deprecatedList}
 Deprecated values are preserved for system compatibility but hidden from new item creation.
 
 Effects of approval:
-âœ“ Request will be approved normally
-âœ“ Deprecated values preserved in approved item
-âœ“ System integrity maintained
-âœ“ Duplicate detection continues working
+Ã¢Å“â€œ Request will be approved normally
+Ã¢Å“â€œ Deprecated values preserved in approved item
+Ã¢Å“â€œ System integrity maintained
+Ã¢Å“â€œ Duplicate detection continues working
 
 Continue with approval?`;
 
@@ -9325,7 +9325,7 @@ async function showDeprecationAnalysisModal(requestData, deprecationCheck) {
         <div class="relative min-h-screen flex items-center justify-center p-4">
             <div class="relative bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                 <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-                    <h3 class="text-lg font-medium text-gray-900">âš ï¸ Deprecation Analysis</h3>
+                    <h3 class="text-lg font-medium text-gray-900">Ã¢Å¡Â Ã¯Â¸Â Deprecation Analysis</h3>
                     <button onclick="closeDeprecationAnalysisModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -9341,11 +9341,11 @@ async function showDeprecationAnalysisModal(requestData, deprecationCheck) {
                     <div class="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
                         <h4 class="font-medium text-blue-800 mb-2">Impact Analysis</h4>
                         <div class="text-sm text-blue-700 space-y-1">
-                            <div>âœ“ System integrity maintained</div>
-                            <div>âœ“ Duplicate detection preserved</div>
-                            <div>âœ“ Existing items unaffected</div>
-                            <div>âœ“ Search functionality maintained</div>
-                            <div>âš ï¸ Values hidden from new item creation</div>
+                            <div>Ã¢Å“â€œ System integrity maintained</div>
+                            <div>Ã¢Å“â€œ Duplicate detection preserved</div>
+                            <div>Ã¢Å“â€œ Existing items unaffected</div>
+                            <div>Ã¢Å“â€œ Search functionality maintained</div>
+                            <div>Ã¢Å¡Â Ã¯Â¸Â Values hidden from new item creation</div>
                         </div>
                     </div>
                     
@@ -10000,7 +10000,7 @@ async function bulkUnassignSelected() {
         const successful = results.filter(r => r.success).length;
         const failed = results.length - successful;
         
-        alert(`Bulk unassignment completed:\n✓ ${successful} successful\n✗ ${failed} failed`);
+        alert(`Bulk unassignment completed:\nâœ“ ${successful} successful\nâœ— ${failed} failed`);
         
         if (successful > 0) {
             selectedReassignItems.clear();
@@ -10168,7 +10168,7 @@ async function executeReassignment(selectedItems) {
         
         closeReassignModal();
         
-        alert(`Reassignment completed:\n✓ ${successful} successful\n✗ ${failed} failed`);
+        alert(`Reassignment completed:\nâœ“ ${successful} successful\nâœ— ${failed} failed`);
         
         if (successful > 0) {
             selectedReassignItems.clear();
@@ -10209,9 +10209,13 @@ async function performReassignment(type, id, newReviewerId) {
         }
         
         const updateData = {
-            [column]: newReviewerId,
-            updated_at: new Date().toISOString()
+            [column]: newReviewerId
         };
+        
+        // Only include updated_at for tables that have this column
+        if (type === 'project' || type === 'item_code') {
+            updateData.updated_at = new Date().toISOString();
+        }
         
         const { error } = await supabase
             .from(table)
