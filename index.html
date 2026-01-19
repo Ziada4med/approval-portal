@@ -189,7 +189,7 @@
         }
         
         .deprecated-attribute::before {
-            content: "Ã¢Å¡Â Ã¯Â¸Â DEPRECATED VALUE";
+            content: "ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â DEPRECATED VALUE";
             position: absolute;
             top: -8px;
             left: 8px;
@@ -211,7 +211,7 @@
         }
         
         .deprecated-warning::before {
-            content: "Ã¢Å¡Â Ã¯Â¸Â";
+            content: "ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â";
             font-size: 16px;
             margin-right: 8px;
         }
@@ -1084,11 +1084,11 @@ let bulkApprovalMode = false;
 const SUPABASE_URL = 'https://mvftaaxgdygeyzcvzqfr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12ZnRhYXhnZHlnZXl6Y3Z6cWZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjI3OTQsImV4cCI6MjA3NDE5ODc5NH0.nj5c_AAEg4U2qlcE1vQDMWt0nfXpmUYR1lrTR6KCIDY';
 
-// ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â¯ PERFECT SUPABASE SOLUTION - Handles all edge cases including auto-login URLs
+// ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â½Ãƒâ€šÃ‚Â¯ PERFECT SUPABASE SOLUTION - Handles all edge cases including auto-login URLs
 // Check if client is already created on window to avoid redeclaration error
 if (window.supabase && !window.supabaseInstance) {
     window.supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Supabase client created successfully');
+    console.log('ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Supabase client created successfully');
 }
 
 // Use var to allow redeclaration if the script is re-run (page reloads, auto-login)
@@ -1096,9 +1096,9 @@ var supabase = window.supabaseInstance;
 
 // Validation
 if (!supabase) {
-    console.error('ÃƒÂ¢Ã‚ÂÃ…â€™ Supabase client not available');
+    console.error('ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒâ€¦Ã¢â‚¬â„¢ Supabase client not available');
 } else {
-    console.log('ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Supabase client ready for use');
+    console.log('ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Supabase client ready for use');
 }
 
 // ===== MODAL FUNCTIONS =====
@@ -1186,6 +1186,7 @@ async function performAssignment(requestId, requestType) {
     }
 }
 async function openReviewModal(type, id) {
+    console.log('🚨🚨🚨 BUTTON CLICKED - TYPE:', type, 'ID:', id);
     console.log('Opening review modal for type:', type, 'id:', id);
     
     if (type === 'project') {
@@ -1673,7 +1674,7 @@ async function openProjectReviewModal(projectId) {
 
 async function openItemReviewModal(type, id) {
     try {
-        console.log('Loading item for review:', type, id);
+        console.log('🚨 ITEM REVIEW MODAL OPENED - TYPE:', type, 'ID:', id);
         
         let query, table;
         switch(type) {
@@ -1696,6 +1697,7 @@ async function openItemReviewModal(type, id) {
                 `);
                 break;
             case 'value':
+                console.log('📝 HANDLING VALUE REQUEST');
                 table = 'standard_value_requests';
                 query = supabase.from(table).select(`
                     *,
@@ -1946,10 +1948,10 @@ async function submitCurrentReview(decision) {
                             
                             if (deprecationCheck.hasDeprecated) {
                                 const deprecatedList = deprecationCheck.deprecatedValues
-                                    .map(dv => `Ã¢â‚¬Â¢ ${dv.attributeName}: ${dv.valueName}`)
+                                    .map(dv => `ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${dv.attributeName}: ${dv.valueName}`)
                                     .join('\n');
                                 
-                                const confirmMessage = `Ã¢Å¡Â Ã¯Â¸Â REVIEWER NOTICE: DEPRECATED VALUES DETECTED
+                                const confirmMessage = `ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â REVIEWER NOTICE: DEPRECATED VALUES DETECTED
                                 
 This request contains ${deprecationCheck.deprecatedValues.length} deprecated standard value${deprecationCheck.deprecatedValues.length > 1 ? 's' : ''}:
 
@@ -2211,11 +2213,97 @@ async function reviewAdminProject(projectId, decision) {
         alert('Failed to submit review');
     }
 }
+
+// Direct function to generate standard values with deprecation status inline
+async function generateDirectStandardValuesDisplay(currentAttribute, requestData) {
+    console.log('🔧 DIRECT GENERATION CALLED');
+    
+    try {
+        // Get deprecated values
+        const { data: attrData, error } = await supabase
+            .from('project_attributes')
+            .select('deprecated_values')
+            .eq('id', currentAttribute.id)
+            .single();
+
+        console.log('📊 Deprecated values data:', attrData);
+
+        let deprecatedNames = [];
+        if (!error && attrData?.deprecated_values) {
+            deprecatedNames = attrData.deprecated_values.map(dv => dv.name);
+        }
+
+        console.log('📝 Deprecated names:', deprecatedNames);
+
+        // Generate values HTML
+        let valuesHTML = '';
+        if (currentAttribute.standard_values && currentAttribute.standard_values.length > 0) {
+            valuesHTML = currentAttribute.standard_values.map(val => {
+                const isDeprecated = deprecatedNames.includes(val.name);
+                console.log(`🏷️ Value "${val.name}" deprecated: ${isDeprecated}`);
+                
+                if (isDeprecated) {
+                    return `
+                        <div class="flex items-center space-x-2 p-2 bg-orange-50 rounded border border-orange-200">
+                            <span class="w-2 h-2 bg-orange-500 rounded-full"></span>
+                            <span class="text-gray-700 line-through">${val.name}</span>
+                            <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full font-medium">DEPRECATED</span>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="flex items-center space-x-2 p-2 bg-white rounded border">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            <span>${val.name}</span>
+                        </div>
+                    `;
+                }
+            }).join('');
+        } else {
+            valuesHTML = '<p class="text-gray-500 italic">No existing values found</p>';
+        }
+
+        // Add new value
+        const newValueHTML = `
+            <div class="flex items-center space-x-2 p-2 bg-green-100 border border-green-300 rounded">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span class="font-bold text-green-800">+ ${requestData.new_value} (New - Pending Approval)</span>
+            </div>
+        `;
+
+        console.log('✅ Generated HTML');
+        return valuesHTML + newValueHTML;
+
+    } catch (error) {
+        console.error('❌ Error in direct generation:', error);
+        // Fallback
+        let fallbackHTML = '';
+        if (currentAttribute.standard_values) {
+            fallbackHTML = currentAttribute.standard_values.map(val => `
+                <div class="flex items-center space-x-2 p-2 bg-white rounded border">
+                    <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                    <span>${val.name}</span>
+                </div>
+            `).join('');
+        }
+        
+        const newValueHTML = `
+            <div class="flex items-center space-x-2 p-2 bg-green-100 border border-green-300 rounded">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span class="font-bold text-green-800">+ ${requestData.new_value} (New - Pending Approval)</span>
+            </div>
+        `;
+
+        return fallbackHTML + newValueHTML;
+    }
+}
+
 async function viewRequestDetails(type, requestId) {
     try {
-        console.log('Loading request details for:', type, requestId);
+        console.log('🚨 REQUEST DETAILS OPENED - TYPE:', type, 'ID:', requestId);
         
         if (type === 'project') {
+            console.log('📁 Opening project details');
             // Handle project details differently
             await openProjectReviewModal(requestId);
             return;
@@ -2311,6 +2399,8 @@ async function viewRequestDetails(type, requestId) {
             }
 
         } else if (type === 'value') {
+            console.log('📝 PROCESSING STANDARD VALUE REQUEST');
+            
             const { data, error } = await supabase
                 .from('standard_value_requests')
                 .select(`
@@ -2560,12 +2650,12 @@ async function viewRequestDetails(type, requestId) {
                                 </div>
                                 <div class="ml-4 text-right">
                                     <div class="font-semibold text-blue-600">${selectedValue ? selectedValue.name : 'Not selected'}</div>
-                                    ${isDeprecated ? '<div class="text-xs text-orange-600 font-medium">Ã¢Å¡Â Ã¯Â¸Â Deprecated Value</div>' : ''}
+                                    ${isDeprecated ? '<div class="text-xs text-orange-600 font-medium">ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Deprecated Value</div>' : ''}
                                 </div>
                             </div>
                             ${isDeprecated ? `
                                 <div class="mt-2 p-2 bg-orange-100 border border-orange-300 rounded text-xs text-orange-800">
-                                    <div class="font-semibold">Ã¢Å¡Â Ã¯Â¸Â Deprecation Notice:</div>
+                                    <div class="font-semibold">ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Deprecation Notice:</div>
                                     <div>This value was deprecated ${deprecationInfo?.deprecated_at ? 'on ' + new Date(deprecationInfo.deprecated_at).toLocaleDateString() : 'previously'}</div>
                                     ${deprecationInfo?.deprecated_reason ? `<div class="mt-1"><strong>Reason:</strong> ${deprecationInfo.deprecated_reason}</div>` : ''}
                                 </div>
@@ -2658,7 +2748,7 @@ async function viewRequestDetails(type, requestId) {
                         ${deprecationConflict ? `
                             <!-- Deprecation Conflict Warning -->
                             <div class="deprecated-warning mt-3">
-                                <div class="font-semibold text-orange-800 mb-2">Ã¢Å¡Â Ã¯Â¸Â Deprecation Conflict Detected</div>
+                                <div class="font-semibold text-orange-800 mb-2">ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Deprecation Conflict Detected</div>
                                 <div class="text-sm text-orange-700">
                                     A value named "${deprecationConflict.existingValue}" already exists but is currently deprecated.
                                     ${deprecationConflict.deprecatedAt ? `Deprecated on: ${new Date(deprecationConflict.deprecatedAt).toLocaleDateString()}` : ''}
@@ -2683,16 +2773,7 @@ async function viewRequestDetails(type, requestId) {
                 <div class="bg-gray-50 p-4 rounded-lg mt-4">
                     <h3 class="text-lg font-semibold text-gray-900 mb-3">Current Standard Values for "${requestData.attribute_name}"</h3>
                     <div class="space-y-2 max-h-48 overflow-y-auto">
-                        ${currentAttribute?.standard_values?.map(val => `
-                            <div class="flex items-center space-x-2 p-2 bg-white rounded border">
-                                <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
-                                <span>${val.name}</span>
-                            </div>
-                        `).join('') || '<p class="text-gray-500 italic">No existing values found</p>'}
-                        <div class="flex items-center space-x-2 p-2 bg-green-100 border border-green-300 rounded">
-                            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                            <span class="font-bold text-green-800">+ ${requestData.new_value} (New - Pending Approval)</span>
-                        </div>
+                        ${await generateDirectStandardValuesDisplay(currentAttribute, requestData)}
                     </div>
                 </div>
             `;
@@ -2772,6 +2853,337 @@ async function viewRequestDetails(type, requestId) {
      
         console.error('Error loading request details:', error);
         alert('Error loading request details: ' + error.message);
+    }
+}
+
+// Helper function to generate standard values display with deprecation status
+async function generateStandardValuesDisplayWithDeprecationStatus(currentAttribute, projectId) {
+    if (!currentAttribute || !currentAttribute.standard_values || currentAttribute.standard_values.length === 0) {
+        return '<p class="text-gray-500 italic">No existing values found</p>';
+    }
+
+    console.log('🔍 Checking deprecation status for attribute:', currentAttribute.id);
+    
+    try {
+        // Get the fresh attribute data with deprecated_values
+        const { data: attributeData, error } = await supabase
+            .from('project_attributes')
+            .select('id, attribute_name, standard_values, deprecated_values')
+            .eq('id', currentAttribute.id)
+            .single();
+
+        if (error) {
+            console.warn('Could not fetch fresh attribute data:', error);
+            // Fallback to original data
+            return generateBasicStandardValuesDisplay(currentAttribute);
+        }
+
+        console.log('✅ Fresh attribute data:', attributeData);
+
+        const standardValues = attributeData.standard_values || [];
+        const deprecatedValues = attributeData.deprecated_values || [];
+        
+        console.log('📊 Standard values:', standardValues);
+        console.log('📊 Deprecated values:', deprecatedValues);
+
+        // Create a map of deprecated values for quick lookup
+        const deprecatedMap = new Map();
+        deprecatedValues.forEach(depVal => {
+            if (depVal.name) {
+                deprecatedMap.set(depVal.name, {
+                    deprecated_at: depVal.deprecated_at,
+                    deprecation_reason: depVal.reason || depVal.deprecation_reason,
+                    deprecated_by: depVal.deprecated_by
+                });
+            }
+        });
+
+        console.log('🗂️ Deprecated values map:', deprecatedMap);
+
+        // Generate HTML for each standard value
+        return standardValues.map(val => {
+            const isDeprecated = deprecatedMap.has(val.name);
+            const deprecationInfo = deprecatedMap.get(val.name);
+            
+            console.log(`🏷️ Processing value "${val.name}": deprecated=${isDeprecated}`);
+            
+            if (isDeprecated) {
+                return `
+                    <div class="flex items-center space-x-2 p-2 bg-orange-50 rounded border border-orange-200">
+                        <span class="w-2 h-2 bg-orange-500 rounded-full"></span>
+                        <span class="text-gray-700 line-through">${val.name}</span>
+                        <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full font-medium">DEPRECATED</span>
+                        ${deprecationInfo?.deprecated_at ? `
+                            <span class="text-xs text-orange-600 ml-auto" title="Deprecated on ${new Date(deprecationInfo.deprecated_at).toLocaleDateString()}">
+                                📅 ${new Date(deprecationInfo.deprecated_at).toLocaleDateString()}
+                            </span>
+                        ` : ''}
+                    </div>
+                    ${deprecationInfo?.deprecation_reason ? `
+                        <div class="ml-6 text-xs text-orange-600 bg-orange-50 p-2 rounded border-l-2 border-orange-200">
+                            <strong>Deprecation Reason:</strong> ${deprecationInfo.deprecation_reason}
+                        </div>
+                    ` : ''}
+                `;
+            } else {
+                return `
+                    <div class="flex items-center space-x-2 p-2 bg-white rounded border">
+                        <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        <span>${val.name}</span>
+                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium ml-auto">ACTIVE</span>
+                    </div>
+                `;
+            }
+        }).join('');
+
+    } catch (error) {
+        console.error('❌ Error in deprecation detection:', error);
+        return generateBasicStandardValuesDisplay(currentAttribute);
+    }
+}
+
+// Fallback function for basic display when deprecation detection fails
+function generateBasicStandardValuesDisplay(currentAttribute) {
+    console.log('🔄 Using fallback basic display');
+    
+    if (!currentAttribute?.standard_values) {
+        return '<p class="text-gray-500 italic">No existing values found</p>';
+    }
+    
+    return currentAttribute.standard_values.map(val => `
+        <div class="flex items-center space-x-2 p-2 bg-white rounded border">
+            <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+            <span>${val.name}</span>
+            <span class="text-xs text-gray-500 ml-auto">(Status unknown)</span>
+        </div>
+    `).join('');
+}
+
+// Debug function to test deprecation status (for testing purposes)
+async function testDeprecationStatus(projectId, attributeId) {
+    console.log('🧪 Testing deprecation status detection...');
+    console.log('Parameters:', { projectId, attributeId });
+    
+    try {
+        // Test: Check project_attributes table directly
+        console.log('📋 Checking project_attributes table...');
+        const { data: attributeData, error: attrError } = await supabase
+            .from('project_attributes')
+            .select('id, attribute_name, standard_values, deprecated_values')
+            .eq('id', attributeId)
+            .single();
+        
+        if (!attrError && attributeData) {
+            console.log('✅ Attribute data found:');
+            console.log('  - ID:', attributeData.id);
+            console.log('  - Name:', attributeData.attribute_name);
+            console.log('  - Standard values:', attributeData.standard_values);
+            console.log('  - Deprecated values:', attributeData.deprecated_values);
+            
+            const deprecatedCount = (attributeData.deprecated_values || []).length;
+            const standardCount = (attributeData.standard_values || []).length;
+            
+            alert(`Deprecation Test Results:
+Attribute: ${attributeData.attribute_name}
+Standard Values: ${standardCount}
+Deprecated Values: ${deprecatedCount}
+
+Check console for detailed data structure`);
+            
+        } else {
+            console.log('❌ Attribute error:', attrError);
+            alert(`Error fetching attribute data: ${attrError?.message || 'Unknown error'}`);
+        }
+        
+    } catch (error) {
+        console.error('Test failed:', error);
+        alert(`Test failed: ${error.message}`);
+    }
+}
+
+// Function to create a test deprecated value directly in the database (admin only)
+async function createTestDeprecatedValue(projectId, attributeId, valueName) {
+    if (!currentUser || currentUser.role !== 'admin') {
+        alert('❌ Admin access required for this function');
+        return;
+    }
+    
+    try {
+        console.log('🔧 Creating test deprecated value...');
+        
+        // First get the current attribute data
+        const { data: attributeData, error: fetchError } = await supabase
+            .from('project_attributes')
+            .select('id, attribute_name, standard_values, deprecated_values')
+            .eq('id', attributeId)
+            .single();
+        
+        if (fetchError) {
+            throw new Error(`Failed to fetch attribute: ${fetchError.message}`);
+        }
+        
+        // Check if the value exists in standard_values
+        const standardValues = attributeData.standard_values || [];
+        const valueExists = standardValues.some(val => val.name === valueName);
+        
+        if (!valueExists) {
+            throw new Error(`Value "${valueName}" not found in standard values`);
+        }
+        
+        // Add to deprecated_values array
+        const currentDeprecated = attributeData.deprecated_values || [];
+        const alreadyDeprecated = currentDeprecated.some(val => val.name === valueName);
+        
+        if (alreadyDeprecated) {
+            alert(`Value "${valueName}" is already deprecated`);
+            return;
+        }
+        
+        const newDeprecatedValue = {
+            name: valueName,
+            deprecated_at: new Date().toISOString(),
+            deprecated_by: currentUser.id,
+            reason: 'Test deprecation for demonstration'
+        };
+        
+        const updatedDeprecated = [...currentDeprecated, newDeprecatedValue];
+        
+        // Update the database
+        const { error: updateError } = await supabase
+            .from('project_attributes')
+            .update({
+                deprecated_values: updatedDeprecated,
+                last_modified_at: new Date().toISOString(),
+                last_modified_by: currentUser.id
+            })
+            .eq('id', attributeId);
+        
+        if (updateError) {
+            throw updateError;
+        }
+        
+        console.log('✅ Test deprecated value created successfully');
+        alert(`✅ Successfully deprecated "${valueName}" for testing!\n\nRefresh the standard value modal to see the deprecation indicator.`);
+        
+    } catch (error) {
+        console.error('❌ Error creating test deprecated value:', error);
+        alert(`❌ Error: ${error.message}`);
+    }
+}
+
+// Make debug functions available globally for console testing
+window.testDeprecationStatus = testDeprecationStatus;
+window.createTestDeprecatedValue = createTestDeprecatedValue;
+
+// Function to populate standard values list with deprecation status after modal is rendered
+async function populateStandardValuesWithDeprecationStatus(currentAttribute, requestData) {
+    const container = document.getElementById('standard-values-list');
+    if (!container) {
+        console.log('❌ Container not found!');
+        return;
+    }
+
+    console.log('🔧 POPULATE FUNCTION CALLED');
+    console.log('Current attribute:', currentAttribute);
+    console.log('Request data:', requestData);
+
+    try {
+        // Get current attribute data including deprecated_values
+        console.log('📡 Fetching deprecated values for attribute ID:', currentAttribute.id);
+        
+        const { data: attrData, error } = await supabase
+            .from('project_attributes')
+            .select('deprecated_values')
+            .eq('id', currentAttribute.id)
+            .single();
+
+        console.log('📊 Database response:', { attrData, error });
+
+        let deprecatedNames = [];
+        if (!error && attrData?.deprecated_values) {
+            deprecatedNames = attrData.deprecated_values.map(dv => dv.name);
+        }
+
+        console.log('📝 Deprecated names array:', deprecatedNames);
+
+        // Generate HTML for existing standard values
+        let valuesHTML = '';
+        if (currentAttribute.standard_values && currentAttribute.standard_values.length > 0) {
+            console.log('📋 Processing standard values:', currentAttribute.standard_values);
+            
+            valuesHTML = currentAttribute.standard_values.map(val => {
+                const isDeprecated = deprecatedNames.includes(val.name);
+                console.log(`🏷️ Value "${val.name}" - deprecated: ${isDeprecated}`);
+                
+                if (isDeprecated) {
+                    return `
+                        <div class="flex items-center space-x-2 p-2 bg-orange-50 rounded border border-orange-200">
+                            <span class="w-2 h-2 bg-orange-500 rounded-full"></span>
+                            <span class="text-gray-700 line-through">${val.name}</span>
+                            <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full font-medium">DEPRECATED</span>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="flex items-center space-x-2 p-2 bg-white rounded border">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            <span>${val.name}</span>
+                        </div>
+                    `;
+                }
+            }).join('');
+        } else {
+            valuesHTML = '<p class="text-gray-500 italic">No existing values found</p>';
+        }
+
+        // Add the new value
+        const newValueHTML = `
+            <div class="flex items-center space-x-2 p-2 bg-green-100 border border-green-300 rounded">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span class="font-bold text-green-800">+ ${requestData.new_value} (New - Pending Approval)</span>
+            </div>
+        `;
+
+        console.log('📝 Final HTML length:', valuesHTML.length);
+        container.innerHTML = valuesHTML + newValueHTML;
+        console.log('✅ HTML content updated');
+
+        // Add a test button for admins to create deprecated values
+        if (currentUser?.role === 'admin') {
+            const testHTML = `
+                <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded">
+                    <div class="text-sm font-semibold text-red-800 mb-2">🧪 TEST DEPRECATED VALUES</div>
+                    <button onclick="createTestDeprecated('${currentAttribute.id}', '${currentAttribute.standard_values[0]?.name}')" 
+                            class="bg-red-500 text-white px-3 py-1 rounded text-sm">
+                        Deprecate "${currentAttribute.standard_values[0]?.name}" for Testing
+                    </button>
+                    <div class="text-xs text-red-600 mt-1">This will add the value to deprecated_values table</div>
+                </div>
+            `;
+            container.innerHTML += testHTML;
+        }
+
+    } catch (error) {
+        console.error('❌ Error loading values:', error);
+        // Fallback: show values without deprecation status
+        let fallbackHTML = '';
+        if (currentAttribute.standard_values) {
+            fallbackHTML = currentAttribute.standard_values.map(val => `
+                <div class="flex items-center space-x-2 p-2 bg-white rounded border">
+                    <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                    <span>${val.name}</span>
+                </div>
+            `).join('');
+        }
+        
+        const newValueHTML = `
+            <div class="flex items-center space-x-2 p-2 bg-green-100 border border-green-300 rounded">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span class="font-bold text-green-800">+ ${requestData.new_value} (New - Pending Approval)</span>
+            </div>
+        `;
+
+        container.innerHTML = fallbackHTML + newValueHTML;
     }
 }
 
@@ -2935,17 +3347,8 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
             <!-- Current Standard Values -->
             <div class="bg-gray-50 p-4 rounded-lg">
                 <h3 class="text-lg font-semibold text-gray-900 mb-3">Current Standard Values for "${requestData.attribute_name}"</h3>
-                <div class="space-y-2 max-h-48 overflow-y-auto">
-                    ${currentAttribute?.standard_values?.map(val => `
-                        <div class="flex items-center space-x-2 p-2 bg-white rounded border">
-                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
-                            <span>${val.name}</span>
-                        </div>
-                    `).join('') || '<p class="text-gray-500 italic">No existing values found</p>'}
-                    <div class="flex items-center space-x-2 p-2 bg-green-100 border border-green-300 rounded">
-                        <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                        <span class="font-bold text-green-800">+ ${requestData.new_value} (New - Pending Approval)</span>
-                    </div>
+                <div class="space-y-2 max-h-48 overflow-y-auto" id="admin-standard-values-list">
+                    <!-- Values will be populated dynamically -->
                 </div>
             </div>
         `;
@@ -3027,6 +3430,132 @@ function showAdminRequestDetailModal(type, requestData, projectData, attributeDa
 updateModalActionButtons(type, requestData);
 
 modal.classList.remove('hidden');
+
+// For standard value requests in admin modal, populate the values list with deprecation status
+if (type === 'value' && attributeData && attributeData[0]) {
+    populateAdminStandardValuesWithDeprecationStatus(attributeData[0], requestData);
+}
+}
+
+// Simple function to create a deprecated value for testing
+async function createTestDeprecated(attributeId, valueName) {
+    if (!currentUser || currentUser.role !== 'admin') {
+        alert('Admin only');
+        return;
+    }
+    
+    try {
+        console.log('Creating test deprecated value...');
+        
+        // Get current attribute
+        const { data: attr, error: fetchError } = await supabase
+            .from('project_attributes')
+            .select('deprecated_values')
+            .eq('id', attributeId)
+            .single();
+            
+        if (fetchError) {
+            throw fetchError;
+        }
+        
+        const currentDeprecated = attr.deprecated_values || [];
+        const newDeprecated = [...currentDeprecated, {
+            name: valueName,
+            deprecated_at: new Date().toISOString(),
+            reason: 'Test deprecation'
+        }];
+        
+        const { error: updateError } = await supabase
+            .from('project_attributes')
+            .update({ deprecated_values: newDeprecated })
+            .eq('id', attributeId);
+            
+        if (updateError) {
+            throw updateError;
+        }
+        
+        alert('Deprecated! Close and reopen this modal to see the change.');
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    }
+}
+
+window.createTestDeprecated = createTestDeprecated;
+
+// Function to populate admin modal standard values list with deprecation status
+async function populateAdminStandardValuesWithDeprecationStatus(currentAttribute, requestData) {
+    const container = document.getElementById('admin-standard-values-list');
+    if (!container) return;
+
+    try {
+        const { data: attrData, error } = await supabase
+            .from('project_attributes')
+            .select('deprecated_values')
+            .eq('id', currentAttribute.id)
+            .single();
+
+        let deprecatedNames = [];
+        if (!error && attrData?.deprecated_values) {
+            deprecatedNames = attrData.deprecated_values.map(dv => dv.name);
+        }
+
+        let valuesHTML = '';
+        if (currentAttribute.standard_values && currentAttribute.standard_values.length > 0) {
+            valuesHTML = currentAttribute.standard_values.map(val => {
+                const isDeprecated = deprecatedNames.includes(val.name);
+                
+                if (isDeprecated) {
+                    return `
+                        <div class="flex items-center space-x-2 p-2 bg-orange-50 rounded border border-orange-200">
+                            <span class="w-2 h-2 bg-orange-500 rounded-full"></span>
+                            <span class="text-gray-700 line-through">${val.name}</span>
+                            <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full font-medium">DEPRECATED</span>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="flex items-center space-x-2 p-2 bg-white rounded border">
+                            <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            <span>${val.name}</span>
+                        </div>
+                    `;
+                }
+            }).join('');
+        } else {
+            valuesHTML = '<p class="text-gray-500 italic">No existing values found</p>';
+        }
+
+        const newValueHTML = `
+            <div class="flex items-center space-x-2 p-2 bg-green-100 border border-green-300 rounded">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span class="font-bold text-green-800">+ ${requestData.new_value} (New - Pending Approval)</span>
+            </div>
+        `;
+
+        container.innerHTML = valuesHTML + newValueHTML;
+
+    } catch (error) {
+        let fallbackHTML = '';
+        if (currentAttribute.standard_values) {
+            fallbackHTML = currentAttribute.standard_values.map(val => `
+                <div class="flex items-center space-x-2 p-2 bg-white rounded border">
+                    <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+                    <span>${val.name}</span>
+                </div>
+            `).join('');
+        }
+        
+        const newValueHTML = `
+            <div class="flex items-center space-x-2 p-2 bg-green-100 border border-green-300 rounded">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span class="font-bold text-green-800">+ ${requestData.new_value} (New - Pending Approval)</span>
+            </div>
+        `;
+
+        container.innerHTML = fallbackHTML + newValueHTML;
+    }
 }
 
 
@@ -5300,7 +5829,7 @@ async function viewStandardValueDetails(requestId) {
         if (error) throw error;
         if (!request) throw new Error('Standard value request not found');
 
-        showStandardValueDetailModal(request);
+        await showStandardValueDetailModal(request);
         
     } catch (error) {
         console.error('Error loading standard value details:', error);
@@ -5308,7 +5837,95 @@ async function viewStandardValueDetails(requestId) {
     }
 }
 
-function showStandardValueDetailModal(request) {
+async function generateStandardValuePillsWithDeprecation(attribute, standardValues) {
+    try {
+        // Query the standard_values_lifecycle table directly for deprecated values
+        const { data: lifecycleData, error } = await supabase
+            .from('standard_values_lifecycle')
+            .select('value_name, status')
+            .eq('project_id', attribute.project_id)
+            .eq('attribute_id', attribute.id)
+            .eq('status', 'deprecated');
+
+        let deprecatedNames = [];
+        if (!error && lifecycleData && Array.isArray(lifecycleData)) {
+            deprecatedNames = lifecycleData.map(item => item.value_name);
+        }
+
+        // ALSO check the status field in the standard values themselves
+        const deprecatedFromStatus = standardValues
+            .filter(val => {
+                if (typeof val === 'object' && val !== null) {
+                    return val.status === 'deprecated';
+                }
+                return false;
+            })
+            .map(val => val.name);
+        
+        // Combine both sources
+        deprecatedNames = [...new Set([...deprecatedNames, ...deprecatedFromStatus])];
+
+        const pillsHtml = `
+            <div class="mb-6">
+                <h4 class="font-semibold text-gray-800 mb-3">Current Standard Values</h4>
+                <div class="flex flex-wrap gap-2">
+                    ${standardValues.map(value => {
+                        // Handle both object and string formats
+                        const valueName = typeof value === 'object' && value !== null ? 
+                            (value.name || String(value)) : String(value);
+                        const valueUnit = typeof value === 'object' && value !== null && value.unit ? 
+                            value.unit : '';
+                        const displayText = valueUnit ? `${valueName} (${valueUnit})` : valueName;
+                        
+                        const isDeprecated = deprecatedNames.includes(valueName);
+                        
+                        if (isDeprecated) {
+                            return `
+                                <span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm line-through">
+                                    ${displayText} [DEPRECATED]
+                                </span>
+                            `;
+                        } else {
+                            return `
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                    ${displayText}
+                                </span>
+                            `;
+                        }
+                    }).join('')}
+                </div>
+            </div>
+        `;
+
+        return pillsHtml;
+
+    } catch (error) {
+        console.error('Error generating pills:', error);
+        // Fallback to original blue pills
+        return `
+            <div class="mb-6">
+                <h4 class="font-semibold text-gray-800 mb-3">Current Standard Values</h4>
+                <div class="flex flex-wrap gap-2">
+                    ${standardValues.map(value => {
+                        const valueName = typeof value === 'object' && value !== null ? 
+                            (value.name || String(value)) : String(value);
+                        const valueUnit = typeof value === 'object' && value !== null && value.unit ? 
+                            value.unit : '';
+                        const displayText = valueUnit ? `${valueName} (${valueUnit})` : valueName;
+                        
+                        return `
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                ${displayText}
+                            </span>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+}
+
+async function showStandardValueDetailModal(request) {
     // Remove existing modal if present
     const existingModal = document.getElementById('standard-value-detail-modal');
     if (existingModal) {
@@ -5353,27 +5970,7 @@ function showStandardValueDetailModal(request) {
         }
         
         if (standardValues.length > 0) {
-            existingValuesHtml = `
-                <div class="mb-6">
-                    <h4 class="font-semibold text-gray-800 mb-3">Current Standard Values</h4>
-                    <div class="flex flex-wrap gap-2">
-                        ${standardValues.map(value => {
-                            // Handle both object and string formats
-                            const valueName = typeof value === 'object' && value !== null ? 
-                                (value.name || String(value)) : String(value);
-                            const valueUnit = typeof value === 'object' && value !== null && value.unit ? 
-                                value.unit : '';
-                            const displayText = valueUnit ? `${valueName} (${valueUnit})` : valueName;
-                            
-                            return `
-                                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                                    ${displayText}
-                                </span>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-            `;
+            existingValuesHtml = await generateStandardValuePillsWithDeprecation(request.attribute, standardValues);
         }
     }
 
@@ -5930,25 +6527,25 @@ function createDetailedAdminReviewCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â', 
+            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¦', 
+            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â¦', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â ', 
+            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â ', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â«', 
+            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â«', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -6395,10 +6992,10 @@ function createSimpleReviewerCard(item) {
     card.className = 'request-card bg-white border rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow border-l-4 border-l-blue-500';
     
     const typeInfo = {
-        'project': { icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
-        'code': { icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¦', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
-        'value': { icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â ', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
-        'block': { icon: 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â«', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
+        'project': { icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
+        'code': { icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â¦', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
+        'value': { icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â ', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
+        'block': { icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â«', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
     };
 
     const info = typeInfo[item.type] || typeInfo['code'];
@@ -6520,25 +7117,25 @@ function createDetailedReviewerCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â', 
+            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¦', 
+            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â¦', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â ', 
+            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â ', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â«', 
+            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â«', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -7304,12 +7901,12 @@ function displayAllRequests(requests) {
 
 function getTypeIcon(type) {
     const icons = {
-        project: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â',
-        code: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â¦',
-        block: 'ÃƒÂ°Ã…Â¸Ã…Â¡Ã‚Â«',
-        value: 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â '
+        project: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â',
+        code: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â¦',
+        block: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â«',
+        value: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â '
     };
-    return icons[type] || 'ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬Å¾';
+    return icons[type] || 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾';
 }
 
 function createAllRequestCard(request) {
@@ -9258,10 +9855,10 @@ async function enhancedApprovalProcess(type, requestId, decision, comments) {
                 
                 if (deprecationCheck.hasDeprecated) {
                     const deprecatedList = deprecationCheck.deprecatedValues
-                        .map(dv => `Ã¢â‚¬Â¢ ${dv.attributeName}: ${dv.valueName}`)
+                        .map(dv => `ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${dv.attributeName}: ${dv.valueName}`)
                         .join('\n');
                     
-                    const confirmMessage = `Ã¢Å¡Â Ã¯Â¸Â DEPRECATION WARNING
+                    const confirmMessage = `ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â DEPRECATION WARNING
                     
 This request contains ${deprecationCheck.deprecatedValues.length} deprecated standard value${deprecationCheck.deprecatedValues.length > 1 ? 's' : ''}:
 
@@ -9270,10 +9867,10 @@ ${deprecatedList}
 Deprecated values are preserved for system compatibility but hidden from new item creation.
 
 Effects of approval:
-Ã¢Å“â€œ Request will be approved normally
-Ã¢Å“â€œ Deprecated values preserved in approved item
-Ã¢Å“â€œ System integrity maintained
-Ã¢Å“â€œ Duplicate detection continues working
+ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Request will be approved normally
+ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Deprecated values preserved in approved item
+ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ System integrity maintained
+ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Duplicate detection continues working
 
 Continue with approval?`;
 
@@ -9325,7 +9922,7 @@ async function showDeprecationAnalysisModal(requestData, deprecationCheck) {
         <div class="relative min-h-screen flex items-center justify-center p-4">
             <div class="relative bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                 <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-                    <h3 class="text-lg font-medium text-gray-900">Ã¢Å¡Â Ã¯Â¸Â Deprecation Analysis</h3>
+                    <h3 class="text-lg font-medium text-gray-900">ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Deprecation Analysis</h3>
                     <button onclick="closeDeprecationAnalysisModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -9341,11 +9938,11 @@ async function showDeprecationAnalysisModal(requestData, deprecationCheck) {
                     <div class="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
                         <h4 class="font-medium text-blue-800 mb-2">Impact Analysis</h4>
                         <div class="text-sm text-blue-700 space-y-1">
-                            <div>Ã¢Å“â€œ System integrity maintained</div>
-                            <div>Ã¢Å“â€œ Duplicate detection preserved</div>
-                            <div>Ã¢Å“â€œ Existing items unaffected</div>
-                            <div>Ã¢Å“â€œ Search functionality maintained</div>
-                            <div>Ã¢Å¡Â Ã¯Â¸Â Values hidden from new item creation</div>
+                            <div>ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ System integrity maintained</div>
+                            <div>ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Duplicate detection preserved</div>
+                            <div>ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Existing items unaffected</div>
+                            <div>ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Search functionality maintained</div>
+                            <div>ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Values hidden from new item creation</div>
                         </div>
                     </div>
                     
@@ -10000,7 +10597,7 @@ async function bulkUnassignSelected() {
         const successful = results.filter(r => r.success).length;
         const failed = results.length - successful;
         
-        alert(`Bulk unassignment completed:\nâœ“ ${successful} successful\nâœ— ${failed} failed`);
+        alert(`Bulk unassignment completed:\nÃ¢Å“â€œ ${successful} successful\nÃ¢Å“â€” ${failed} failed`);
         
         if (successful > 0) {
             selectedReassignItems.clear();
@@ -10168,7 +10765,7 @@ async function executeReassignment(selectedItems) {
         
         closeReassignModal();
         
-        alert(`Reassignment completed:\nâœ“ ${successful} successful\nâœ— ${failed} failed`);
+        alert(`Reassignment completed:\nÃ¢Å“â€œ ${successful} successful\nÃ¢Å“â€” ${failed} failed`);
         
         if (successful > 0) {
             selectedReassignItems.clear();
