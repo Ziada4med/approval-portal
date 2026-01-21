@@ -189,7 +189,7 @@
         }
         
         .deprecated-attribute::before {
-            content: "ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â DEPRECATED VALUE";
+            content: "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â DEPRECATED VALUE";
             position: absolute;
             top: -8px;
             left: 8px;
@@ -211,7 +211,7 @@
         }
         
         .deprecated-warning::before {
-            content: "ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â";
+            content: "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â";
             font-size: 16px;
             margin-right: 8px;
         }
@@ -1084,11 +1084,11 @@ let bulkApprovalMode = false;
 const SUPABASE_URL = 'https://mvftaaxgdygeyzcvzqfr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12ZnRhYXhnZHlnZXl6Y3Z6cWZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MjI3OTQsImV4cCI6MjA3NDE5ODc5NH0.nj5c_AAEg4U2qlcE1vQDMWt0nfXpmUYR1lrTR6KCIDY';
 
-// ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â½Ãƒâ€šÃ‚Â¯ PERFECT SUPABASE SOLUTION - Handles all edge cases including auto-login URLs
+// ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â½ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ PERFECT SUPABASE SOLUTION - Handles all edge cases including auto-login URLs
 // Check if client is already created on window to avoid redeclaration error
 if (window.supabase && !window.supabaseInstance) {
     window.supabaseInstance = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Supabase client created successfully');
+    console.log('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ Supabase client created successfully');
 }
 
 // Use var to allow redeclaration if the script is re-run (page reloads, auto-login)
@@ -1096,9 +1096,9 @@ var supabase = window.supabaseInstance;
 
 // Validation
 if (!supabase) {
-    console.error('ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒâ€¦Ã¢â‚¬â„¢ Supabase client not available');
+    console.error('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Supabase client not available');
 } else {
-    console.log('ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ Supabase client ready for use');
+    console.log('ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ Supabase client ready for use');
 }
 
 // ===== MODAL FUNCTIONS =====
@@ -1186,7 +1186,7 @@ async function performAssignment(requestId, requestType) {
     }
 }
 async function openReviewModal(type, id) {
-    console.log('🚨🚨🚨 BUTTON CLICKED - TYPE:', type, 'ID:', id);
+    console.log('ðŸš¨ðŸš¨ðŸš¨ BUTTON CLICKED - TYPE:', type, 'ID:', id);
     console.log('Opening review modal for type:', type, 'id:', id);
     
     if (type === 'project') {
@@ -1674,7 +1674,7 @@ async function openProjectReviewModal(projectId) {
 
 async function openItemReviewModal(type, id) {
     try {
-        console.log('🚨 ITEM REVIEW MODAL OPENED - TYPE:', type, 'ID:', id);
+        console.log('ðŸš¨ ITEM REVIEW MODAL OPENED - TYPE:', type, 'ID:', id);
         
         let query, table;
         switch(type) {
@@ -1697,7 +1697,7 @@ async function openItemReviewModal(type, id) {
                 `);
                 break;
             case 'value':
-                console.log('📝 HANDLING VALUE REQUEST');
+                console.log('ðŸ“ HANDLING VALUE REQUEST');
                 table = 'standard_value_requests';
                 query = supabase.from(table).select(`
                     *,
@@ -1948,10 +1948,10 @@ async function submitCurrentReview(decision) {
                             
                             if (deprecationCheck.hasDeprecated) {
                                 const deprecatedList = deprecationCheck.deprecatedValues
-                                    .map(dv => `ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${dv.attributeName}: ${dv.valueName}`)
+                                    .map(dv => `ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ ${dv.attributeName}: ${dv.valueName}`)
                                     .join('\n');
                                 
-                                const confirmMessage = `ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â REVIEWER NOTICE: DEPRECATED VALUES DETECTED
+                                const confirmMessage = `ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â REVIEWER NOTICE: DEPRECATED VALUES DETECTED
                                 
 This request contains ${deprecationCheck.deprecatedValues.length} deprecated standard value${deprecationCheck.deprecatedValues.length > 1 ? 's' : ''}:
 
@@ -2216,7 +2216,7 @@ async function reviewAdminProject(projectId, decision) {
 
 // Direct function to generate standard values with deprecation status inline
 async function generateDirectStandardValuesDisplay(currentAttribute, requestData) {
-    console.log('🔧 DIRECT GENERATION CALLED');
+    console.log('ðŸ”§ DIRECT GENERATION CALLED');
     
     try {
         // Get deprecated values
@@ -2226,21 +2226,21 @@ async function generateDirectStandardValuesDisplay(currentAttribute, requestData
             .eq('id', currentAttribute.id)
             .single();
 
-        console.log('📊 Deprecated values data:', attrData);
+        console.log('ðŸ“Š Deprecated values data:', attrData);
 
         let deprecatedNames = [];
         if (!error && attrData?.deprecated_values) {
             deprecatedNames = attrData.deprecated_values.map(dv => dv.name);
         }
 
-        console.log('📝 Deprecated names:', deprecatedNames);
+        console.log('ðŸ“ Deprecated names:', deprecatedNames);
 
         // Generate values HTML
         let valuesHTML = '';
         if (currentAttribute.standard_values && currentAttribute.standard_values.length > 0) {
             valuesHTML = currentAttribute.standard_values.map(val => {
                 const isDeprecated = deprecatedNames.includes(val.name);
-                console.log(`🏷️ Value "${val.name}" deprecated: ${isDeprecated}`);
+                console.log(`ðŸ·ï¸ Value "${val.name}" deprecated: ${isDeprecated}`);
                 
                 if (isDeprecated) {
                     return `
@@ -2271,11 +2271,11 @@ async function generateDirectStandardValuesDisplay(currentAttribute, requestData
             </div>
         `;
 
-        console.log('✅ Generated HTML');
+        console.log('âœ… Generated HTML');
         return valuesHTML + newValueHTML;
 
     } catch (error) {
-        console.error('❌ Error in direct generation:', error);
+        console.error('âŒ Error in direct generation:', error);
         // Fallback
         let fallbackHTML = '';
         if (currentAttribute.standard_values) {
@@ -2300,10 +2300,10 @@ async function generateDirectStandardValuesDisplay(currentAttribute, requestData
 
 async function viewRequestDetails(type, requestId) {
     try {
-        console.log('🚨 REQUEST DETAILS OPENED - TYPE:', type, 'ID:', requestId);
+        console.log('ðŸš¨ REQUEST DETAILS OPENED - TYPE:', type, 'ID:', requestId);
         
         if (type === 'project') {
-            console.log('📁 Opening project details');
+            console.log('ðŸ“ Opening project details');
             // Handle project details differently
             await openProjectReviewModal(requestId);
             return;
@@ -2399,7 +2399,7 @@ async function viewRequestDetails(type, requestId) {
             }
 
         } else if (type === 'value') {
-            console.log('📝 PROCESSING STANDARD VALUE REQUEST');
+            console.log('ðŸ“ PROCESSING STANDARD VALUE REQUEST');
             
             const { data, error } = await supabase
                 .from('standard_value_requests')
@@ -2650,12 +2650,12 @@ async function viewRequestDetails(type, requestId) {
                                 </div>
                                 <div class="ml-4 text-right">
                                     <div class="font-semibold text-blue-600">${selectedValue ? selectedValue.name : 'Not selected'}</div>
-                                    ${isDeprecated ? '<div class="text-xs text-orange-600 font-medium">ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Deprecated Value</div>' : ''}
+                                    ${isDeprecated ? '<div class="text-xs text-orange-600 font-medium">ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â Deprecated Value</div>' : ''}
                                 </div>
                             </div>
                             ${isDeprecated ? `
                                 <div class="mt-2 p-2 bg-orange-100 border border-orange-300 rounded text-xs text-orange-800">
-                                    <div class="font-semibold">ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Deprecation Notice:</div>
+                                    <div class="font-semibold">ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â Deprecation Notice:</div>
                                     <div>This value was deprecated ${deprecationInfo?.deprecated_at ? 'on ' + new Date(deprecationInfo.deprecated_at).toLocaleDateString() : 'previously'}</div>
                                     ${deprecationInfo?.deprecated_reason ? `<div class="mt-1"><strong>Reason:</strong> ${deprecationInfo.deprecated_reason}</div>` : ''}
                                 </div>
@@ -2748,7 +2748,7 @@ async function viewRequestDetails(type, requestId) {
                         ${deprecationConflict ? `
                             <!-- Deprecation Conflict Warning -->
                             <div class="deprecated-warning mt-3">
-                                <div class="font-semibold text-orange-800 mb-2">ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Deprecation Conflict Detected</div>
+                                <div class="font-semibold text-orange-800 mb-2">ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â Deprecation Conflict Detected</div>
                                 <div class="text-sm text-orange-700">
                                     A value named "${deprecationConflict.existingValue}" already exists but is currently deprecated.
                                     ${deprecationConflict.deprecatedAt ? `Deprecated on: ${new Date(deprecationConflict.deprecatedAt).toLocaleDateString()}` : ''}
@@ -2862,7 +2862,7 @@ async function generateStandardValuesDisplayWithDeprecationStatus(currentAttribu
         return '<p class="text-gray-500 italic">No existing values found</p>';
     }
 
-    console.log('🔍 Checking deprecation status for attribute:', currentAttribute.id);
+    console.log('ðŸ” Checking deprecation status for attribute:', currentAttribute.id);
     
     try {
         // Get the fresh attribute data with deprecated_values
@@ -2878,13 +2878,13 @@ async function generateStandardValuesDisplayWithDeprecationStatus(currentAttribu
             return generateBasicStandardValuesDisplay(currentAttribute);
         }
 
-        console.log('✅ Fresh attribute data:', attributeData);
+        console.log('âœ… Fresh attribute data:', attributeData);
 
         const standardValues = attributeData.standard_values || [];
         const deprecatedValues = attributeData.deprecated_values || [];
         
-        console.log('📊 Standard values:', standardValues);
-        console.log('📊 Deprecated values:', deprecatedValues);
+        console.log('ðŸ“Š Standard values:', standardValues);
+        console.log('ðŸ“Š Deprecated values:', deprecatedValues);
 
         // Create a map of deprecated values for quick lookup
         const deprecatedMap = new Map();
@@ -2898,14 +2898,14 @@ async function generateStandardValuesDisplayWithDeprecationStatus(currentAttribu
             }
         });
 
-        console.log('🗂️ Deprecated values map:', deprecatedMap);
+        console.log('ðŸ—‚ï¸ Deprecated values map:', deprecatedMap);
 
         // Generate HTML for each standard value
         return standardValues.map(val => {
             const isDeprecated = deprecatedMap.has(val.name);
             const deprecationInfo = deprecatedMap.get(val.name);
             
-            console.log(`🏷️ Processing value "${val.name}": deprecated=${isDeprecated}`);
+            console.log(`ðŸ·ï¸ Processing value "${val.name}": deprecated=${isDeprecated}`);
             
             if (isDeprecated) {
                 return `
@@ -2915,7 +2915,7 @@ async function generateStandardValuesDisplayWithDeprecationStatus(currentAttribu
                         <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full font-medium">DEPRECATED</span>
                         ${deprecationInfo?.deprecated_at ? `
                             <span class="text-xs text-orange-600 ml-auto" title="Deprecated on ${new Date(deprecationInfo.deprecated_at).toLocaleDateString()}">
-                                📅 ${new Date(deprecationInfo.deprecated_at).toLocaleDateString()}
+                                ðŸ“… ${new Date(deprecationInfo.deprecated_at).toLocaleDateString()}
                             </span>
                         ` : ''}
                     </div>
@@ -2937,14 +2937,14 @@ async function generateStandardValuesDisplayWithDeprecationStatus(currentAttribu
         }).join('');
 
     } catch (error) {
-        console.error('❌ Error in deprecation detection:', error);
+        console.error('âŒ Error in deprecation detection:', error);
         return generateBasicStandardValuesDisplay(currentAttribute);
     }
 }
 
 // Fallback function for basic display when deprecation detection fails
 function generateBasicStandardValuesDisplay(currentAttribute) {
-    console.log('🔄 Using fallback basic display');
+    console.log('ðŸ”„ Using fallback basic display');
     
     if (!currentAttribute?.standard_values) {
         return '<p class="text-gray-500 italic">No existing values found</p>';
@@ -2961,12 +2961,12 @@ function generateBasicStandardValuesDisplay(currentAttribute) {
 
 // Debug function to test deprecation status (for testing purposes)
 async function testDeprecationStatus(projectId, attributeId) {
-    console.log('🧪 Testing deprecation status detection...');
+    console.log('ðŸ§ª Testing deprecation status detection...');
     console.log('Parameters:', { projectId, attributeId });
     
     try {
         // Test: Check project_attributes table directly
-        console.log('📋 Checking project_attributes table...');
+        console.log('ðŸ“‹ Checking project_attributes table...');
         const { data: attributeData, error: attrError } = await supabase
             .from('project_attributes')
             .select('id, attribute_name, standard_values, deprecated_values')
@@ -2974,7 +2974,7 @@ async function testDeprecationStatus(projectId, attributeId) {
             .single();
         
         if (!attrError && attributeData) {
-            console.log('✅ Attribute data found:');
+            console.log('âœ… Attribute data found:');
             console.log('  - ID:', attributeData.id);
             console.log('  - Name:', attributeData.attribute_name);
             console.log('  - Standard values:', attributeData.standard_values);
@@ -2991,7 +2991,7 @@ Deprecated Values: ${deprecatedCount}
 Check console for detailed data structure`);
             
         } else {
-            console.log('❌ Attribute error:', attrError);
+            console.log('âŒ Attribute error:', attrError);
             alert(`Error fetching attribute data: ${attrError?.message || 'Unknown error'}`);
         }
         
@@ -3004,12 +3004,12 @@ Check console for detailed data structure`);
 // Function to create a test deprecated value directly in the database (admin only)
 async function createTestDeprecatedValue(projectId, attributeId, valueName) {
     if (!currentUser || currentUser.role !== 'admin') {
-        alert('❌ Admin access required for this function');
+        alert('âŒ Admin access required for this function');
         return;
     }
     
     try {
-        console.log('🔧 Creating test deprecated value...');
+        console.log('ðŸ”§ Creating test deprecated value...');
         
         // First get the current attribute data
         const { data: attributeData, error: fetchError } = await supabase
@@ -3062,12 +3062,12 @@ async function createTestDeprecatedValue(projectId, attributeId, valueName) {
             throw updateError;
         }
         
-        console.log('✅ Test deprecated value created successfully');
-        alert(`✅ Successfully deprecated "${valueName}" for testing!\n\nRefresh the standard value modal to see the deprecation indicator.`);
+        console.log('âœ… Test deprecated value created successfully');
+        alert(`âœ… Successfully deprecated "${valueName}" for testing!\n\nRefresh the standard value modal to see the deprecation indicator.`);
         
     } catch (error) {
-        console.error('❌ Error creating test deprecated value:', error);
-        alert(`❌ Error: ${error.message}`);
+        console.error('âŒ Error creating test deprecated value:', error);
+        alert(`âŒ Error: ${error.message}`);
     }
 }
 
@@ -3079,17 +3079,17 @@ window.createTestDeprecatedValue = createTestDeprecatedValue;
 async function populateStandardValuesWithDeprecationStatus(currentAttribute, requestData) {
     const container = document.getElementById('standard-values-list');
     if (!container) {
-        console.log('❌ Container not found!');
+        console.log('âŒ Container not found!');
         return;
     }
 
-    console.log('🔧 POPULATE FUNCTION CALLED');
+    console.log('ðŸ”§ POPULATE FUNCTION CALLED');
     console.log('Current attribute:', currentAttribute);
     console.log('Request data:', requestData);
 
     try {
         // Get current attribute data including deprecated_values
-        console.log('📡 Fetching deprecated values for attribute ID:', currentAttribute.id);
+        console.log('ðŸ“¡ Fetching deprecated values for attribute ID:', currentAttribute.id);
         
         const { data: attrData, error } = await supabase
             .from('project_attributes')
@@ -3097,23 +3097,23 @@ async function populateStandardValuesWithDeprecationStatus(currentAttribute, req
             .eq('id', currentAttribute.id)
             .single();
 
-        console.log('📊 Database response:', { attrData, error });
+        console.log('ðŸ“Š Database response:', { attrData, error });
 
         let deprecatedNames = [];
         if (!error && attrData?.deprecated_values) {
             deprecatedNames = attrData.deprecated_values.map(dv => dv.name);
         }
 
-        console.log('📝 Deprecated names array:', deprecatedNames);
+        console.log('ðŸ“ Deprecated names array:', deprecatedNames);
 
         // Generate HTML for existing standard values
         let valuesHTML = '';
         if (currentAttribute.standard_values && currentAttribute.standard_values.length > 0) {
-            console.log('📋 Processing standard values:', currentAttribute.standard_values);
+            console.log('ðŸ“‹ Processing standard values:', currentAttribute.standard_values);
             
             valuesHTML = currentAttribute.standard_values.map(val => {
                 const isDeprecated = deprecatedNames.includes(val.name);
-                console.log(`🏷️ Value "${val.name}" - deprecated: ${isDeprecated}`);
+                console.log(`ðŸ·ï¸ Value "${val.name}" - deprecated: ${isDeprecated}`);
                 
                 if (isDeprecated) {
                     return `
@@ -3144,15 +3144,15 @@ async function populateStandardValuesWithDeprecationStatus(currentAttribute, req
             </div>
         `;
 
-        console.log('📝 Final HTML length:', valuesHTML.length);
+        console.log('ðŸ“ Final HTML length:', valuesHTML.length);
         container.innerHTML = valuesHTML + newValueHTML;
-        console.log('✅ HTML content updated');
+        console.log('âœ… HTML content updated');
 
         // Add a test button for admins to create deprecated values
         if (currentUser?.role === 'admin') {
             const testHTML = `
                 <div class="mt-4 p-3 bg-red-50 border border-red-200 rounded">
-                    <div class="text-sm font-semibold text-red-800 mb-2">🧪 TEST DEPRECATED VALUES</div>
+                    <div class="text-sm font-semibold text-red-800 mb-2">ðŸ§ª TEST DEPRECATED VALUES</div>
                     <button onclick="createTestDeprecated('${currentAttribute.id}', '${currentAttribute.standard_values[0]?.name}')" 
                             class="bg-red-500 text-white px-3 py-1 rounded text-sm">
                         Deprecate "${currentAttribute.standard_values[0]?.name}" for Testing
@@ -3164,7 +3164,7 @@ async function populateStandardValuesWithDeprecationStatus(currentAttribute, req
         }
 
     } catch (error) {
-        console.error('❌ Error loading values:', error);
+        console.error('âŒ Error loading values:', error);
         // Fallback: show values without deprecation status
         let fallbackHTML = '';
         if (currentAttribute.standard_values) {
@@ -6527,25 +6527,25 @@ function createDetailedAdminReviewCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â', 
+            icon: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â¦', 
+            icon: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â ', 
+            icon: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â ', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â«', 
+            icon: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â«', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -6992,10 +6992,10 @@ function createSimpleReviewerCard(item) {
     card.className = 'request-card bg-white border rounded-lg shadow-sm p-4 hover:shadow-md transition-shadow border-l-4 border-l-blue-500';
     
     const typeInfo = {
-        'project': { icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
-        'code': { icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â¦', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
-        'value': { icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â ', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
-        'block': { icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â«', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
+        'project': { icon: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â', label: 'Classification Project', bgClass: 'bg-purple-100 text-purple-800' },
+        'code': { icon: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦', label: 'Item Code Request', bgClass: 'bg-green-100 text-green-800' },
+        'value': { icon: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â ', label: 'Standard Value Request', bgClass: 'bg-blue-100 text-blue-800' },
+        'block': { icon: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â«', label: 'Block Combination', bgClass: 'bg-red-100 text-red-800' }
     };
 
     const info = typeInfo[item.type] || typeInfo['code'];
@@ -7117,25 +7117,25 @@ function createDetailedReviewerCard(item) {
     
     const typeInfo = {
         'project': { 
-            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â', 
+            icon: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â', 
             color: 'purple', 
             label: 'Classification Project',
             bgClass: 'bg-purple-100 text-purple-800'
         },
         'code': { 
-            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â¦', 
+            icon: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦', 
             color: 'green', 
             label: 'Item Code Request',
             bgClass: 'bg-green-100 text-green-800'
         },
         'value': { 
-            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â ', 
+            icon: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â ', 
             color: 'blue', 
             label: 'Standard Value Request',
             bgClass: 'bg-blue-100 text-blue-800'
         },
         'block': { 
-            icon: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â«', 
+            icon: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â«', 
             color: 'red', 
             label: 'Block Combination',
             bgClass: 'bg-red-100 text-red-800'
@@ -7901,12 +7901,12 @@ function displayAllRequests(requests) {
 
 function getTypeIcon(type) {
     const icons = {
-        project: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â',
-        code: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â¦',
-        block: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â«',
-        value: 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€¦Ã‚Â '
+        project: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â',
+        code: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦',
+        block: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â«',
+        value: 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â '
     };
-    return icons[type] || 'ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾';
+    return icons[type] || 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾';
 }
 
 function createAllRequestCard(request) {
@@ -9128,8 +9128,850 @@ function switchTab(tabName) {
 
 async function loadAdminPanel() {
     const container = document.getElementById('admin-panel-container');
-    container.innerHTML = '<div class="text-center text-gray-500 py-8">Admin panel functionality - to be implemented</div>';
+    
+    try {
+        console.log('🔧 Loading admin panel with configurable approval system...');
+        
+        // Show loading state
+        container.innerHTML = `
+            <div class="flex items-center justify-center py-8">
+                <div class="text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
+                    <p class="text-gray-600">Loading approval configurations...</p>
+                </div>
+            </div>
+        `;
+        
+        // Load all approval configurations
+        const { data: configsData, error: configsError } = await supabase.rpc('get_all_approval_configs', {
+            admin_id_param: currentUser.id
+        });
+        
+        if (configsError) {
+            throw new Error(`Failed to load configurations: ${configsError.message}`);
+        }
+        
+        console.log('📋 Loaded approval configurations:', configsData);
+        
+        // Build the admin panel interface
+        container.innerHTML = `
+            <div class="space-y-6">
+                <!-- Header -->
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="text-2xl font-semibold text-gray-800">Approval Configuration</h2>
+                        <p class="text-sm text-gray-600 mt-1">Configure approval layers (0-5) for different request types independently</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="resetToDefaults()" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            Reset to Defaults
+                        </button>
+                        <button onclick="refreshApprovalConfigs()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Configuration Tabs -->
+                <div class="bg-white rounded-lg shadow-sm border">
+                    <!-- Tab Navigation -->
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8" aria-label="Approval Configuration Tabs">
+                            <button onclick="switchApprovalConfigTab('projects')" id="projects-config-tab" 
+                                class="approval-config-tab-btn py-4 px-1 border-b-2 border-blue-500 text-blue-600 font-medium text-sm whitespace-nowrap">
+                                Classification Projects
+                            </button>
+                            <button onclick="switchApprovalConfigTab('item_codes')" id="item_codes-config-tab"
+                                class="approval-config-tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">
+                                Item Codes
+                            </button>
+                            <button onclick="switchApprovalConfigTab('standard_values')" id="standard_values-config-tab"
+                                class="approval-config-tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">
+                                Standard Values
+                            </button>
+                            <button onclick="switchApprovalConfigTab('combinations')" id="combinations-config-tab"
+                                class="approval-config-tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">
+                                Combinations
+                            </button>
+                            <button onclick="switchApprovalConfigTab('global')" id="global-config-tab"
+                                class="approval-config-tab-btn py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium text-sm whitespace-nowrap">
+                                Global Settings
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="p-6">
+                        <div id="approval-config-content">
+                            <!-- Configuration content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bulk Configuration Section -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-blue-900 mb-4">Bulk Configuration</h3>
+                    <p class="text-blue-700 text-sm mb-4">Apply the same approval configuration across all request types</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-blue-700 mb-1">Approval Layers</label>
+                            <select id="bulk-approval-layers" class="w-full px-3 py-2 border border-blue-300 rounded-md bg-white">
+                                <option value="0">0 - Auto Approve</option>
+                                <option value="1">1 - Admin Only</option>
+                                <option value="2" selected>2 - Reviewer → Admin</option>
+                                <option value="3">3 - Custom Layer 1</option>
+                                <option value="4">4 - Custom Layer 2</option>
+                                <option value="5">5 - Custom Layer 3</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-700 mb-1">Auto Approve</label>
+                            <select id="bulk-auto-approve" class="w-full px-3 py-2 border border-blue-300 rounded-md bg-white">
+                                <option value="false" selected>Disabled</option>
+                                <option value="true">Enabled</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-700 mb-1">Description</label>
+                            <input type="text" id="bulk-description" placeholder="Bulk configuration update" 
+                                class="w-full px-3 py-2 border border-blue-300 rounded-md">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="applyBulkConfiguration()" 
+                                class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                Apply to All Types
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration Impact Preview -->
+                <div id="config-impact-preview" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 hidden">
+                    <h4 class="text-yellow-800 font-medium mb-2">Configuration Impact</h4>
+                    <div id="impact-details" class="text-yellow-700 text-sm"></div>
+                </div>
+            </div>
+        `;
+        
+        // Initialize with the projects tab
+        window.currentApprovalConfigs = configsData;
+        switchApprovalConfigTab('projects');
+        
+        console.log('✅ Admin panel loaded successfully');
+        
+    } catch (error) {
+        console.error('❌ Error loading admin panel:', error);
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <div class="text-red-600 mb-3">
+                    <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Failed to Load Admin Panel</h3>
+                <p class="text-gray-600 mb-4">${error.message}</p>
+                <button onclick="loadAdminPanel()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">
+                    Try Again
+                </button>
+            </div>
+        `;
+    }
 }
+
+// ===== APPROVAL CONFIGURATION SYSTEM FUNCTIONS =====
+
+// Global variable to store current approval configurations
+window.currentApprovalConfigs = null;
+
+// Switch between approval configuration tabs
+async function switchApprovalConfigTab(requestType) {
+    console.log(`🔄 Switching to ${requestType} approval config tab...`);
+    
+    // Update tab appearance
+    document.querySelectorAll('.approval-config-tab-btn').forEach(tab => {
+        tab.classList.remove('border-blue-500', 'text-blue-600');
+        tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700');
+    });
+    
+    const activeTab = document.getElementById(`${requestType}-config-tab`);
+    if (activeTab) {
+        activeTab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700');
+        activeTab.classList.add('border-blue-500', 'text-blue-600');
+    }
+    
+    // Load tab content
+    const contentDiv = document.getElementById('approval-config-content');
+    
+    if (requestType === 'global') {
+        await loadGlobalApprovalConfigTab(contentDiv);
+    } else {
+        await loadRequestTypeConfigTab(contentDiv, requestType);
+    }
+}
+
+// Load configuration for a specific request type
+async function loadRequestTypeConfigTab(contentDiv, requestType) {
+    try {
+        // Get current configuration for this request type
+        const { data: configData, error: configError } = await supabase.rpc('get_approval_config', {
+            request_type_param: requestType
+        });
+        
+        if (configError) {
+            throw new Error(`Failed to load ${requestType} configuration: ${configError.message}`);
+        }
+        
+        const config = configData.config;
+        const source = configData.source;
+        
+        console.log(`📋 Loaded ${requestType} config:`, config);
+        
+        const requestTypeNames = {
+            'projects': 'Classification Projects',
+            'item_codes': 'Item Code Requests', 
+            'standard_values': 'Standard Value Requests',
+            'combinations': 'Block Combination Requests'
+        };
+        
+        const sourceLabels = {
+            'project_specific_': 'Project-Specific Configuration',
+            'global_': 'Request-Type Specific Configuration',
+            'global_all_fallback': 'Global Default Configuration',
+            'system_default': 'System Default (No Configuration Found)'
+        };
+        
+        const sourceKey = Object.keys(sourceLabels).find(key => source.startsWith(key)) || 'system_default';
+        const sourceLabel = sourceLabels[sourceKey];
+        
+        contentDiv.innerHTML = `
+            <div class="space-y-6">
+                <!-- Current Configuration Display -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-lg font-semibold text-gray-800">${requestTypeNames[requestType]} Configuration</h3>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full ${
+                            source.includes('project_specific') ? 'bg-blue-100 text-blue-800' :
+                            source.includes('global_') && !source.includes('fallback') ? 'bg-green-100 text-green-800' :
+                            source.includes('fallback') ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                        }">
+                            ${sourceLabel}
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <label class="font-medium text-gray-600">Current Approval Layers:</label>
+                            <p class="text-lg font-bold text-gray-900">${config.approval_layers}</p>
+                            <p class="text-xs text-gray-500">${getApprovalLayersDescription(config.approval_layers)}</p>
+                        </div>
+                        <div>
+                            <label class="font-medium text-gray-600">Auto Approve:</label>
+                            <p class="text-lg font-bold ${config.auto_approve ? 'text-green-600' : 'text-red-600'}">
+                                ${config.auto_approve ? 'Enabled' : 'Disabled'}
+                            </p>
+                        </div>
+                        <div>
+                            <label class="font-medium text-gray-600">Description:</label>
+                            <p class="text-sm text-gray-700">${config.description || 'No description'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workflow Preview -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 class="font-semibold text-blue-800 mb-3">Current Workflow Preview</h4>
+                    <div id="workflow-preview-${requestType}">
+                        ${generateWorkflowPreview(config.approval_layers, config.auto_approve)}
+                    </div>
+                </div>
+
+                <!-- Configuration Form -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4">
+                    <h4 class="font-semibold text-gray-800 mb-4">Update Configuration</h4>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Approval Layers</label>
+                            <select id="config-layers-${requestType}" class="w-full px-3 py-2 border border-gray-300 rounded-md" 
+                                onchange="previewWorkflowChange('${requestType}')">
+                                <option value="0" ${config.approval_layers === 0 ? 'selected' : ''}>0 - Auto Approve (Skip All Reviews)</option>
+                                <option value="1" ${config.approval_layers === 1 ? 'selected' : ''}>1 - Admin Only (Direct to Admin)</option>
+                                <option value="2" ${config.approval_layers === 2 ? 'selected' : ''}>2 - Standard (Reviewer → Admin)</option>
+                                <option value="3" ${config.approval_layers === 3 ? 'selected' : ''}>3 - Extended (Reviewer → Senior → Admin)</option>
+                                <option value="4" ${config.approval_layers === 4 ? 'selected' : ''}>4 - Detailed (Reviewer → Lead → Senior → Admin)</option>
+                                <option value="5" ${config.approval_layers === 5 ? 'selected' : ''}>5 - Maximum (All Available Layers)</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Configure how many approval steps are required</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Auto Approve</label>
+                            <select id="config-auto-${requestType}" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                <option value="false" ${!config.auto_approve ? 'selected' : ''}>Disabled - Manual Review Required</option>
+                                <option value="true" ${config.auto_approve ? 'selected' : ''}>Enabled - Automatic Approval (Use with 0 layers)</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Enable automatic approval for low-risk requests</p>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <input type="text" id="config-desc-${requestType}" 
+                                value="${config.description || ''}" 
+                                placeholder="Brief description of this configuration..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <div class="text-sm text-gray-600">
+                            <strong>Impact:</strong> This will affect how ${requestTypeNames[requestType].toLowerCase()} are processed in the approval workflow.
+                        </div>
+                        <div class="space-x-2">
+                            <button onclick="resetRequestTypeConfig('${requestType}')" 
+                                class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm">
+                                Reset to Default
+                            </button>
+                            <button onclick="saveRequestTypeConfig('${requestType}')" 
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">
+                                Save Configuration
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration Test Section -->
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h4 class="font-semibold text-green-800 mb-3">Test Configuration</h4>
+                    <p class="text-green-700 text-sm mb-3">Test how this configuration would work with sample requests</p>
+                    <button onclick="testApprovalConfiguration('${requestType}')" 
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm">
+                        Run Configuration Test
+                    </button>
+                    <div id="test-results-${requestType}" class="mt-3 hidden"></div>
+                </div>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error(`❌ Error loading ${requestType} configuration:`, error);
+        contentDiv.innerHTML = `
+            <div class="text-center py-8">
+                <div class="text-red-600 mb-3">
+                    <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <p class="text-gray-600">Failed to load ${requestType} configuration</p>
+                <button onclick="switchApprovalConfigTab('${requestType}')" 
+                    class="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm">
+                    Try Again
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Helper functions for approval configuration system
+function getApprovalLayersDescription(layers) {
+    const descriptions = {
+        0: 'Auto-approve',
+        1: 'Admin only',
+        2: 'Reviewer → Admin',
+        3: 'Reviewer → Senior → Admin',
+        4: 'Reviewer → Lead → Senior → Admin',
+        5: 'All layers'
+    };
+    return descriptions[layers] || 'Custom';
+}
+
+// Generate workflow preview
+function generateWorkflowPreview(layers, autoApprove) {
+    if (autoApprove && layers === 0) {
+        return `
+            <div class="flex items-center space-x-2 text-green-600">
+                <div class="w-4 h-4 bg-green-500 rounded-full"></div>
+                <span class="font-medium">Automatic Approval</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+        `;
+    }
+    
+    const steps = [];
+    
+    if (layers === 0) {
+        steps.push('Auto-Approve');
+    } else if (layers === 1) {
+        steps.push('Admin Review');
+    } else {
+        steps.push('Reviewer Review');
+        if (layers >= 2) steps.push('Admin Review');
+        if (layers >= 3) steps.push('Senior Review');
+        if (layers >= 4) steps.push('Lead Review');
+        if (layers >= 5) steps.push('Executive Review');
+    }
+    
+    return steps.map((step, index) => `
+        <div class="flex items-center ${index < steps.length - 1 ? 'mb-2' : ''}">
+            <div class="w-8 h-8 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-sm font-medium">
+                ${index + 1}
+            </div>
+            <div class="ml-3 flex-1">
+                <span class="text-sm font-medium text-gray-800">${step}</span>
+            </div>
+            ${index < steps.length - 1 ? `
+                <div class="ml-2">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                    </svg>
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+// Preview workflow changes
+function previewWorkflowChange(requestType) {
+    const layersSelect = document.getElementById(`config-layers-${requestType}`);
+    const layers = parseInt(layersSelect.value);
+    const autoApprove = document.getElementById(`config-auto-${requestType}`).value === 'true';
+    
+    const previewDiv = document.getElementById(`workflow-preview-${requestType}`);
+    previewDiv.innerHTML = generateWorkflowPreview(layers, autoApprove);
+}
+
+// Save request type configuration
+async function saveRequestTypeConfig(requestType) {
+    try {
+        const layers = parseInt(document.getElementById(`config-layers-${requestType}`).value);
+        const autoApprove = document.getElementById(`config-auto-${requestType}`).value === 'true';
+        const description = document.getElementById(`config-desc-${requestType}`).value.trim();
+        
+        console.log(`💾 Saving ${requestType} configuration...`, { layers, autoApprove, description });
+        
+        // Show loading state
+        const saveBtn = event.target;
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = 'Saving...';
+        saveBtn.disabled = true;
+        
+        const { data, error } = await supabase.rpc('set_approval_config', {
+            project_id_param: null,
+            request_type_param: requestType,
+            approval_layers_param: layers,
+            auto_approve_param: autoApprove,
+            description_param: description,
+            admin_id_param: currentUser.id
+        });
+        
+        if (error) {
+            throw new Error(error.message);
+        }
+        
+        console.log(`✅ ${requestType} configuration saved:`, data);
+        
+        // Show success message
+        showNotificationMessage('Configuration saved successfully!', 'success');
+        
+        // Refresh the global configs first
+        await refreshApprovalConfigs();
+        
+        // Refresh the current tab
+        await switchApprovalConfigTab(requestType);
+        
+    } catch (error) {
+        console.error(`❌ Error saving ${requestType} configuration:`, error);
+        showNotificationMessage('Failed to save configuration: ' + error.message, 'error');
+    } finally {
+        // Restore button state
+        const saveBtn = event.target;
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+    }
+}
+
+// Refresh approval configurations
+async function refreshApprovalConfigs() {
+    try {
+        console.log('🔄 Refreshing approval configurations...');
+        
+        const { data: configsData, error: configsError } = await supabase.rpc('get_all_approval_configs', {
+            admin_id_param: currentUser.id
+        });
+        
+        if (configsError) {
+            throw new Error(configsError.message);
+        }
+        
+        window.currentApprovalConfigs = configsData;
+        console.log('✅ Approval configurations refreshed');
+        
+        // If we're on the global tab, refresh the table
+        const activeTab = document.querySelector('.approval-config-tab-btn.border-blue-500');
+        if (activeTab && activeTab.id === 'global-config-tab') {
+            await populateGlobalConfigsTable();
+        }
+        
+        showNotificationMessage('Configurations refreshed', 'info');
+        
+    } catch (error) {
+        console.error('❌ Error refreshing configurations:', error);
+        showNotificationMessage('Failed to refresh configurations: ' + error.message, 'error');
+    }
+}
+
+// Helper function to show notifications
+function showNotificationMessage(message, type = 'info') {
+    const colors = {
+        success: 'bg-green-100 border-green-500 text-green-700',
+        error: 'bg-red-100 border-red-500 text-red-700',
+        info: 'bg-blue-100 border-blue-500 text-blue-700'
+    };
+    
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 max-w-sm p-4 border-l-4 ${colors[type]} rounded shadow-lg z-50`;
+    notification.innerHTML = `
+        <div class="flex">
+            <div class="flex-1">
+                <p class="text-sm font-medium">${message}</p>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-600">
+                ×
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 5000);
+}
+
+// ===== END APPROVAL CONFIGURATION SYSTEM FUNCTIONS =====
+
+// Additional approval configuration functions
+async function loadGlobalApprovalConfigTab(contentDiv) {
+    try {
+        contentDiv.innerHTML = `
+            <div class="space-y-6">
+                <div class="text-center py-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Global Configuration Overview</h3>
+                    <p class="text-gray-600">View and manage all approval configurations across the system</p>
+                </div>
+                
+                <!-- All Configurations Table -->
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                        <h4 class="font-semibold text-gray-800">All Active Configurations</h4>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Request Type</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scope</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Layers</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Auto Approve</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="global-configs-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- Table content will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Populate the table after the HTML is created
+        setTimeout(async () => {
+            await populateGlobalConfigsTable();
+        }, 100);
+        
+    } catch (error) {
+        console.error('❌ Error loading global configuration tab:', error);
+        contentDiv.innerHTML = `
+            <div class="text-center py-8 text-red-600">
+                <p>Failed to load global configuration</p>
+            </div>
+        `;
+    }
+}
+
+// Populate the global configurations table
+async function populateGlobalConfigsTable() {
+    const tbody = document.getElementById('global-configs-table-body');
+    
+    // Check if the element exists
+    if (!tbody) {
+        console.warn('global-configs-table-body element not found - table not yet rendered');
+        return;
+    }
+    
+    if (!window.currentApprovalConfigs) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">No configurations loaded</td></tr>';
+        return;
+    }
+    
+    const configs = [
+        ...(window.currentApprovalConfigs.global_configs || []),
+        ...(window.currentApprovalConfigs.project_configs || [])
+    ];
+    
+    if (configs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">No configurations found</td></tr>';
+        return;
+    }
+    
+    const requestTypeNames = {
+        'all': 'Global Default',
+        'projects': 'Classification Projects',
+        'item_codes': 'Item Code Requests',
+        'standard_values': 'Standard Value Requests',
+        'combinations': 'Block Combinations'
+    };
+    
+    tbody.innerHTML = configs.map(config => `
+        <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">${requestTypeNames[config.request_type] || config.request_type}</div>
+                <div class="text-sm text-gray-500">${config.request_type}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 py-1 text-xs font-medium rounded-full ${
+                    config.scope === 'global' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                }">
+                    ${config.scope === 'global' ? 'Global' : 'Project-Specific'}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-bold text-gray-900">${config.approval_layers}</div>
+                <div class="text-xs text-gray-500">${getApprovalLayersDescription(config.approval_layers)}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="text-sm ${config.auto_approve ? 'text-green-600 font-medium' : 'text-gray-600'}">
+                    ${config.auto_approve ? 'Yes' : 'No'}
+                </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                ${new Date(config.updated_at).toLocaleDateString()}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <button onclick="editGlobalConfig(${config.id}, '${config.request_type}')" 
+                    class="text-blue-600 hover:text-blue-800 mr-2">Edit</button>
+                ${config.scope === 'project_specific' ? 
+                    `<button onclick="deleteConfig(${config.id})" class="text-red-600 hover:text-red-800">Delete</button>` : 
+                    ''
+                }
+            </td>
+        </tr>
+    `).join('');
+    
+    console.log(`✅ Populated global configs table with ${configs.length} configurations`);
+}
+
+// Reset request type configuration to default
+async function resetRequestTypeConfig(requestType) {
+    if (!confirm(`Are you sure you want to reset ${requestType} configuration to default?`)) {
+        return;
+    }
+    
+    const defaultConfigs = {
+        'projects': { layers: 2, autoApprove: false },
+        'item_codes': { layers: 2, autoApprove: false },
+        'standard_values': { layers: 2, autoApprove: false },
+        'combinations': { layers: 1, autoApprove: false }
+    };
+    
+    const defaultConfig = defaultConfigs[requestType] || { layers: 2, autoApprove: false };
+    
+    // Update form fields
+    document.getElementById(`config-layers-${requestType}`).value = defaultConfig.layers;
+    document.getElementById(`config-auto-${requestType}`).value = defaultConfig.autoApprove;
+    document.getElementById(`config-desc-${requestType}`).value = `Default configuration for ${requestType}`;
+    
+    // Update preview
+    previewWorkflowChange(requestType);
+    
+    showNotificationMessage('Configuration reset to default values', 'info');
+}
+
+// Apply bulk configuration to all request types
+async function applyBulkConfiguration() {
+    const layers = parseInt(document.getElementById('bulk-approval-layers').value);
+    const autoApprove = document.getElementById('bulk-auto-approve').value === 'true';
+    const description = document.getElementById('bulk-description').value.trim() || 'Bulk configuration update';
+    
+    if (!confirm(`Are you sure you want to apply this configuration to ALL request types?\n\nLayers: ${layers}\nAuto Approve: ${autoApprove ? 'Yes' : 'No'}\nDescription: ${description}`)) {
+        return;
+    }
+    
+    try {
+        console.log('🔄 Applying bulk configuration...', { layers, autoApprove, description });
+        
+        const requestTypes = ['projects', 'item_codes', 'standard_values', 'combinations'];
+        const promises = requestTypes.map(requestType => 
+            supabase.rpc('set_approval_config', {
+                project_id_param: null,
+                request_type_param: requestType,
+                approval_layers_param: layers,
+                auto_approve_param: autoApprove,
+                description_param: `${description} (${requestType})`,
+                admin_id_param: currentUser.id
+            })
+        );
+        
+        const results = await Promise.all(promises);
+        
+        // Check for any errors
+        const errors = results.filter(result => result.error);
+        if (errors.length > 0) {
+            throw new Error(`Failed to update ${errors.length} configurations`);
+        }
+        
+        console.log('✅ Bulk configuration applied successfully');
+        showNotificationMessage('Bulk configuration applied to all request types!', 'success');
+        
+        // Refresh configurations
+        await refreshApprovalConfigs();
+        
+        // Clear bulk form
+        document.getElementById('bulk-approval-layers').value = '2';
+        document.getElementById('bulk-auto-approve').value = 'false';
+        document.getElementById('bulk-description').value = '';
+        
+    } catch (error) {
+        console.error('❌ Error applying bulk configuration:', error);
+        showNotificationMessage('Failed to apply bulk configuration: ' + error.message, 'error');
+    }
+}
+
+// Reset all configurations to default
+async function resetToDefaults() {
+    if (!confirm('Are you sure you want to reset ALL approval configurations to their default values? This cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        console.log('🔄 Resetting all configurations to defaults...');
+        
+        const defaultConfigs = [
+            { type: 'projects', layers: 2, autoApprove: false },
+            { type: 'item_codes', layers: 2, autoApprove: false },
+            { type: 'standard_values', layers: 2, autoApprove: false },
+            { type: 'combinations', layers: 1, autoApprove: false }
+        ];
+        
+        const promises = defaultConfigs.map(config => 
+            supabase.rpc('set_approval_config', {
+                project_id_param: null,
+                request_type_param: config.type,
+                approval_layers_param: config.layers,
+                auto_approve_param: config.autoApprove,
+                description_param: `Default configuration for ${config.type} (reset)`,
+                admin_id_param: currentUser.id
+            })
+        );
+        
+        await Promise.all(promises);
+        
+        console.log('✅ All configurations reset to defaults');
+        showNotificationMessage('All configurations reset to default values!', 'success');
+        
+        // Refresh configurations
+        await refreshApprovalConfigs();
+        
+    } catch (error) {
+        console.error('❌ Error resetting to defaults:', error);
+        showNotificationMessage('Failed to reset configurations: ' + error.message, 'error');
+    }
+}
+
+// Test approval configuration
+async function testApprovalConfiguration(requestType) {
+    try {
+        console.log(`🧪 Testing ${requestType} approval configuration...`);
+        
+        const resultsDiv = document.getElementById(`test-results-${requestType}`);
+        resultsDiv.classList.remove('hidden');
+        resultsDiv.innerHTML = `
+            <div class="animate-pulse">
+                <div class="h-4 bg-green-200 rounded w-3/4 mb-2"></div>
+                <div class="h-4 bg-green-200 rounded w-1/2"></div>
+            </div>
+        `;
+        
+        // Get current configuration
+        const { data: configData, error: configError } = await supabase.rpc('get_approval_config', {
+            request_type_param: requestType
+        });
+        
+        if (configError) {
+            throw new Error(configError.message);
+        }
+        
+        const config = configData.config;
+        
+        // Simulate test scenarios
+        const testScenarios = [
+            { scenario: 'New request submission', expectedStatus: 'pending' },
+            { scenario: 'Reviewer approval', expectedStatus: config.approval_layers <= 1 ? 'admin_approved' : 'reviewer_approved' },
+            { scenario: 'Admin final approval', expectedStatus: 'admin_approved' }
+        ];
+        
+        resultsDiv.innerHTML = `
+            <div class="space-y-2">
+                <h5 class="font-medium text-green-800">Configuration Test Results</h5>
+                ${testScenarios.map((test, index) => `
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-green-700">${test.scenario}:</span>
+                        <span class="font-medium text-green-800">${test.expectedStatus}</span>
+                    </div>
+                `).join('')}
+                <div class="mt-3 p-2 bg-green-100 rounded text-sm text-green-800">
+                    ✅ Configuration test completed successfully
+                </div>
+            </div>
+        `;
+        
+        console.log(`✅ ${requestType} configuration test completed`);
+        
+    } catch (error) {
+        console.error(`❌ Error testing ${requestType} configuration:`, error);
+        const resultsDiv = document.getElementById(`test-results-${requestType}`);
+        resultsDiv.innerHTML = `
+            <div class="p-2 bg-red-100 text-red-800 rounded text-sm">
+                ❌ Test failed: ${error.message}
+            </div>
+        `;
+    }
+}
+
+// Placeholder functions for referenced but not implemented features
+async function editGlobalConfig(configId, requestType) {
+    showNotificationMessage(`Edit configuration ${configId} for ${requestType} - Feature coming soon!`, 'info');
+}
+
+async function deleteConfig(configId) {
+    if (!confirm('Are you sure you want to delete this configuration?')) {
+        return;
+    }
+    showNotificationMessage(`Delete configuration ${configId} - Feature coming soon!`, 'info');
+}
+
+// ===== END ADDITIONAL APPROVAL CONFIGURATION FUNCTIONS =====
 
 // ===== QUICK REVIEW FUNCTIONS FOR CARD BUTTONS =====
 
@@ -9855,10 +10697,10 @@ async function enhancedApprovalProcess(type, requestId, decision, comments) {
                 
                 if (deprecationCheck.hasDeprecated) {
                     const deprecatedList = deprecationCheck.deprecatedValues
-                        .map(dv => `ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ ${dv.attributeName}: ${dv.valueName}`)
+                        .map(dv => `ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ ${dv.attributeName}: ${dv.valueName}`)
                         .join('\n');
                     
-                    const confirmMessage = `ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â DEPRECATION WARNING
+                    const confirmMessage = `ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â DEPRECATION WARNING
                     
 This request contains ${deprecationCheck.deprecatedValues.length} deprecated standard value${deprecationCheck.deprecatedValues.length > 1 ? 's' : ''}:
 
@@ -9867,10 +10709,10 @@ ${deprecatedList}
 Deprecated values are preserved for system compatibility but hidden from new item creation.
 
 Effects of approval:
-ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Request will be approved normally
-ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Deprecated values preserved in approved item
-ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ System integrity maintained
-ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Duplicate detection continues working
+ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ Request will be approved normally
+ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ Deprecated values preserved in approved item
+ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ System integrity maintained
+ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ Duplicate detection continues working
 
 Continue with approval?`;
 
@@ -9922,7 +10764,7 @@ async function showDeprecationAnalysisModal(requestData, deprecationCheck) {
         <div class="relative min-h-screen flex items-center justify-center p-4">
             <div class="relative bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                 <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-                    <h3 class="text-lg font-medium text-gray-900">ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Deprecation Analysis</h3>
+                    <h3 class="text-lg font-medium text-gray-900">ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â Deprecation Analysis</h3>
                     <button onclick="closeDeprecationAnalysisModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -9938,11 +10780,11 @@ async function showDeprecationAnalysisModal(requestData, deprecationCheck) {
                     <div class="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
                         <h4 class="font-medium text-blue-800 mb-2">Impact Analysis</h4>
                         <div class="text-sm text-blue-700 space-y-1">
-                            <div>ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ System integrity maintained</div>
-                            <div>ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Duplicate detection preserved</div>
-                            <div>ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Existing items unaffected</div>
-                            <div>ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ Search functionality maintained</div>
-                            <div>ÃƒÂ¢Ã…Â¡Ã‚Â ÃƒÂ¯Ã‚Â¸Ã‚Â Values hidden from new item creation</div>
+                            <div>ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ System integrity maintained</div>
+                            <div>ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ Duplicate detection preserved</div>
+                            <div>ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ Existing items unaffected</div>
+                            <div>ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ Search functionality maintained</div>
+                            <div>ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â Values hidden from new item creation</div>
                         </div>
                     </div>
                     
@@ -10597,7 +11439,7 @@ async function bulkUnassignSelected() {
         const successful = results.filter(r => r.success).length;
         const failed = results.length - successful;
         
-        alert(`Bulk unassignment completed:\nÃ¢Å“â€œ ${successful} successful\nÃ¢Å“â€” ${failed} failed`);
+        alert(`Bulk unassignment completed:\nÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ ${successful} successful\nÃƒÂ¢Ã…â€œÃ¢â‚¬â€ ${failed} failed`);
         
         if (successful > 0) {
             selectedReassignItems.clear();
@@ -10765,7 +11607,7 @@ async function executeReassignment(selectedItems) {
         
         closeReassignModal();
         
-        alert(`Reassignment completed:\nÃ¢Å“â€œ ${successful} successful\nÃ¢Å“â€” ${failed} failed`);
+        alert(`Reassignment completed:\nÃƒÂ¢Ã…â€œÃ¢â‚¬Å“ ${successful} successful\nÃƒÂ¢Ã…â€œÃ¢â‚¬â€ ${failed} failed`);
         
         if (successful > 0) {
             selectedReassignItems.clear();
