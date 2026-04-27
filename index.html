@@ -5569,7 +5569,7 @@ async function viewProjectDetails(projectId) {
                 reviewer:users!classification_projects_assigned_reviewer_id_fkey(username, email),
                 admin:users!classification_projects_admin_id_fkey(username, email),
                 project_attributes(
-                    id, attribute_name, standard_values, is_mandatory, is_manual_entry
+                    id, attribute_name, standard_values, is_mandatory, is_manual_entry, is_size_attribute
                 )
             `)
             .eq('id', projectId)
@@ -5641,11 +5641,22 @@ function showProjectDetailModal(project) {
                                     <span class="text-sm font-medium text-gray-600">Project ID:</span>
                                     <p class="text-sm text-gray-800 font-mono">#${project.id}</p>
                                 </div>
+                                <div>
+                                    <span class="text-sm font-medium text-gray-600">Project Type:</span>
+                                    <div class="mt-1">
+                                        ${project.project_type ?
+                                            (project.project_type.toLowerCase() === 'purchase' ?
+                                                '<span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">&#128722; Purchase</span>' :
+                                                project.project_type.toLowerCase() === 'cost' ?
+                                                '<span class="inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">&#128176; Cost</span>' :
+                                                `<span class="inline-flex items-center gap-1 bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-semibold">${project.project_type}</span>`)
+                                            : '<span class="text-sm text-gray-400 italic">Not specified</span>'
+                                        }
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- CSI Hierarchy Section -->
                     <div class="mb-6">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                             <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm mr-2">CSI HIERARCHY</span>
@@ -5734,13 +5745,18 @@ function showProjectDetailModal(project) {
                         </h3>
                         <div class="bg-gray-50 p-4 rounded-lg">
                             ${project.project_attributes && project.project_attributes.length > 0 ? `
+                                ${currentUser.role === 'admin' && project.status === 'reviewer_approved' ? `
+                                    <div class="flex items-center gap-2 mb-3 p-2 bg-purple-50 border border-purple-200 rounded-lg">
+                                        <span class="text-purple-700 text-xs font-medium">&#128208; As admin, you can toggle which attributes are Size Attributes before approving/rejecting. Changes are saved with your decision.</span>
+                                    </div>
+                                ` : ''}
                                 <div class="space-y-4 max-h-96 overflow-y-auto">
                                     ${project.project_attributes.map(attr => `
                                         <div class="bg-white border rounded-lg p-4">
                                             <div class="flex justify-between items-start mb-3">
-                                                <div>
+                                                <div class="flex-1">
                                                     <h4 class="font-semibold text-gray-800">${attr.attribute_name}</h4>
-                                                    <div class="flex gap-2 mt-1">
+                                                    <div class="flex flex-wrap gap-2 mt-1 items-center">
                                                         ${attr.is_mandatory ? 
                                                             '<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Mandatory</span>' : 
                                                             '<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">Optional</span>'
@@ -5749,6 +5765,18 @@ function showProjectDetailModal(project) {
                                                             '<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Manual Entry</span>' : 
                                                             '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Predefined Values</span>'
                                                         }
+                                                        ${currentUser.role === 'admin' && project.status === 'reviewer_approved' ? `
+                                                            <label class="flex items-center gap-1.5 cursor-pointer select-none ml-1 px-2 py-1 rounded border border-purple-200 bg-purple-50 hover:bg-purple-100 transition-colors">
+                                                                <input type="checkbox" 
+                                                                    class="attr-size-toggle w-3.5 h-3.5 accent-purple-600 cursor-pointer"
+                                                                    data-attr-id="${attr.id}"
+                                                                    ${attr.is_size_attribute ? 'checked' : ''}>
+                                                                <span class="text-xs font-medium text-purple-800">&#128208; Size Attribute</span>
+                                                            </label>
+                                                        ` : (attr.is_size_attribute ? 
+                                                            '<span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">&#128208; Size Attribute</span>' : 
+                                                            ''
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
@@ -6908,6 +6936,30 @@ async function submitProjectReview(projectId, decision) {
         
         const confirmed = confirm(`Are you sure you want to ${decision} this project?`);
         if (!confirmed) return;
+        
+        // If admin, collect and save size attribute toggle states first
+        if (currentUser.role === 'admin') {
+            const sizeToggles = document.querySelectorAll('.attr-size-toggle');
+            if (sizeToggles.length > 0) {
+                showProgressNotification('Saving size attribute settings...');
+                const updatePromises = Array.from(sizeToggles).map(toggle => {
+                    const attrId = parseInt(toggle.getAttribute('data-attr-id'));
+                    const isSizeAttr = toggle.checked;
+                    return supabase
+                        .from('project_attributes')
+                        .update({ is_size_attribute: isSizeAttr })
+                        .eq('id', attrId);
+                });
+                const results = await Promise.all(updatePromises);
+                const failed = results.filter(r => r.error);
+                if (failed.length > 0) {
+                    hideProgressNotification();
+                    alert('Failed to save size attribute settings: ' + failed[0].error.message);
+                    return;
+                }
+                hideProgressNotification();
+            }
+        }
         
         // Call the appropriate review function
         if (currentUser.role === 'reviewer') {
