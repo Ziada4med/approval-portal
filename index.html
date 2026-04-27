@@ -5657,6 +5657,8 @@ function showProjectDetailModal(project) {
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- CSI Hierarchy Section -->
                     <div class="mb-6">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                             <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm mr-2">CSI HIERARCHY</span>
@@ -5746,8 +5748,8 @@ function showProjectDetailModal(project) {
                         <div class="bg-gray-50 p-4 rounded-lg">
                             ${project.project_attributes && project.project_attributes.length > 0 ? `
                                 ${currentUser.role === 'admin' && project.status === 'reviewer_approved' ? `
-                                    <div class="flex items-center gap-2 mb-3 p-2 bg-purple-50 border border-purple-200 rounded-lg">
-                                        <span class="text-purple-700 text-xs font-medium">&#128208; As admin, you can toggle which attributes are Size Attributes before approving/rejecting. Changes are saved with your decision.</span>
+                                    <div class="flex items-center gap-2 mb-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                                        <span class="text-amber-700 text-xs font-medium">&#9999; As admin, you can toggle Mandatory status and Size Attribute for each attribute before approving/rejecting. Changes are saved with your decision.</span>
                                     </div>
                                 ` : ''}
                                 <div class="space-y-4 max-h-96 overflow-y-auto">
@@ -5757,24 +5759,32 @@ function showProjectDetailModal(project) {
                                                 <div class="flex-1">
                                                     <h4 class="font-semibold text-gray-800">${attr.attribute_name}</h4>
                                                     <div class="flex flex-wrap gap-2 mt-1 items-center">
-                                                        ${attr.is_mandatory ? 
-                                                            '<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Mandatory</span>' : 
+                                                        ${currentUser.role === 'admin' && project.status === 'reviewer_approved' ? `
+                                                            <label class="flex items-center gap-1.5 cursor-pointer select-none px-2 py-1 rounded border border-red-200 bg-red-50 hover:bg-red-100 transition-colors">
+                                                                <input type="checkbox"
+                                                                    class="attr-mandatory-toggle w-3.5 h-3.5 accent-red-600 cursor-pointer"
+                                                                    data-attr-id="${attr.id}"
+                                                                    ${attr.is_mandatory ? 'checked' : ''}>
+                                                                <span class="text-xs font-medium text-red-800">Mandatory</span>
+                                                            </label>
+                                                        ` : (attr.is_mandatory ?
+                                                            '<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Mandatory</span>' :
                                                             '<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">Optional</span>'
-                                                        }
+                                                        )}
                                                         ${attr.is_manual_entry ? 
                                                             '<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">Manual Entry</span>' : 
                                                             '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">Predefined Values</span>'
                                                         }
                                                         ${currentUser.role === 'admin' && project.status === 'reviewer_approved' ? `
-                                                            <label class="flex items-center gap-1.5 cursor-pointer select-none ml-1 px-2 py-1 rounded border border-purple-200 bg-purple-50 hover:bg-purple-100 transition-colors">
-                                                                <input type="checkbox" 
+                                                            <label class="flex items-center gap-1.5 cursor-pointer select-none px-2 py-1 rounded border border-purple-200 bg-purple-50 hover:bg-purple-100 transition-colors">
+                                                                <input type="checkbox"
                                                                     class="attr-size-toggle w-3.5 h-3.5 accent-purple-600 cursor-pointer"
                                                                     data-attr-id="${attr.id}"
                                                                     ${attr.is_size_attribute ? 'checked' : ''}>
                                                                 <span class="text-xs font-medium text-purple-800">&#128208; Size Attribute</span>
                                                             </label>
-                                                        ` : (attr.is_size_attribute ? 
-                                                            '<span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">&#128208; Size Attribute</span>' : 
+                                                        ` : (attr.is_size_attribute ?
+                                                            '<span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">&#128208; Size Attribute</span>' :
                                                             ''
                                                         )}
                                                     </div>
@@ -6484,7 +6494,17 @@ async function showStandardValueDetailModal(request) {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label class="text-sm font-medium text-green-700">Requested New Value:</label>
-                                    <p class="font-bold text-green-900 text-lg">${request.new_value}</p>
+                                    ${currentUser.role === 'admin' && request.status === 'reviewer_approved' ? `
+                                        <div class="mt-1">
+                                            <input type="text" id="sv-admin-new-value"
+                                                value="${request.new_value}"
+                                                class="w-full px-3 py-2 border border-green-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 text-green-900 font-bold bg-white"
+                                                placeholder="Enter value...">
+                                            <p class="text-xs text-green-600 mt-1">&#9998; You may edit this value before approving. The saved value will be added to the attribute if approved.</p>
+                                        </div>
+                                    ` : `
+                                        <p class="font-bold text-green-900 text-lg">${request.new_value}</p>
+                                    `}
                                 </div>
                             </div>
                             ${request.reason ? `
@@ -6576,6 +6596,30 @@ async function submitStandardValueReview(requestId, decision) {
         
         const confirmed = confirm(`Are you sure you want to ${decision} this standard value request?`);
         if (!confirmed) return;
+        
+        // If admin, check if the new_value was edited and save it first
+        if (currentUser.role === 'admin') {
+            const editedValueInput = document.getElementById('sv-admin-new-value');
+            if (editedValueInput) {
+                const editedValue = editedValueInput.value.trim();
+                if (!editedValue) {
+                    alert('The new value cannot be empty.');
+                    editedValueInput.focus();
+                    return;
+                }
+                // Persist the (possibly modified) value back to the request row
+                showProgressNotification('Saving value...');
+                const { error: valError } = await supabase
+                    .from('standard_value_requests')
+                    .update({ new_value: editedValue })
+                    .eq('id', requestId);
+                hideProgressNotification();
+                if (valError) {
+                    alert('Failed to save the updated value: ' + valError.message);
+                    return;
+                }
+            }
+        }
         
         // Call the appropriate review function
         if (currentUser.role === 'reviewer') {
@@ -6937,24 +6981,36 @@ async function submitProjectReview(projectId, decision) {
         const confirmed = confirm(`Are you sure you want to ${decision} this project?`);
         if (!confirmed) return;
         
-        // If admin, collect and save size attribute toggle states first
+        // If admin, collect and save attribute toggle states first
         if (currentUser.role === 'admin') {
             const sizeToggles = document.querySelectorAll('.attr-size-toggle');
-            if (sizeToggles.length > 0) {
-                showProgressNotification('Saving size attribute settings...');
-                const updatePromises = Array.from(sizeToggles).map(toggle => {
-                    const attrId = parseInt(toggle.getAttribute('data-attr-id'));
-                    const isSizeAttr = toggle.checked;
-                    return supabase
-                        .from('project_attributes')
-                        .update({ is_size_attribute: isSizeAttr })
-                        .eq('id', attrId);
+            const mandatoryToggles = document.querySelectorAll('.attr-mandatory-toggle');
+            
+            if (sizeToggles.length > 0 || mandatoryToggles.length > 0) {
+                showProgressNotification('Saving attribute settings...');
+                
+                // Build a map of attrId -> updates so we batch per attribute
+                const attrUpdates = {};
+                sizeToggles.forEach(toggle => {
+                    const id = toggle.getAttribute('data-attr-id');
+                    attrUpdates[id] = attrUpdates[id] || {};
+                    attrUpdates[id].is_size_attribute = toggle.checked;
                 });
+                mandatoryToggles.forEach(toggle => {
+                    const id = toggle.getAttribute('data-attr-id');
+                    attrUpdates[id] = attrUpdates[id] || {};
+                    attrUpdates[id].is_mandatory = toggle.checked;
+                });
+                
+                const updatePromises = Object.entries(attrUpdates).map(([attrId, updates]) =>
+                    supabase.from('project_attributes').update(updates).eq('id', parseInt(attrId))
+                );
+                
                 const results = await Promise.all(updatePromises);
                 const failed = results.filter(r => r.error);
                 if (failed.length > 0) {
                     hideProgressNotification();
-                    alert('Failed to save size attribute settings: ' + failed[0].error.message);
+                    alert('Failed to save attribute settings: ' + failed[0].error.message);
                     return;
                 }
                 hideProgressNotification();
