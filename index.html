@@ -4320,41 +4320,26 @@ async function reviewAdminRequest(type, requestId, decision) {
                 
                 console.log('Standard value request data:', requestData);
                 
-                // Get current attribute values
-                const { data: attributeData, error: attrError } = await supabase
-                    .from('project_attributes')
-                    .select('standard_values')
-                    .eq('id', requestData.attribute_id)
-                    .single();
-                
-                if (attrError) {
-                    console.error('Error fetching attribute data:', attrError);
-                    throw attrError;
+                // Add value via synced RPC: re-checks duplicates (deprecated values don't count)
+                // and mirrors OEM PART NO. values between paired OEM/Aftermarket projects automatically.
+                const { data: syncResult, error: syncError } = await supabase
+                    .rpc('add_standard_value_synced', {
+                        p_attribute_id: requestData.attribute_id,
+                        p_new_value: requestData.new_value,
+                        p_unit: ''
+                    });
+
+                if (syncError) {
+                    console.error('Error adding standard value via synced RPC:', syncError);
+                    throw syncError;
                 }
-                
-                console.log('Current attribute data:', attributeData);
-                
-                // Add new value if it doesn't exist
-                const currentValues = attributeData.standard_values || [];
-                const valueExists = currentValues.some(val => val.name === requestData.new_value);
-                
-                if (!valueExists) {
-                    const newValue = { name: requestData.new_value, unit: '' };
-                    const updatedValues = [...currentValues, newValue];
-                    
-                    console.log('Adding new value:', newValue, 'to existing values:', currentValues);
-                    
-                    const { error: updateAttrError } = await supabase
-                        .from('project_attributes')
-                        .update({ standard_values: updatedValues })
-                        .eq('id', requestData.attribute_id);
-                    
-                    if (updateAttrError) {
-                        console.error('Error updating attribute values:', updateAttrError);
-                        throw updateAttrError;
-                    }
-                    
-                    console.log('Successfully updated attribute values');
+
+                console.log('Synced standard value add result:', syncResult);
+
+                if (!syncResult || !syncResult.success) {
+                    // Value already existed (duplicate) - request is still marked approved below,
+                    // since the value is already present in the attribute either way.
+                    console.log('Standard value not added (likely already exists):', syncResult?.message);
                 }
             }
             
