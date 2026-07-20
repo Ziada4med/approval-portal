@@ -4356,6 +4356,9 @@ async function reviewAdminRequest(type, requestId, decision) {
                     }
                     if (!syncResult || !syncResult.success) {
                         console.error('add_standard_value_synced failed:', syncResult?.message);
+                        if (syncResult?.duplicate_project) {
+                            throw new Error(`"${requestData.new_value}" already exists as an OEM Part No. in project "${syncResult.duplicate_project.project_name}" (${syncResult.duplicate_project.item_code}). The request has NOT been approved.`);
+                        }
                         throw new Error(syncResult?.message || 'Failed to add standard value');
                     }
                     if (syncResult.mirrored) {
@@ -10892,9 +10895,66 @@ async function reviewStandardValueRequest(requestId, decision, comments) {
 
 async function adminReviewStandardValueRequest(requestId, decision, comments) {
     try {
+        // Fetch the request + current attribute state WITHOUT changing status yet.
+        // The value must be successfully added first (approve path) so a blocked
+        // duplicate never leaves the request silently marked as admin_approved.
+        const { data: requestRow, error: fetchError } = await supabase
+            .from('standard_value_requests')
+            .select(`
+                *,
+                created_by_user:users!standard_value_requests_created_by_fkey(username, email),
+                project:classification_projects(project_name),
+                attribute:project_attributes(*)
+            `)
+            .eq('id', requestId)
+            .single();
+
+        if (fetchError) throw fetchError;
+
+        // If approved, add the new value to the project attribute via the synced RPC.
+        // This ensures the correct standard_values format (name/unit/status/created_at/usage_count),
+        // automatically mirrors OEM PART NO. values between paired OEM/Aftermarket projects, and
+        // blocks the add if the OEM Part No. already exists in any other PMV project.
+        if (decision === 'approve' && requestRow.attribute) {
+            const currentValues = Array.isArray(requestRow.attribute.standard_values) 
+                ? requestRow.attribute.standard_values 
+                : [];
+            
+            const newValue = requestRow.new_value;
+            const valueExists = currentValues.some(val => 
+                (typeof val === 'string' && val === newValue) ||
+                (typeof val === 'object' && val.name === newValue)
+            );
+            
+            if (!valueExists) {
+                const { data: syncResult, error: syncError } = await supabase
+                    .rpc('add_standard_value_synced', {
+                        p_attribute_id: requestRow.attribute_id,
+                        p_new_value: newValue,
+                        p_unit: ''
+                    });
+
+                if (syncError) {
+                    throw syncError;
+                }
+                if (!syncResult || !syncResult.success) {
+                    // Duplicate elsewhere, or other failure - abort WITHOUT changing request status
+                    // so the admin can see it's still pending and address the conflict.
+                    if (syncResult?.duplicate_project) {
+                        alert(`Cannot approve: "${newValue}" already exists as an OEM Part No. in project "${syncResult.duplicate_project.project_name}" (${syncResult.duplicate_project.item_code}).\n\nThe request has NOT been approved. Please reject it or ask the requester to verify against that project.`);
+                    } else {
+                        alert(`Cannot approve: ${syncResult?.message || 'Failed to add standard value.'}\n\nThe request has NOT been approved.`);
+                    }
+                    return;
+                }
+                if (syncResult.mirrored) {
+                    console.log('OEM PART NO. value mirrored to paired OEM/Aftermarket project.');
+                }
+            }
+        }
+
+        // Value added successfully (or already existed, or this is a rejection) - now finalize status
         const status = decision === 'approve' ? 'admin_approved' : 'admin_rejected';
-        
-        // Update the request status
         const { data, error } = await supabase
             .from('standard_value_requests')
             .update({
@@ -10907,44 +10967,11 @@ async function adminReviewStandardValueRequest(requestId, decision, comments) {
             .select(`
                 *,
                 created_by_user:users!standard_value_requests_created_by_fkey(username, email),
-                project:classification_projects(project_name),
-                attribute:project_attributes(*)
+                project:classification_projects(project_name)
             `)
             .single();
 
         if (error) throw error;
-
-        // If approved, add the new value to the project attribute via the synced RPC.
-        // This ensures the correct standard_values format (name/unit/status/created_at/usage_count)
-        // and automatically mirrors OEM PART NO. values between paired OEM/Aftermarket projects.
-        if (decision === 'approve' && data.attribute) {
-            const currentValues = Array.isArray(data.attribute.standard_values) 
-                ? data.attribute.standard_values 
-                : [];
-            
-            const newValue = data.new_value;
-            const valueExists = currentValues.some(val => 
-                (typeof val === 'string' && val === newValue) ||
-                (typeof val === 'object' && val.name === newValue)
-            );
-            
-            if (!valueExists) {
-                const { data: syncResult, error: syncError } = await supabase
-                    .rpc('add_standard_value_synced', {
-                        p_attribute_id: data.attribute_id,
-                        p_new_value: newValue,
-                        p_unit: ''
-                    });
-
-                if (syncError) {
-                    console.error('Error adding standard value via synced RPC:', syncError);
-                } else if (!syncResult || !syncResult.success) {
-                    console.error('add_standard_value_synced failed:', syncResult?.message);
-                } else if (syncResult.mirrored) {
-                    console.log('OEM PART NO. value mirrored to paired OEM/Aftermarket project.');
-                }
-            }
-        }
 
         // Send email notification for standard values (NOT item codes)
         const requestData = {
