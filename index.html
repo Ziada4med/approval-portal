@@ -5526,22 +5526,88 @@ async function processSingleApproval(requestType, itemId, action, comments) {
                 comments_param: comments || ''
             });
             
-        case 'standard-values':
-            // Update standard value request
+        case 'standard-values': {
+            const reviewedAtField = currentUser.role === 'admin' ? 'admin_reviewed_at' : 'reviewed_at';
+            const reviewedByField = currentUser.role === 'admin' ? 'admin_reviewed_by' : 'reviewed_by';
+            const commentsField = currentUser.role === 'admin' ? 'admin_comments' : 'reviewer_comments';
+            const approvedStatus = currentUser.role === 'admin' ? 'admin_approved' : 'reviewer_approved';
+            const rejectedStatus = currentUser.role === 'admin' ? 'admin_rejected' : 'reviewer_rejected';
+
+            // Fetch the request + current attribute state WITHOUT changing status yet.
+            // The value must be successfully added first (approve path) so a blocked
+            // duplicate never leaves the request silently marked as approved.
+            const { data: svRequest, error: svFetchError } = await supabase
+                .from('standard_value_requests')
+                .select('*, attribute:project_attributes(*)')
+                .eq('id', itemId)
+                .single();
+
+            if (svFetchError) throw svFetchError;
+
+            // If approved, add the new value to the project attribute via the synced RPC.
+            // This ensures the correct standard_values format (name/unit/status/created_at/usage_count),
+            // automatically mirrors OEM PART NO. values between paired OEM/Aftermarket projects, and
+            // blocks the add if the OEM Part No. already exists in any other PMV project.
+            if (action === 'approve' && svRequest.attribute) {
+                const currentValues = Array.isArray(svRequest.attribute.standard_values)
+                    ? svRequest.attribute.standard_values
+                    : [];
+                const valueExists = currentValues.some(val =>
+                    (typeof val === 'string' && val === svRequest.new_value) ||
+                    (typeof val === 'object' && val.name === svRequest.new_value)
+                );
+
+                if (!valueExists) {
+                    const { data: syncResult, error: syncError } = await supabase
+                        .rpc('add_standard_value_synced', {
+                            p_attribute_id: svRequest.attribute_id,
+                            p_new_value: svRequest.new_value,
+                            p_unit: ''
+                        });
+
+                    if (syncError) throw syncError;
+                    if (!syncResult || !syncResult.success) {
+                        const reason = syncResult?.duplicate_project
+                            ? `"${svRequest.new_value}" already exists as an OEM Part No. in project "${syncResult.duplicate_project.project_name}" (${syncResult.duplicate_project.item_code}).`
+                            : (syncResult?.message || 'Failed to add standard value.');
+                        throw new Error(`Request #${itemId} NOT approved: ${reason}`);
+                    }
+                }
+            }
+
+            // Value added successfully (or already existed, or this is a rejection) - now finalize status
             const { data, error } = await supabase
                 .from('standard_value_requests')
                 .update({
-                    status: action === 'approve' ? 
-                        (currentUser.role === 'admin' ? 'admin_approved' : 'reviewer_approved') :
-                        (currentUser.role === 'admin' ? 'admin_rejected' : 'reviewer_rejected'),
-                    [currentUser.role === 'admin' ? 'admin_reviewed_at' : 'reviewed_at']: new Date().toISOString(),
-                    [currentUser.role === 'admin' ? 'admin_reviewed_by' : 'reviewed_by']: currentUser.id,
-                    [currentUser.role === 'admin' ? 'admin_comments' : 'reviewer_comments']: comments || ''
+                    status: action === 'approve' ? approvedStatus : rejectedStatus,
+                    [reviewedAtField]: new Date().toISOString(),
+                    [reviewedByField]: currentUser.id,
+                    [commentsField]: comments || ''
                 })
-                .eq('id', itemId);
-                
+                .eq('id', itemId)
+                .select(`
+                    *,
+                    created_by_user:users!standard_value_requests_created_by_fkey(username, email),
+                    project:classification_projects(project_name)
+                `)
+                .single();
+
             if (error) throw error;
+
+            // Send email notification, matching the single-item review flow (best-effort, don't fail the approval)
+            try {
+                const notifData = {
+                    ...data,
+                    request_type: 'Standard Value Request',
+                    title: `${data.attribute_name}: ${data.new_value}`
+                };
+                await sendStandardValueNotification(notifData, action, comments, currentUser);
+            } catch (emailError) {
+                console.error('Failed to send bulk standard value notification:', emailError);
+            }
+
             return { data, error: null };
+        }
             
         case 'combinations':
             // Update combination request  
