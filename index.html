@@ -5544,11 +5544,13 @@ async function processSingleApproval(requestType, itemId, action, comments) {
 
             if (svFetchError) throw svFetchError;
 
-            // If approved, add the new value to the project attribute via the synced RPC.
-            // This ensures the correct standard_values format (name/unit/status/created_at/usage_count),
+            // ADMIN ONLY: add the value at FINAL approval, matching the single-item flows.
+            // Reviewer (layer 1) bulk approvals must be status-only — the value goes live
+            // exclusively when the admin (layer 2) approves. The synced RPC ensures the
+            // correct standard_values format (name/unit/status/created_at/usage_count),
             // automatically mirrors OEM PART NO. values between paired OEM/Aftermarket projects, and
             // blocks the add if the OEM Part No. already exists in any other PMV project.
-            if (action === 'approve' && svRequest.attribute) {
+            if (action === 'approve' && currentUser.role === 'admin' && svRequest.attribute) {
                 const currentValues = Array.isArray(svRequest.attribute.standard_values)
                     ? svRequest.attribute.standard_values
                     : [];
